@@ -1,7 +1,7 @@
 #include "camera.h"
 #include "sprite.h"
 
-SDL_Rect camera_relative( const camera_t* camera, SDL_Rect coords )
+rect_t camera_relative( const camera_t* camera, rect_t coords )
 {
     coords.x -= ( int )( camera->x );
     coords.y -= ( int )( camera->y );

@@ -1,4 +1,5 @@
 #include "inventory.h"
+#include <math.h>
 
 #define GEMS_DISPLAY_INCREMENT 25
 

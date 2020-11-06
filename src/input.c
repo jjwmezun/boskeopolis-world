@@ -1,40 +1,36 @@
 #include "input.h"
 
-int inputs_held[ INPUT_MAX ];
+int inputs_held[ INPUT_NULL ];
 
-void input_register( SDL_Keycode key, int value );
+static void input_register( input_t input, int value );
 
 int input_held( input_t input )
 {
     return inputs_held[ input ];
 };
 
-void input_register_press( SDL_Keycode key )
+void input_register_press( input_t input )
 {
-    input_register( key, 1 );
+    input_register( input, 1 );
 };
 
-void input_register_release( SDL_Keycode key )
+void input_register_release( input_t input )
 {
-    input_register( key, 0 );
+    input_register( input, 0 );
 };
 
 void input_init()
 {
-    for ( int i = 0; i < INPUT_MAX; ++i )
+    for ( int i = 0; i < INPUT_NULL; ++i )
     {
         inputs_held[ i ] = 0;
     }
 };
 
-void input_register( SDL_Keycode key, int value )
+static void input_register( input_t input, int value )
 {
-    switch ( key )
+    if ( input != INPUT_NULL )
     {
-        case ( SDLK_UP ): { inputs_held[ INPUT_UP ] = value; } break;
-        case ( SDLK_RIGHT ): { inputs_held[ INPUT_RIGHT ] = value; } break;
-        case ( SDLK_DOWN ): { inputs_held[ INPUT_DOWN ] = value; } break;
-        case ( SDLK_LEFT ): { inputs_held[ INPUT_LEFT ] = value; } break;
-        case ( SDLK_z ): { inputs_held[ INPUT_JUMP ] = value; } break;
+        inputs_held[ input ] = value;
     }
 };

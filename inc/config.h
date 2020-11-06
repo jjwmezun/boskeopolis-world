@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <math.h>
+
 #define BLOCK_SIZE 16
 #define BLOCKS_TO_PIXELS( blocks ) ( ( blocks ) * BLOCK_SIZE )
 #define PIXELS_TO_BLOCKS( pixels ) ( ( pixels ) / BLOCK_SIZE )

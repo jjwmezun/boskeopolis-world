@@ -1,16 +1,20 @@
 #include "camera.h"
 #include "config.h"
+#include "color.h"
 #include "input.h"
 #include "inventory.h"
 #include "map.h"
+#include "math.h"
+#include "rect.h"
+#include "render.h"
 #include "sprite.h"
 
-void sprite_render( const sprite_t* sprite, const struct camera_t* camera, SDL_Renderer* renderer )
+void sprite_render( const sprite_t* sprite, const struct camera_t* camera )
 {
-    const SDL_Rect coords_orig = { ( int )( sprite->x ), ( int )( sprite->y ), ( int )( sprite->w ), ( int )( sprite->h ) };
-    const SDL_Rect coords = camera_relative( camera, coords_orig );
-    SDL_SetRenderDrawColor( renderer, 255, 0, 0, 255 );
-    SDL_RenderFillRect( renderer, &coords );
+    const rect_t coords_orig = { ( int )( sprite->x ), ( int )( sprite->y ), ( int )( sprite->w ), ( int )( sprite->h ) };
+    const rect_t coords = camera_relative( camera, coords_orig );
+    const color_t color = { 255, 0, 0, 255 };
+    render_rect( &coords, &color );
 };
 
 double sprite_bottom( const sprite_t* sprite )
@@ -33,7 +37,7 @@ double sprite_center_y( const sprite_t* sprite )
     return sprite->y + sprite->h / 2.0;
 };
 
-void sprite_update( sprite_t* sprite, const struct map_t* map )
+void sprite_update( sprite_t* sprite, struct map_t* map )
 {
     if ( sprite->state == SSTATE_ON_GROUND )
     {

@@ -1,33 +1,60 @@
+#include "bswmath.h"
+#include "camera.h"
+#include "color.h"
+#include "config.h"
 #include "map.h"
+#include "rect.h"
+#include "render.h"
 
-int map_test_generic_collision( const map_t* map, int x, int y, int index );
+static int map_test_generic_collision( const struct map_t* map, int x, int y, int index );
 
-int map_test_pixel_solid_collision( const map_t* map, int x, int y )
+void map_render( const struct map_t* map, const struct camera_t* camera )
+{
+    const int start_y = PIXELS_TO_BLOCKS( ( int )( camera->y ) );
+    const int start_x = PIXELS_TO_BLOCKS( ( int )( camera->x ) );
+    const int end_y = min( MAP_HEIGHT, PIXELS_TO_BLOCKS( ( int )( camera_bottom( camera ) ) ) );
+    const int end_x = min( MAP_WIDTH, PIXELS_TO_BLOCKS( ( int )( camera_right( camera ) ) ) );
+    for ( int y = start_y; y < end_y; ++y )
+    {
+        for ( int x = start_x; x < end_x; ++x )
+        {
+            if ( map->tiles[ MAP_INDEX( x, y ) ] )
+            {
+                const rect_t block_orig = { x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE };
+                const rect_t block = camera_relative( camera, block_orig );
+                const color_t color = { 255, 255, 255, 255 };
+                render_rect( &block, &color );
+            }
+        }
+    }
+};
+
+int map_test_pixel_solid_collision( const struct map_t* map, int x, int y )
 {
     return map_test_generic_collision( map, x, y, 1 );
 };
 
-int map_test_pixel_top_solid_collision( const map_t* map, int x, int y )
+int map_test_pixel_top_solid_collision( const struct map_t* map, int x, int y )
 {
     return map_test_generic_collision( map, x, y, 2 );
 };
 
-int map_test_pixel_ladder_collision( const map_t* map, int x, int y )
+int map_test_pixel_ladder_collision( const struct map_t* map, int x, int y )
 {
     return map_test_generic_collision( map, x, y, 3 );
 };
 
-int map_test_pixel_gem_collision( const map_t* map, int x, int y )
+int map_test_pixel_gem_collision( const struct map_t* map, int x, int y )
 {
     return map_test_generic_collision( map, x, y, 4 );
 };
 
-int map_test_pixel_treasure_collision( const map_t* map, int x, int y )
+int map_test_pixel_treasure_collision( const struct map_t* map, int x, int y )
 {
     return map_test_generic_collision( map, x, y, 5 );
 };
 
-void map_remove( map_t* map, int x, int y )
+void map_remove( struct map_t* map, int x, int y )
 {
     map->tiles[ MAP_INDEX( x, y ) ] = 0;
 };
@@ -40,7 +67,7 @@ map_t map_create()
 return map;
 };
 
-int map_test_generic_collision( const map_t* map, int x, int y, int index )
+static int map_test_generic_collision( const struct map_t* map, int x, int y, int index )
 {
     return
         x >= 0 &&
