@@ -1,6 +1,7 @@
 #include "camera.h"
 #include "config.h"
 #include "input.h"
+#include "inventory.h"
 #include "map.h"
 #include "sprite.h"
 
@@ -121,10 +122,33 @@ void sprite_update( sprite_t* sprite, const struct map_t* map )
         sprite->x = prev_x;
     }
 
+    const int center_x_block = ( int )( floor( ( sprite_center_x( sprite ) ) / ( double )( BLOCK_SIZE ) ) );
+    const int center_y_block = ( int )( floor( ( sprite_center_y( sprite ) ) / ( double )( BLOCK_SIZE ) ) );
     const int left_x = ( int )( floor( sprite->x / ( double )( BLOCK_SIZE ) ) );
     const int right_x = ( int )( floor( sprite_right( sprite ) / ( double )( BLOCK_SIZE ) ) );
     const int x_bottom = ( int )( floor( ( sprite_bottom( sprite ) - 5.0 ) / ( double )( BLOCK_SIZE ) ) );
     const int x_top = ( int )( floor( ( sprite->y + 5.0 ) / ( double )( BLOCK_SIZE ) ) );
+    if ( map_test_pixel_gem_collision( map, left_x, x_bottom ) )
+    {
+        inventory_add_gems( 100 );
+        map_remove( map, left_x, x_bottom );
+    }
+    if ( map_test_pixel_gem_collision( map, right_x, x_bottom ) )
+    {
+        inventory_add_gems( 100 );
+        map_remove( map, right_x, x_bottom );
+    }
+    if ( map_test_pixel_gem_collision( map, left_x, x_top ) )
+    {
+        inventory_add_gems( 100 );
+        map_remove( map, left_x, x_top );
+    }
+    if ( map_test_pixel_gem_collision( map, left_x, x_bottom ) )
+    {
+        inventory_add_gems( 100 );
+        map_remove( map, right_x, x_top );
+    }
+
     if
     (
         map_test_pixel_solid_collision( map, left_x, x_bottom ) || map_test_pixel_solid_collision( map, right_x, x_bottom ) ||
@@ -161,7 +185,6 @@ void sprite_update( sprite_t* sprite, const struct map_t* map )
     }
     else
     {
-        const int center_y_block = ( int )( floor( ( sprite_center_y( sprite ) ) / ( double )( BLOCK_SIZE ) ) );
         if ( !map_test_pixel_ladder_collision( map, y_left_block_x, center_y_block ) && !map_test_pixel_ladder_collision( map, y_right_block_x, center_y_block ) )
         {
             if ( map_test_pixel_ladder_collision( map, y_left_block_x, bottom_block_y ) || map_test_pixel_ladder_collision( map, y_right_block_x, bottom_block_y ) )
@@ -213,8 +236,6 @@ void sprite_update( sprite_t* sprite, const struct map_t* map )
 
     if ( sprite->state == SSTATE_ON_LADDER )
     {
-        const int center_x_block = ( int )( floor( ( sprite_center_x( sprite ) ) / ( double )( BLOCK_SIZE ) ) );
-        const int center_y_block = ( int )( floor( ( sprite_center_y( sprite ) ) / ( double )( BLOCK_SIZE ) ) );
         if ( !map_test_pixel_ladder_collision( map, center_x_block, center_y_block ) )
         {
             if ( map_test_pixel_ladder_collision( map, y_left_block_x, bottom_block_y ) || map_test_pixel_ladder_collision( map, y_right_block_x, bottom_block_y ) )
@@ -229,8 +250,6 @@ void sprite_update( sprite_t* sprite, const struct map_t* map )
     }
     else if ( input_held( INPUT_UP ) )
     {
-        const int center_x_block = ( int )( floor( ( sprite_center_x( sprite ) ) / ( double )( BLOCK_SIZE ) ) );
-        const int center_y_block = ( int )( floor( ( sprite_center_y( sprite ) ) / ( double )( BLOCK_SIZE ) ) );
         if ( map_test_pixel_ladder_collision( map, center_x_block, center_y_block ) )
         {
             sprite->state = SSTATE_ON_LADDER;

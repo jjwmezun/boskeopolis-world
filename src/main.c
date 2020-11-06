@@ -1,6 +1,7 @@
 #include "camera.h"
 #include "config.h"
 #include "input.h"
+#include "inventory.h"
 #include "map.h"
 #include <math.h>
 #include <SDL2/SDL.h>
@@ -93,6 +94,7 @@ int main( int argc, char** argv )
 
         sprite_update( &sprite, &map );
         camera_update( &camera, &sprite );
+        inventory_update();
 
         SDL_SetRenderDrawColor( renderer, 0, 0, 0, 255 );
         SDL_RenderClear( renderer );
