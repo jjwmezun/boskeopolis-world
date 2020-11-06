@@ -1,189 +1,19 @@
+#include "camera.h"
 #include "config.h"
 #include "input.h"
+#include "map.h"
 #include <math.h>
 #include <SDL2/SDL.h>
+#include "sprite.h"
 
 SDL_Window* window;
 SDL_Renderer* renderer;
 int running = 1;
 int ticks;
 
-const int area[ WINDOW_HEIGHT_BLOCKS ][ WINDOW_WIDTH_BLOCKS ] =
+int min( int a, int b )
 {
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0 },
-    { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 },
-    { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 },
-    { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 },
-    { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
-};
-
-typedef struct player_t
-{
-    double x;
-    double y;
-    double w;
-    double h;
-    double accx;
-    double accy;
-    double vx;
-    double vy;
-    int on_ground;
-    int is_jumping;
-    int jump_lock;
-} player_t;
-
-player_t player = { 96.0, 32.0, 16.0, 24.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0 };
-
-void player_render()
-{
-    const SDL_Rect coords = { ( int )( player.x ), ( int )( player.y ), ( int )( player.w ), ( int )( player.h ) };
-    SDL_SetRenderDrawColor( renderer, 255, 0, 0, 255 );
-    SDL_RenderFillRect( renderer, &coords );
-};
-
-#define PLAYER_BOTTOM( player ) ( player.y + player.h )
-#define PLAYER_RIGHT( player ) ( player.x + player.w )
-
-int player_test_pixel_collision( int x, int y )
-{
-    return
-        x > 0 &&
-        x < WINDOW_WIDTH_BLOCKS &&
-        y > 0 &&
-        y < WINDOW_HEIGHT_BLOCKS &&
-        area[ y ][ x ];
-};
-
-void player_update()
-{
-    player.on_ground = 0;
-    double prev_y = player.y;
-    double prev_x = player.x;
-
-    if ( input_held( INPUT_RIGHT ) )
-    {
-        player.accx = 0.25;
-    }
-    else if ( input_held( INPUT_LEFT ) )
-    {
-        player.accx = -0.25;
-    }
-    else
-    {
-        player.accx = 0.0;
-    }
-
-    player.vx += player.accx;
-    if ( player.vx > 2.0 )
-    {
-        player.vx = 2.0;
-    }
-    if ( player.vx < -2.0 )
-    {
-        player.vx = -2.0;
-    }
-
-    if ( player.accx == 0.0 )
-    {
-        player.vx /= 1.15;
-    }
-
-    player.x += player.vx;
-
-    if ( player.is_jumping )
-    {
-        player.accy = -1.0;
-    }
-    else
-    {
-        player.accy = 0.25;
-    }
-    player.vy += player.accy;
-    if ( player.is_jumping && ( player.vy < -5.0 || !input_held( INPUT_JUMP ) ) )
-    {
-        player.is_jumping = 0;
-    }
-    else if ( player.vy > 4.0 )
-    {
-        player.vy = 4.0;
-    }
-    player.y += player.vy;
-
-    if ( player.x < 0.0 || PLAYER_RIGHT( player ) > WINDOW_WIDTH_PIXELS )
-    {
-        player.accx = 0.0;
-        player.vx *= -0.5;
-        player.x = prev_x;
-    }
-
-    const int left_x = ( int )( floor( player.x / ( double )( BLOCK_SIZE ) ) );
-    const int right_x = ( int )( floor( PLAYER_RIGHT( player ) / ( double )( BLOCK_SIZE ) ) );
-    const int x_bottom = ( int )( floor( ( PLAYER_BOTTOM( player ) - 5.0 ) / ( double )( BLOCK_SIZE ) ) );
-    const int x_top = ( int )( floor( ( player.y + 5.0 ) / ( double )( BLOCK_SIZE ) ) );
-    if
-    (
-        player_test_pixel_collision( left_x, x_bottom ) || player_test_pixel_collision( right_x, x_bottom ) ||
-        player_test_pixel_collision( left_x, x_top ) || player_test_pixel_collision( right_x, x_top )
-    )
-    {
-        player.accx = 0.0;
-        player.vx *= -0.5;
-        player.x = prev_x;
-    }
-
-    const int y_left_block_x = ( int )( floor( ( player.x + 2.0 ) / ( double )( BLOCK_SIZE ) ) );
-    const int y_right_block_x = ( int )( floor( ( PLAYER_RIGHT( player ) - 2.0 ) / ( double )( BLOCK_SIZE ) ) );
-    const int bottom_block_y = ( int )( floor( PLAYER_BOTTOM( player ) / ( double )( BLOCK_SIZE ) ) );
-    const int top_block_y = ( int )( floor( player.y / ( double )( BLOCK_SIZE ) ) );
-    if ( player_test_pixel_collision( y_left_block_x, bottom_block_y ) || player_test_pixel_collision( y_right_block_x, bottom_block_y ) )
-    {
-        player.accy = 0.0;
-        player.vy = 0.0;
-        const int collision = PLAYER_BOTTOM( player ) - ( bottom_block_y * BLOCK_SIZE );
-        player.y -= collision;
-        player.on_ground = 1;
-    }
-    else if ( player_test_pixel_collision( y_left_block_x, top_block_y ) || player_test_pixel_collision( y_right_block_x, top_block_y ) )
-    {
-        player.accy = 0.0;
-        player.vy *= -0.5;
-        player.y = prev_y;
-    }
-
-    if ( player.y > WINDOW_HEIGHT_PIXELS - 16.0 )
-    {
-        player.accy = 0.0;
-        player.vy = 0.0;
-        player.y = prev_y;
-    }
-
-    if ( player.on_ground )
-    {
-        if ( input_held( INPUT_JUMP ) )
-        {
-            if ( !player.jump_lock )
-            {
-                player.is_jumping = 1;
-            }
-        }
-        else
-        {
-            player.jump_lock = 0;
-        }
-    }
-    else
-    {
-        player.jump_lock = 1;
-    }
+    return ( a > b ) ? b : a;
 };
 
 int main( int argc, char** argv )
@@ -214,6 +44,10 @@ int main( int argc, char** argv )
         return 1;
     }
     input_init();
+    camera_t camera = { ( double )( BLOCKS_TO_PIXELS( 120 ) ), ( double )( BLOCKS_TO_PIXELS( 17 ) ), ( double )( WINDOW_WIDTH_PIXELS ), ( double )( WINDOW_HEIGHT_PIXELS ) };
+    map_t map = map_create();
+    sprite_t sprite = { ( double )( BLOCKS_TO_PIXELS( 144 ) ), ( double )( BLOCKS_TO_PIXELS( 26 ) ), 16.0, 24.0, 0.0, 0.0, 0.0, 0.0, SSTATE_FALLING, 0 };
+
     while ( running )
     {
         SDL_Event event;
@@ -257,24 +91,30 @@ int main( int argc, char** argv )
             }
 		}
 
-        player_update();
+        sprite_update( &sprite, &map );
+        camera_update( &camera, &sprite );
 
         SDL_SetRenderDrawColor( renderer, 0, 0, 0, 255 );
         SDL_RenderClear( renderer );
 
-        for ( int y = 0; y < WINDOW_HEIGHT_BLOCKS; ++y )
+        const int start_y = PIXELS_TO_BLOCKS( ( int )( camera.y ) );
+        const int start_x = PIXELS_TO_BLOCKS( ( int )( camera.x ) );
+        const int end_y = min( MAP_HEIGHT, PIXELS_TO_BLOCKS( ( int )( camera_bottom( &camera ) ) ) );
+        const int end_x = min( MAP_WIDTH, PIXELS_TO_BLOCKS( ( int )( camera_right( &camera ) ) ) );
+        for ( int y = start_y; y < end_y; ++y )
         {
-            for ( int x = 0; x < WINDOW_WIDTH_BLOCKS; ++x )
+            for ( int x = start_x; x < end_x; ++x )
             {
-                if ( area[ y ][ x ] )
+                if ( map.tiles[ MAP_INDEX( x, y ) ] )
                 {
-                    const SDL_Rect block = { x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE };
+                    const SDL_Rect block_orig = { x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE };
+                    const SDL_Rect block = camera_relative( &camera, block_orig );
                     SDL_SetRenderDrawColor( renderer, 255, 255, 255, 255 );
                     SDL_RenderFillRect( renderer, &block );
                 }
             }
         }
-        player_render();
+        sprite_render( &sprite, &camera, renderer );
 
         SDL_RenderPresent( renderer );
 

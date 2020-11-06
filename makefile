@@ -3,7 +3,7 @@ LINKER = gcc
 WIN_COMPILER = x86_64-w64-mingw32-gcc
 WIN_LINKER = x86_64-w64-mingw32-gcc
 EXT = c
-CFLAGS = -g3 -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wfloat-equal -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wmain -Wfatal-errors -Wextra -Wall -Wno-switch -Wno-unused-parameter -Wno-float-equal
+CFLAGS = -g3 -std=c11 -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wfloat-equal -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wmain -Wfatal-errors -Wextra -Wall -Wno-switch -Wno-unused-parameter -Wno-float-equal
 
 LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_mixer -lm
 ABS_INC = -Iinc/

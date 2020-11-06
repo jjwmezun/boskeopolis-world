@@ -2,6 +2,8 @@
 #define CONFIG_H
 
 #define BLOCK_SIZE 16
+#define BLOCKS_TO_PIXELS( blocks ) ( ( blocks ) * BLOCK_SIZE )
+#define PIXELS_TO_BLOCKS( pixels ) ( ( pixels ) / BLOCK_SIZE )
 #define WINDOW_WIDTH_BLOCKS 25
 #define WINDOW_HEIGHT_BLOCKS 14
 #define WINDOW_WIDTH_PIXELS ( WINDOW_WIDTH_BLOCKS * BLOCK_SIZE )
