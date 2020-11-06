@@ -250,11 +250,16 @@ void sprite_update( sprite_t* sprite, const struct map_t* map )
     }
     else if ( input_held( INPUT_UP ) )
     {
-        if ( map_test_pixel_ladder_collision( map, center_x_block, center_y_block ) )
+        if ( inventory_has_treasure( TREASURE_GLOVES ) && map_test_pixel_ladder_collision( map, center_x_block, center_y_block ) )
         {
             sprite->state = SSTATE_ON_LADDER;
             sprite->accy = 0.0;
             sprite->vy = 0.0;
+        }
+        else if ( map_test_pixel_treasure_collision( map, center_x_block, center_y_block ) )
+        {
+            inventory_get_treasure( center_x_block );
+            map_remove( map, center_x_block, center_y_block );
         }
     }
 };

@@ -45,6 +45,7 @@ int main( int argc, char** argv )
         return 1;
     }
     input_init();
+    inventory_init();
     camera_t camera = { ( double )( BLOCKS_TO_PIXELS( 120 ) ), ( double )( BLOCKS_TO_PIXELS( 17 ) ), ( double )( WINDOW_WIDTH_PIXELS ), ( double )( WINDOW_HEIGHT_PIXELS ) };
     map_t map = map_create();
     sprite_t sprite = { ( double )( BLOCKS_TO_PIXELS( 144 ) ), ( double )( BLOCKS_TO_PIXELS( 26 ) ), 16.0, 24.0, 0.0, 0.0, 0.0, 0.0, SSTATE_FALLING, 0 };
