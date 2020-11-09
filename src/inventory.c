@@ -1,4 +1,5 @@
 #include "inventory.h"
+#include "game_state.h"
 #include <math.h>
 
 #define GEMS_DISPLAY_INCREMENT 25
@@ -78,6 +79,7 @@ void inventory_get_treasure( int x )
     if ( treasure_type != TREASURE_NONE )
     {
         treasures_collected[ ( int )( treasure_type ) ] = 1;
+        game_state_add_treasure_message( treasure_type );
     }
 };
 

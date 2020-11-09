@@ -15,5 +15,6 @@ int input_held( input_t input );
 void input_register_press( input_t input );
 void input_register_release( input_t input );
 void input_init();
+void input_reset();
 
 #endif

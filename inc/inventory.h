@@ -1,11 +1,7 @@
 #ifndef INVENTORY_H
 #define INVENTORY_H
 
-typedef enum
-{
-    TREASURE_GLOVES,
-    TREASURE_NONE
-} treasure_t;
+#include "treasure.h"
 
 void inventory_update();
 void inventory_add_gems( int amount );

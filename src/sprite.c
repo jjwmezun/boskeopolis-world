@@ -9,6 +9,18 @@
 #include "render.h"
 #include "sprite.h"
 
+sprite_t sprite_create
+(
+    double x,
+    double y,
+    double w,
+    double h
+)
+{
+    sprite_t sprite = { x, y, w, h, 0.0, 0.0, 0.0, 0.0, SSTATE_FALLING, 0 };
+    return sprite;
+};
+
 void sprite_render( const sprite_t* sprite, const struct camera_t* camera )
 {
     const rect_t coords_orig = { ( int )( sprite->x ), ( int )( sprite->y ), ( int )( sprite->w ), ( int )( sprite->h ) };
@@ -262,8 +274,8 @@ void sprite_update( sprite_t* sprite, struct map_t* map )
         }
         else if ( map_test_pixel_treasure_collision( map, center_x_block, center_y_block ) )
         {
-            inventory_get_treasure( center_x_block );
             map_remove( map, center_x_block, center_y_block );
+            inventory_get_treasure( center_x_block );
         }
     }
 };

@@ -26,6 +26,14 @@ typedef struct sprite_t
     int jump_lock;
 } sprite_t;
 
+sprite_t sprite_create
+(
+    double x,
+    double y,
+    double w,
+    double h
+);
+
 void sprite_render( const sprite_t* sprite, const struct camera_t* camera );
 double sprite_bottom( const sprite_t* sprite );
 double sprite_right( const sprite_t* sprite );

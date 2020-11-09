@@ -21,10 +21,7 @@ void input_register_release( input_t input )
 
 void input_init()
 {
-    for ( int i = 0; i < INPUT_NULL; ++i )
-    {
-        inputs_held[ i ] = 0;
-    }
+    input_reset();
 };
 
 static void input_register( input_t input, int value )
@@ -32,5 +29,13 @@ static void input_register( input_t input, int value )
     if ( input != INPUT_NULL )
     {
         inputs_held[ input ] = value;
+    }
+};
+
+void input_reset()
+{
+    for ( int i = 0; i < INPUT_NULL; ++i )
+    {
+        inputs_held[ i ] = 0;
     }
 };
