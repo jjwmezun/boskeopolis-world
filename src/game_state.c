@@ -93,8 +93,8 @@ void game_state_update()
             break;
             case ( GSTATE_LEVEL ):
             {
-                game_state_level_data_t* data = &states[ number_of_states - 1 ].data.level;
-                sprite_update( &data->player, &data->map );
+                game_state_level_data_t * data = &states[ number_of_states - 1 ].data.level;
+                sprite_update( &data->player, &data->map, &data->camera );
                 camera_update( &data->camera, &data->player );
                 inventory_update();
             }
@@ -105,30 +105,6 @@ void game_state_update()
                 {
                     game_state_pop();
                 }
-            }
-            break;
-        }
-    }
-};
-
-void game_state_render()
-{
-    for ( int i = 0; i < number_of_states; ++i )
-    {
-        switch ( states[ i ].type )
-        {
-            case ( GSTATE_LEVEL ):
-            {
-                game_state_level_data_t* data = &states[ i ].data.level;
-                map_render( &data->map, &data->camera );
-                sprite_render( &data->player, &data->camera );
-            }
-            break;
-            case ( GSTATE_MESSAGE ):
-            {
-                const rect_t box = { 32, 32, WINDOW_WIDTH_PIXELS - 64, WINDOW_HEIGHT_PIXELS - 64 };
-                const color_t color = { 255, 0, 0, 255 };
-                render_rect( &box, &color );
             }
             break;
         }

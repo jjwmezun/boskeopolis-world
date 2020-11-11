@@ -1,6 +1,6 @@
 #include "input.h"
 
-int inputs_held[ INPUT_NULL ];
+static int inputs_held[ INPUT_NULL ];
 
 static void input_register( input_t input, int value );
 

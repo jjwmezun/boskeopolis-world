@@ -6,11 +6,10 @@
 #include "inventory.h"
 #include "render.h"
 
-const color_t background_color = { 0, 0, 0, 255 };
-int running = 1;
-int ticks;
+static int running = 1;
+static int ticks;
 
-int main( int argc, char** argv )
+int main( int argc, char ** argv )
 {
     // Init
     if ( engine_init() != 0 )
@@ -41,13 +40,9 @@ int main( int argc, char** argv )
             }
 		}
 
-        // Update
         game_state_update();
 
-        // Render
-        render_start( &background_color );
-        game_state_render();
-        render_end();
+        render_execute();
 
         // Update time.
         ticks = engine_get_ticks();

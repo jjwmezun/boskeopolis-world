@@ -4,7 +4,6 @@
 #include "treasure.h"
 
 void game_state_update();
-void game_state_render();
 
 void game_state_init();
 void game_state_pop();

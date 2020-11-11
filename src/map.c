@@ -6,9 +6,9 @@
 #include "rect.h"
 #include "render.h"
 
-static int map_test_generic_collision( const struct map_t* map, int x, int y, int index );
+static int map_test_generic_collision( const struct map_t * map, int x, int y, int index );
 
-void map_render( const struct map_t* map, const struct camera_t* camera )
+void map_render( const struct map_t * map, const struct camera_t * camera )
 {
     const int start_y = PIXELS_TO_BLOCKS( ( int )( camera->y ) );
     const int start_x = PIXELS_TO_BLOCKS( ( int )( camera->x ) );
@@ -29,32 +29,32 @@ void map_render( const struct map_t* map, const struct camera_t* camera )
     }
 };
 
-int map_test_pixel_solid_collision( const struct map_t* map, int x, int y )
+int map_test_pixel_solid_collision( const struct map_t * map, int x, int y )
 {
     return map_test_generic_collision( map, x, y, 1 );
 };
 
-int map_test_pixel_top_solid_collision( const struct map_t* map, int x, int y )
+int map_test_pixel_top_solid_collision( const struct map_t * map, int x, int y )
 {
     return map_test_generic_collision( map, x, y, 2 );
 };
 
-int map_test_pixel_ladder_collision( const struct map_t* map, int x, int y )
+int map_test_pixel_ladder_collision( const struct map_t * map, int x, int y )
 {
     return map_test_generic_collision( map, x, y, 3 );
 };
 
-int map_test_pixel_gem_collision( const struct map_t* map, int x, int y )
+int map_test_pixel_gem_collision( const struct map_t * map, int x, int y )
 {
     return map_test_generic_collision( map, x, y, 4 );
 };
 
-int map_test_pixel_treasure_collision( const struct map_t* map, int x, int y )
+int map_test_pixel_treasure_collision( const struct map_t * map, int x, int y )
 {
     return map_test_generic_collision( map, x, y, 5 );
 };
 
-void map_remove( struct map_t* map, int x, int y )
+void map_remove( struct map_t * map, int x, int y )
 {
     map->tiles[ MAP_INDEX( x, y ) ] = 0;
 };
@@ -67,7 +67,7 @@ map_t map_create()
 return map;
 };
 
-static int map_test_generic_collision( const struct map_t* map, int x, int y, int index )
+static int map_test_generic_collision( const struct map_t * map, int x, int y, int index )
 {
     return
         x >= 0 &&

@@ -1,6 +1,7 @@
 #include "camera.h"
 #include "config.h"
 #include "color.h"
+#include "graphics.h"
 #include "input.h"
 #include "inventory.h"
 #include "map.h"
@@ -17,46 +18,46 @@ sprite_t sprite_create
     double h
 )
 {
-    sprite_t sprite = { x, y, w, h, 0.0, 0.0, 0.0, 0.0, SSTATE_FALLING, 0 };
+    graphics_t graphics = { GRAPHICS_REGULAR, {{ render_get_texture_id( "sprites/autumn.png" ), { 0.0, 0.0, 16.0, 24.0 }, { x, y, 16.0, 24.0 }, FLIP_NONE, 0.0 } }};
+    sprite_t sprite =
+    {
+        { x, y, w, h },
+        0.0, 0.0, 0.0, 0.0,
+        SSTATE_FALLING,
+        0,
+        render_add_graphics( &graphics )
+    };
     return sprite;
 };
 
-void sprite_render( const sprite_t* sprite, const struct camera_t* camera )
+double sprite_bottom( const sprite_t * sprite )
 {
-    const rect_t coords_orig = { ( int )( sprite->x ), ( int )( sprite->y ), ( int )( sprite->w ), ( int )( sprite->h ) };
-    const rect_t coords = camera_relative( camera, coords_orig );
-    const color_t color = { 255, 0, 0, 255 };
-    render_rect( &coords, &color );
+    return sprite->position.y + sprite->position.h;
 };
 
-double sprite_bottom( const sprite_t* sprite )
+double sprite_right( const sprite_t * sprite )
 {
-    return sprite->y + sprite->h;
+    return sprite->position.x + sprite->position.w;
 };
 
-double sprite_right( const sprite_t* sprite )
+double sprite_center_x( const sprite_t * sprite )
 {
-    return sprite->x + sprite->w;
+    return sprite->position.x + sprite->position.w / 2.0;
 };
 
-double sprite_center_x( const sprite_t* sprite )
+double sprite_center_y( const sprite_t * sprite )
 {
-    return sprite->x + sprite->w / 2.0;
+    return sprite->position.y + sprite->position.h / 2.0;
 };
 
-double sprite_center_y( const sprite_t* sprite )
-{
-    return sprite->y + sprite->h / 2.0;
-};
-
-void sprite_update( sprite_t* sprite, struct map_t* map )
+void sprite_update( sprite_t * sprite, struct map_t * map, const struct camera_t * camera )
 {
     if ( sprite->state == SSTATE_ON_GROUND )
     {
         sprite->state = SSTATE_FALLING;
     }
-    double prev_y = sprite->y;
-    double prev_x = sprite->x;
+    double prev_y = sprite->position.y;
+    double prev_x = sprite->position.x;
 
     if ( input_held( INPUT_RIGHT ) )
     {
@@ -86,7 +87,7 @@ void sprite_update( sprite_t* sprite, struct map_t* map )
         sprite->vx /= 1.15;
     }
 
-    sprite->x += sprite->vx;
+    sprite->position.x += sprite->vx;
 
     if ( sprite->state == SSTATE_JUMPING )
     {
@@ -129,21 +130,21 @@ void sprite_update( sprite_t* sprite, struct map_t* map )
     {
         sprite->vy = 4.0;
     }
-    sprite->y += sprite->vy;
+    sprite->position.y += sprite->vy;
 
-    if ( sprite->x < 0.0 || sprite_right( sprite ) > MAP_WIDTH_PIXELS )
+    if ( sprite->position.x < 0.0 || sprite_right( sprite ) > MAP_WIDTH_PIXELS )
     {
         sprite->accx = 0.0;
         sprite->vx *= -0.5;
-        sprite->x = prev_x;
+        sprite->position.x = prev_x;
     }
 
     const int center_x_block = ( int )( floor( ( sprite_center_x( sprite ) ) / ( double )( BLOCK_SIZE ) ) );
     const int center_y_block = ( int )( floor( ( sprite_center_y( sprite ) ) / ( double )( BLOCK_SIZE ) ) );
-    const int left_x = ( int )( floor( sprite->x / ( double )( BLOCK_SIZE ) ) );
+    const int left_x = ( int )( floor( sprite->position.x / ( double )( BLOCK_SIZE ) ) );
     const int right_x = ( int )( floor( sprite_right( sprite ) / ( double )( BLOCK_SIZE ) ) );
     const int x_bottom = ( int )( floor( ( sprite_bottom( sprite ) - 5.0 ) / ( double )( BLOCK_SIZE ) ) );
-    const int x_top = ( int )( floor( ( sprite->y + 5.0 ) / ( double )( BLOCK_SIZE ) ) );
+    const int x_top = ( int )( floor( ( sprite->position.y + 5.0 ) / ( double )( BLOCK_SIZE ) ) );
     if ( map_test_pixel_gem_collision( map, left_x, x_bottom ) )
     {
         inventory_add_gems( 100 );
@@ -173,19 +174,19 @@ void sprite_update( sprite_t* sprite, struct map_t* map )
     {
         sprite->accx = 0.0;
         sprite->vx *= -0.5;
-        sprite->x = prev_x;
+        sprite->position.x = prev_x;
     }
 
-    const int y_left_block_x = ( int )( floor( ( sprite->x + 2.0 ) / ( double )( BLOCK_SIZE ) ) );
+    const int y_left_block_x = ( int )( floor( ( sprite->position.x + 2.0 ) / ( double )( BLOCK_SIZE ) ) );
     const int y_right_block_x = ( int )( floor( ( sprite_right( sprite ) - 2.0 ) / ( double )( BLOCK_SIZE ) ) );
     const int bottom_block_y = ( int )( floor( sprite_bottom( sprite ) / ( double )( BLOCK_SIZE ) ) );
-    const int top_block_y = ( int )( floor( sprite->y / ( double )( BLOCK_SIZE ) ) );
+    const int top_block_y = ( int )( floor( sprite->position.y / ( double )( BLOCK_SIZE ) ) );
     if ( map_test_pixel_solid_collision( map, y_left_block_x, bottom_block_y ) || map_test_pixel_solid_collision( map, y_right_block_x, bottom_block_y ) )
     {
         sprite->accy = 0.0;
         sprite->vy = 0.0;
         const int collision = sprite_bottom( sprite ) - ( bottom_block_y * BLOCK_SIZE );
-        sprite->y -= collision;
+        sprite->position.y -= collision;
         sprite->state = SSTATE_ON_GROUND;
     }
     else if ( map_test_pixel_top_solid_collision( map, y_left_block_x, bottom_block_y ) || map_test_pixel_top_solid_collision( map, y_right_block_x, bottom_block_y ) )
@@ -195,7 +196,7 @@ void sprite_update( sprite_t* sprite, struct map_t* map )
             sprite->accy = 0.0;
             sprite->vy = 0.0;
             const int collision = sprite_bottom( sprite ) - ( bottom_block_y * BLOCK_SIZE );
-            sprite->y -= collision;
+            sprite->position.y -= collision;
             sprite->state = SSTATE_ON_GROUND;
         }
     }
@@ -210,14 +211,14 @@ void sprite_update( sprite_t* sprite, struct map_t* map )
                     sprite->state = SSTATE_ON_LADDER;
                     sprite->accy = 0.0;
                     sprite->vy = 0.0;
-                    sprite->y += 6.0;
+                    sprite->position.y += 6.0;
                 }
                 else
                 {
                     sprite->accy = 0.0;
                     sprite->vy = 0.0;
                     const int collision = sprite_bottom( sprite ) - ( bottom_block_y * BLOCK_SIZE );
-                    sprite->y -= collision;
+                    sprite->position.y -= collision;
                     sprite->state = SSTATE_ON_GROUND;
                 }
             }
@@ -227,7 +228,7 @@ void sprite_update( sprite_t* sprite, struct map_t* map )
         {
             sprite->accy = 0.0;
             sprite->vy *= -0.5;
-            sprite->y = prev_y;
+            sprite->position.y = prev_y;
         }
     }
 
@@ -278,4 +279,7 @@ void sprite_update( sprite_t* sprite, struct map_t* map )
             inventory_get_treasure( center_x_block );
         }
     }
+
+    graphics_data_regular_t * graphics = &render_get_graphics( sprite->graphics_id )->data.regular;
+    graphics->dest = camera_relative( camera, sprite->position );
 };
