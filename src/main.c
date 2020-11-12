@@ -1,3 +1,4 @@
+#include "asset.h"
 #include "color.h"
 #include "config.h"
 #include "engine.h"
@@ -20,6 +21,7 @@ int main( int argc, char ** argv )
     {
         return 1;
     }
+    asset_init();
     input_init();
     inventory_init();
     game_state_init();
@@ -49,6 +51,7 @@ int main( int argc, char ** argv )
     }
 
     // Close
+    asset_close();
     render_close();
     engine_close();
     return 0;

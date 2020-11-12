@@ -95,7 +95,8 @@ void game_state_update()
             {
                 game_state_level_data_t * data = &states[ number_of_states - 1 ].data.level;
                 sprite_update( &data->player, &data->map, &data->camera );
-                camera_update( &data->camera, &data->player );
+                map_update( &data->map, &data->camera );
+                camera_update( &data->camera, &data->player, &data->map );
                 inventory_update();
             }
             break;

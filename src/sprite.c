@@ -132,7 +132,7 @@ void sprite_update( sprite_t * sprite, struct map_t * map, const struct camera_t
     }
     sprite->position.y += sprite->vy;
 
-    if ( sprite->position.x < 0.0 || sprite_right( sprite ) > MAP_WIDTH_PIXELS )
+    if ( sprite->position.x < 0.0 || sprite_right( sprite ) > BLOCKS_TO_PIXELS( map->width ) )
     {
         sprite->accx = 0.0;
         sprite->vx *= -0.5;

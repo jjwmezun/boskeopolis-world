@@ -1,19 +1,20 @@
 #ifndef MAP_H
 #define MAP_H
 
-#define MAP_WIDTH 200
-#define MAP_HEIGHT 32
-#define MAP_WIDTH_PIXELS BLOCKS_TO_PIXELS( MAP_WIDTH )
-#define MAP_INDEX( x, y ) ( y ) * MAP_WIDTH + ( x )
-
 struct camera_t;
+
+#define MAP_MAX_TILES 10000
 
 typedef struct map_t
 {
-    int tiles[ MAP_HEIGHT * MAP_WIDTH ];
+    int tiles[ MAP_MAX_TILES ];
+    int bg_graphics_id;
+    int width;
+    int height;
 } map_t;
 
-void map_render( const struct map_t * map, const struct camera_t * camera );
+void map_update( const struct map_t * map, const struct camera_t * camera );
+int map_index( const struct map_t * map, int x, int y );
 int map_test_pixel_solid_collision( const struct map_t * map, int x, int y );
 int map_test_pixel_top_solid_collision( const struct map_t * map, int x, int y );
 int map_test_pixel_ladder_collision( const struct map_t * map, int x, int y );
