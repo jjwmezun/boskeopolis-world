@@ -33,8 +33,8 @@ void map_update( const struct map_t * map, const struct camera_t * camera )
     {
         // Make graphics relative to camera.
         graphics_data_regular_t * graphics = &render_get_graphics( map->bg_graphics_id )->data.regular;
-        graphics->dest.x = -camera->x;
-        graphics->dest.y = -camera->y;
+        graphics->dest.x = -camera->position.x;
+        graphics->dest.y = -camera->position.y;
     }
 };
 

@@ -8,10 +8,7 @@ struct sprite_t;
 
 typedef struct camera_t
 {
-    double x;
-    double y;
-    double w;
-    double h;
+    rect_t position;
 } camera_t;
 
 rect_t camera_relative( const camera_t * camera, rect_t coords );

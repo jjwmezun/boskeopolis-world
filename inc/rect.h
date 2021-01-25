@@ -3,10 +3,10 @@
 
 typedef struct rect_t
 {
-    int x;
-    int y;
-    int w;
-    int h;
+    double x;
+    double y;
+    double w;
+    double h;
 } rect_t;
 
 #endif

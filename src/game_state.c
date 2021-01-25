@@ -60,10 +60,10 @@ void game_state_pop()
 void game_state_change_level()
 {
     states[ 0 ].type = GSTATE_LEVEL;
-    states[ 0 ].data.level.camera.x = ( double )( BLOCKS_TO_PIXELS( 120 ) );
-    states[ 0 ].data.level.camera.y = ( double )( BLOCKS_TO_PIXELS( 17 ) );
-    states[ 0 ].data.level.camera.w = ( double )( WINDOW_WIDTH_PIXELS );
-    states[ 0 ].data.level.camera.h = ( double )( WINDOW_HEIGHT_PIXELS );
+    states[ 0 ].data.level.camera.position.x = ( double )( BLOCKS_TO_PIXELS( 120 ) );
+    states[ 0 ].data.level.camera.position.y = ( double )( BLOCKS_TO_PIXELS( 17 ) );
+    states[ 0 ].data.level.camera.position.w = ( double )( WINDOW_WIDTH_PIXELS );
+    states[ 0 ].data.level.camera.position.h = ( double )( WINDOW_HEIGHT_PIXELS );
     states[ 0 ].data.level.map = map_create();
     states[ 0 ].data.level.player = sprite_create( ( double )( BLOCKS_TO_PIXELS( 144 ) ), ( double )( BLOCKS_TO_PIXELS( 26 ) ), 16.0, 24.0 );
     number_of_states = 1;
