@@ -7,8 +7,11 @@
 #include "inventory.h"
 #include "render.h"
 
+#define DT 17
+
 static int running = 1;
-static int ticks;
+static int ticks = 0;
+static int accumulator = 0;
 
 int main( int argc, char ** argv )
 {
@@ -27,27 +30,22 @@ int main( int argc, char ** argv )
     game_state_init();
 
     // Execute
+    ticks = engine_get_ticks();
     while ( running )
     {
         running = engine_handle_events();
 
-        // Maintain framerate.
-        const int relative_ticks = engine_get_ticks() - ticks;
-		if ( relative_ticks < FPS_MILLISECONDS )
-		{
-            int delay = FPS_MILLISECONDS - relative_ticks;
-            if ( delay > 0 )
-            {
-			    engine_delay( delay );
-            }
-		}
-
-        game_state_update();
+        int new_time = engine_get_ticks();
+        int frame_time = new_time - ticks;
+        ticks = new_time;
+        accumulator += frame_time;
+        while ( accumulator >= DT )
+        {
+            game_state_update();
+            accumulator -= DT;
+        }
 
         render_execute();
-
-        // Update time.
-        ticks = engine_get_ticks();
     }
 
     // Close

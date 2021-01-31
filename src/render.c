@@ -1,5 +1,6 @@
 #include "asset.h"
 #include "color.h"
+#include "config.h"
 #include "graphics.h"
 #include "render.h"
 #include "rect.h"
@@ -17,6 +18,7 @@ static color_t background_color = { 0, 0, 0, 255 };
 static SDL_Window * window;
 static SDL_Renderer * renderer;
 static SDL_Texture * canvas;
+static SDL_Texture * master_texture;
 static int number_of_graphics = 0;
 static int number_of_textures = 0;
 
@@ -40,7 +42,17 @@ void render_execute()
             break;
         }
     }
+
+    SDL_SetRenderTarget( renderer, canvas );
+    SDL_RenderClear( renderer );
+    const SDL_Rect src = { 0, 0, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS };
+    const SDL_Rect dest = { 0, 0, WINDOW_WIDTH_PIXELS * 4, WINDOW_HEIGHT_PIXELS * 4 };
+    if ( SDL_RenderCopy( renderer, master_texture, &src, &dest ) != 0 )
+    {
+        SDL_Log( "Render failure: %s\n", SDL_GetError() );
+    }
     SDL_RenderPresent( renderer );
+    SDL_SetRenderTarget( renderer, master_texture );
 };
 
 int render_init( const char * title, int width, int height )
@@ -50,8 +62,8 @@ int render_init( const char * title, int width, int height )
         title,
 		SDL_WINDOWPOS_CENTERED,
 		SDL_WINDOWPOS_CENTERED,
-		width,
-		height,
+		width * 4,
+		height * 4,
 		SDL_WINDOW_RESIZABLE
     );
     if ( window == NULL )
@@ -67,6 +79,8 @@ int render_init( const char * title, int width, int height )
     }
 
     canvas = SDL_GetRenderTarget( renderer );
+    master_texture = SDL_CreateTexture( renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WINDOW_WIDTH_PIXELS * 4, WINDOW_HEIGHT_PIXELS * 4 );
+    SDL_SetRenderTarget( renderer, master_texture );
 
     return 0;
 };
@@ -161,5 +175,5 @@ void render_set_target_texture( int id )
 
 void render_release_target_texture()
 {
-    SDL_SetRenderTarget( renderer, canvas );
+    SDL_SetRenderTarget( renderer, master_texture );
 };
