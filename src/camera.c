@@ -20,7 +20,7 @@ double camera_right( const camera_t * camera )
     return camera->position.x + camera->position.w;
 };
 
-void camera_update( camera_t * camera, const struct sprite_t * sprite, const struct map_t * map )
+void camera_update( camera_t * camera, const struct sprite_t * sprite, const int * map )
 {
     // If sprite is past boundaries, move camera so that sprite is just within
     // boundaries.
@@ -49,8 +49,8 @@ void camera_update( camera_t * camera, const struct sprite_t * sprite, const str
     }
 
     // Keep camera within map boundaries.
-    const int map_width = BLOCKS_TO_PIXELS( map->width );
-    const int map_height = BLOCKS_TO_PIXELS( map->height );
+    const int map_width = BLOCKS_TO_PIXELS( map[ MAP_WIDTH_LOCATION ] );
+    const int map_height = BLOCKS_TO_PIXELS( map[ MAP_HEIGHT_LOCATION ] );
     if ( camera_right( camera ) > map_width )
     {
         camera->position.x = map_width - camera->position.w;

@@ -51,7 +51,7 @@ double sprite_center_y( const sprite_t * sprite )
     return sprite->position.y + sprite->position.h / 2.0;
 };
 
-void sprite_update( sprite_t * sprite, struct map_t * map, const struct camera_t * camera )
+void sprite_update( sprite_t * sprite, int * map, const struct camera_t * camera )
 {
     if ( sprite->state == SSTATE_ON_GROUND )
     {
@@ -133,7 +133,7 @@ void sprite_update( sprite_t * sprite, struct map_t * map, const struct camera_t
     }
     sprite->position.y += sprite->vy;
 
-    if ( sprite->position.x < 0.0 || sprite_right( sprite ) > BLOCKS_TO_PIXELS( map->width ) )
+    if ( sprite->position.x < 0.0 || sprite_right( sprite ) > BLOCKS_TO_PIXELS( map[ MAP_WIDTH_LOCATION ] ) )
     {
         sprite->accx = 0.0;
         sprite->vx *= -0.5;
@@ -146,6 +146,7 @@ void sprite_update( sprite_t * sprite, struct map_t * map, const struct camera_t
     const int right_x = ( int )( floor( sprite_right( sprite ) / ( double )( BLOCK_SIZE ) ) );
     const int x_bottom = ( int )( floor( ( sprite_bottom( sprite ) - 5.0 ) / ( double )( BLOCK_SIZE ) ) );
     const int x_top = ( int )( floor( ( sprite->position.y + 5.0 ) / ( double )( BLOCK_SIZE ) ) );
+    /*
     if ( map_test_pixel_gem_collision( map, left_x, x_bottom ) )
     {
         inventory_add_gems( 100 );
@@ -165,7 +166,7 @@ void sprite_update( sprite_t * sprite, struct map_t * map, const struct camera_t
     {
         inventory_add_gems( 100 );
         map_remove( map, right_x, x_top );
-    }
+    }*/
 
     if
     (
@@ -274,11 +275,12 @@ void sprite_update( sprite_t * sprite, struct map_t * map, const struct camera_t
             sprite->accy = 0.0;
             sprite->vy = 0.0;
         }
+        /*
         else if ( map_test_pixel_treasure_collision( map, center_x_block, center_y_block ) )
         {
             map_remove( map, center_x_block, center_y_block );
             inventory_get_treasure( center_x_block );
-        }
+        }*/
     }
 
     if ( sprite->graphics_id > 0 )

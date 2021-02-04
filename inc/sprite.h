@@ -4,7 +4,6 @@
 #include "rect.h"
 
 struct camera_t;
-struct map_t;
 
 typedef enum
 {
@@ -38,6 +37,6 @@ double sprite_bottom( const sprite_t * sprite );
 double sprite_right( const sprite_t * sprite );
 double sprite_center_x( const sprite_t * sprite );
 double sprite_center_y( const sprite_t * sprite );
-void sprite_update( sprite_t * sprite, struct map_t * map, const struct camera_t * camera );
+void sprite_update( sprite_t * sprite, int * map, const struct camera_t * camera );
 
 #endif

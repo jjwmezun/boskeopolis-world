@@ -21,13 +21,6 @@ typedef enum
     GSTATE_NULL
 } game_state_type_t;
 
-typedef struct game_state_level_data_t
-{
-    camera_t camera;
-    map_t map;
-    sprite_t player;
-} game_state_level_data_t;
-
 typedef union game_state_data_t
 {
     game_state_level_data_t level;
@@ -67,7 +60,7 @@ void game_state_change_level()
     states[ 0 ].data.level.camera.position.y = ( double )( BLOCKS_TO_PIXELS( 17 ) );
     states[ 0 ].data.level.camera.position.w = ( double )( WINDOW_WIDTH_PIXELS );
     states[ 0 ].data.level.camera.position.h = ( double )( WINDOW_HEIGHT_PIXELS );
-    states[ 0 ].data.level.map = map_create();
+    map_create( &states[ 0 ].data.level );
     states[ 0 ].data.level.player = sprite_create( ( double )( BLOCKS_TO_PIXELS( 144 ) ), ( double )( BLOCKS_TO_PIXELS( 26 ) ), 16.0, 24.0 );
     number_of_states = 1;
     input_reset();
@@ -88,18 +81,15 @@ void game_state_update()
         {
             case ( GSTATE_TITLE ):
             {
-                if ( input_held( INPUT_JUMP ) )
-                {
-                    game_state_change_level();
-                }
+                game_state_change_level();
             }
             break;
             case ( GSTATE_LEVEL ):
             {
                 game_state_level_data_t * data = &states[ number_of_states - 1 ].data.level;
-                sprite_update( &data->player, &data->map, &data->camera );
-                map_update( &data->map, &data->camera );
-                camera_update( &data->camera, &data->player, &data->map );
+                sprite_update( &data->player, &data->extra, &data->camera );
+                map_update( &data->extra, &data->camera );
+                camera_update( &data->camera, &data->player, &data->extra );
                 inventory_update();
             }
             break;
@@ -133,7 +123,6 @@ static void game_state_destroy( game_state_t * state )
         break;
         case ( GSTATE_LEVEL ):
         {
-            map_destroy( &state->data.level.map );
         }
         break;
         case ( GSTATE_MESSAGE ):

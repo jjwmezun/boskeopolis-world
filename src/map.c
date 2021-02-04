@@ -4,6 +4,7 @@
 #include "camera.h"
 #include "color.h"
 #include "config.h"
+#include "game_state.h"
 #include "graphics.h"
 #include "json.h"
 #include "map.h"
@@ -12,6 +13,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+int map_width( const int * map )
+{
+    return map[ 0 ];
+}
+
+int map_height( const int * map )
+{
+    return map[ 1 ];
+}
 
 static const char * layer_types[ NUM_O_LAYER_TYPES ] = {
     "bg1t",
@@ -29,68 +40,62 @@ typedef struct map_layer_t
     int num_o_tiles;
 } map_layer_t;
 
-static int map_test_generic_collision( const struct map_t * map, int x, int y, int_fast16_t index );
+static int map_test_generic_collision( const int * map, int x, int y, int_fast16_t index );
 
-void map_update( const struct map_t * map, const struct camera_t * camera )
+void map_update( const int * map, const struct camera_t * camera )
 {
     for ( int i = 0; i < NUM_O_LAYER_TYPES; ++i )
     {
-        if ( map->bg_graphics_ids[ i ] > 0 )
+        const int id = map[ MAP_BG_LOCATION + i ];
+        if ( id > 0 )
         {
             // Make graphics relative to camera.
-            graphics_data_regular_t * graphics = &render_get_graphics( map->bg_graphics_ids[ i ] )->data.regular;
+            graphics_data_regular_t * graphics = &render_get_graphics( id )->data.regular;
             graphics->dest.x = -camera->position.x;
             graphics->dest.y = -camera->position.y;
         }
     }
 };
 
-int map_index( const struct map_t * map, int x, int y )
+int map_index( const int * map, int x, int y )
 {
-    return XYTOI( map->width, x, y );
+    return XYTOI( map[ MAP_WIDTH_LOCATION ], x, y );
 };
 
-int map_test_pixel_solid_collision( const struct map_t * map, int x, int y )
+int map_test_pixel_solid_collision( const int * map, int x, int y )
 {
     return map_test_generic_collision( map, x, y, 1 );
 };
 
-int map_test_pixel_top_solid_collision( const struct map_t * map, int x, int y )
+int map_test_pixel_top_solid_collision( const int * map, int x, int y )
 {
     return map_test_generic_collision( map, x, y, 2 );
 };
 
-int map_test_pixel_ladder_collision( const struct map_t * map, int x, int y )
+int map_test_pixel_ladder_collision( const int * map, int x, int y )
 {
     return map_test_generic_collision( map, x, y, 3 );
 };
 
-int map_test_pixel_gem_collision( const struct map_t * map, int x, int y )
+int map_test_pixel_gem_collision( const int * map, int x, int y )
 {
     return map_test_generic_collision( map, x, y, 4 );
 };
 
-int map_test_pixel_treasure_collision( const struct map_t * map, int x, int y )
+int map_test_pixel_treasure_collision( const int * map, int x, int y )
 {
     return map_test_generic_collision( map, x, y, 5 );
 };
 
-void map_remove( struct map_t * map, int x, int y )
+int map_create( struct game_state_level_data_t * state )
 {
-    map->collision[ map_index( map, x, y ) ] = 0;
-};
-
-map_t map_create()
-{
-    map_t map;
-
     char * filename = asset_map( "blueberry-1.json" );
     char * text = asset_read_file_text( filename );
     free( filename );
     if ( !text )
     {
         printf( "%s\n", "Couldn’t read map json file." );
-        return map;
+        return -1;
     }
 
     json_char * json = ( json_char * )( text );
@@ -100,7 +105,7 @@ map_t map_create()
     if ( !root )
     {
         printf( "%s\n", "Error parsing map json file." );
-        return map;
+        return -1;
     }
 
     int num_o_layers = 0;
@@ -122,7 +127,7 @@ map_t map_create()
             {
                 printf( "%s\n", "JSON PARSE ERROR." );
             }
-            map.width = value->u.integer;
+            state->extra[ 0 ] = value->u.integer;
         }
         else if ( strcmp( name, "height" ) == 0 )
         {
@@ -131,7 +136,7 @@ map_t map_create()
             {
                 printf( "%s\n", "JSON PARSE ERROR." );
             }
-            map.height = value->u.integer;
+            state->extra[ 1 ] = value->u.integer;
         }
         else if ( strcmp( name, "layers" ) == 0 )
         {
@@ -191,18 +196,17 @@ map_t map_create()
         }
     }
 
-    map.collision = calloc( map.width * map.height, sizeof( int_fast16_t ) );
-    int_fast16_t gfx_layers[ NUM_O_LAYER_TYPES ][ 3 ][ map.width * map.height ];
+    int_fast16_t gfx_layers[ NUM_O_LAYER_TYPES ][ 3 ][ state->extra[ MAP_WIDTH_LOCATION ] * state->extra[ MAP_HEIGHT_LOCATION ] ];
     int gfx_layers_nums[ NUM_O_LAYER_TYPES ] = { 0, 0, 0, 0, 0, 0 };
     for ( int i = 0; i < num_o_layers; ++i )
     {
         if ( strcmp( layers[ i ].type, "collision" ) == 0 )
         {
-            for ( int tile = 0; tile < layers[ i ].num_o_tiles && i < map.width * map.height; ++tile )
+            for ( int tile = 0; tile < layers[ i ].num_o_tiles && i < state->extra[ MAP_WIDTH_LOCATION ] * state->extra[ MAP_HEIGHT_LOCATION ]; ++tile )
             {
                 if ( layers[ i ].tiles[ tile ] )
                 {
-                    map.collision[ tile ] = layers[ i ].tiles[ tile ];
+                    state->extra[ MAP_COLLISION_LOCATION + tile ] = layers[ i ].tiles[ tile ];
                 }
             }
             continue;
@@ -212,7 +216,7 @@ map_t map_create()
         {
             if ( strcmp( layers[ i ].type, layer_types[ lt ] ) == 0 && gfx_layers_nums[ lt ] < 2 )
             {
-                memcpy( gfx_layers[ lt ][ gfx_layers_nums[ lt ] ], layers[ i ].tiles, sizeof( int_fast16_t ) * map.width * map.height );
+                memcpy( gfx_layers[ lt ][ gfx_layers_nums[ lt ] ], layers[ i ].tiles, sizeof( int_fast16_t ) * state->extra[ MAP_WIDTH_LOCATION ] * state->extra[ MAP_HEIGHT_LOCATION ] );
                 ++gfx_layers_nums[ lt ];
                 continue;
             }
@@ -224,7 +228,7 @@ map_t map_create()
     for ( int lti = 0; lti < NUM_O_LAYER_TYPES; ++lti )
     {
         texture_name[ 3 ] = ( char )( lti );
-        const int bg_texture_id = render_create_custom_texture( texture_name, BLOCKS_TO_PIXELS( map.width ), BLOCKS_TO_PIXELS( map.height ) );
+        const int bg_texture_id = render_create_custom_texture( texture_name, BLOCKS_TO_PIXELS( state->extra[ MAP_WIDTH_LOCATION ] ), BLOCKS_TO_PIXELS( state->extra[ MAP_HEIGHT_LOCATION ] ) );
         if ( bg_texture_id != -1 )
         {
             layer_t layer = LAYER_BG1;
@@ -239,16 +243,16 @@ map_t map_create()
             graphics_data_regular_t graphics_box = { -1, { 0, 0, BLOCK_SIZE, BLOCK_SIZE }, { 0, 0, BLOCK_SIZE, BLOCK_SIZE }, FLIP_NONE, 0.0 };
             render_set_target_texture( bg_texture_id );
             render_clear();
-            graphics_t graphics = { GRAPHICS_REGULAR, layer, {{ bg_texture_id, { 0, 0, BLOCKS_TO_PIXELS( map.width ), BLOCKS_TO_PIXELS( map.height ) }, { 0, 0, BLOCKS_TO_PIXELS( map.width ), BLOCKS_TO_PIXELS( map.height ) }, FLIP_NONE, 0.0 }}};
-            map.bg_graphics_ids[ lti ] = render_add_graphics( &graphics );
+            graphics_t graphics = { GRAPHICS_REGULAR, layer, {{ bg_texture_id, { 0, 0, BLOCKS_TO_PIXELS( state->extra[ MAP_WIDTH_LOCATION ] ), BLOCKS_TO_PIXELS( state->extra[ MAP_HEIGHT_LOCATION ] ) }, { 0, 0, BLOCKS_TO_PIXELS( state->extra[ MAP_WIDTH_LOCATION ] ), BLOCKS_TO_PIXELS( state->extra[ MAP_HEIGHT_LOCATION ] ) }, FLIP_NONE, 0.0 }}};
+            state->extra[ MAP_BG_LOCATION + lti ] = render_add_graphics( &graphics );
             graphics_box.texture = render_get_texture_id( "tilesets/urban.png" );
             for ( int li = 0; li < gfx_layers_nums[ lti ]; ++li )
             {
-                for ( int tile = 0; tile < map.width * map.height; ++tile )
+                for ( int tile = 0; tile < state->extra[ MAP_WIDTH_LOCATION ] * state->extra[ MAP_HEIGHT_LOCATION ]; ++tile )
                 {
                     const int tile_type = gfx_layers[ lti ][ li ][ tile ] - 6;
-                    graphics_box.dest.x = BLOCKS_TO_PIXELS( ITOX( map.width, tile ) );
-                    graphics_box.dest.y = BLOCKS_TO_PIXELS( ITOY( map.width, tile ) );
+                    graphics_box.dest.x = BLOCKS_TO_PIXELS( ITOX( state->extra[ MAP_WIDTH_LOCATION ], tile ) );
+                    graphics_box.dest.y = BLOCKS_TO_PIXELS( ITOY( state->extra[ MAP_WIDTH_LOCATION ], tile ) );
                     graphics_box.src.x = BLOCKS_TO_PIXELS( ITOX( 16, tile_type ) );
                     graphics_box.src.y = BLOCKS_TO_PIXELS( ITOY( 16, tile_type ) );
                     render_sprite( &graphics_box );
@@ -264,23 +268,16 @@ map_t map_create()
         {
             free( layers[ i ].tiles );
         }
-        return map;
+        state->map_size = MAP_COLLISION_LOCATION + ( state->extra[ MAP_WIDTH_LOCATION ] * state->extra[ MAP_HEIGHT_LOCATION ] );
+        return 0;
 };
 
-void map_destroy( struct map_t * map )
-{
-    if ( map->collision )
-    {
-        free( map->collision );
-    }
-};
-
-static int map_test_generic_collision( const struct map_t * map, int x, int y, int_fast16_t index )
+static int map_test_generic_collision( const int * map, int x, int y, int_fast16_t index )
 {
     return
         x >= 0 &&
-        x < map->width &&
+        x < map[ MAP_WIDTH_LOCATION ] &&
         y >= 0 &&
-        y < map->height &&
-        map->collision[ map_index( map, x, y ) ] == index;
+        y < map[ MAP_WIDTH_LOCATION ] &&
+        map[ MAP_COLLISION_LOCATION + map_index( map, x, y ) ] == index;
 };
