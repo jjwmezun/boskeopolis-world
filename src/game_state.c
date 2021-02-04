@@ -13,25 +13,6 @@
 
 #define MAX_STATES 3
 
-typedef enum
-{
-    GSTATE_TITLE,
-    GSTATE_LEVEL,
-    GSTATE_MESSAGE,
-    GSTATE_NULL
-} game_state_type_t;
-
-typedef union game_state_data_t
-{
-    game_state_level_data_t level;
-} game_state_data_t;
-
-typedef struct game_state_t
-{
-    game_state_type_t type;
-    game_state_data_t data;
-} game_state_t;
-
 static game_state_t states[ MAX_STATES ];
 static int number_of_states = 0;
 
@@ -55,6 +36,7 @@ void game_state_pop()
 void game_state_change_level()
 {
     game_state_destroy_all();
+    states[ 0 ].timer = 0;
     states[ 0 ].type = GSTATE_LEVEL;
     states[ 0 ].data.level.camera.position.x = ( double )( BLOCKS_TO_PIXELS( 120 ) );
     states[ 0 ].data.level.camera.position.y = ( double )( BLOCKS_TO_PIXELS( 17 ) );
@@ -88,7 +70,7 @@ void game_state_update()
             {
                 game_state_level_data_t * data = &states[ number_of_states - 1 ].data.level;
                 sprite_update( &data->player, &data->extra, &data->camera );
-                map_update( &data->extra, &data->camera );
+                map_update( &data->extra, &data->camera, states[ number_of_states - 1 ].timer );
                 camera_update( &data->camera, &data->player, &data->extra );
                 inventory_update();
             }
@@ -102,6 +84,7 @@ void game_state_update()
             }
             break;
         }
+        ++states[ number_of_states - 1 ].timer;
     }
 };
 

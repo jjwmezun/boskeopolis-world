@@ -177,6 +177,14 @@ int render_add_graphics( const struct graphics_t * gfx )
     return number_of_graphics;
 };
 
+void render_remove_graphics( int id )
+{
+    if ( id > 0 )
+    {
+        graphics[ graphics_ids[ id - 1 ] ].type = GRAPHICS_NULL;
+    }
+};
+
 int render_create_custom_texture( const char * name, int width, int height )
 {
     SDL_Texture * texture = SDL_CreateTexture( renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height );

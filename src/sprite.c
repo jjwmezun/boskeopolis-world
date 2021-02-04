@@ -19,7 +19,7 @@ sprite_t sprite_create
     double h
 )
 {
-    graphics_t graphics = { GRAPHICS_REGULAR, LAYER_OBJ1, {{ render_get_texture_id( "sprites/autumn.png" ), { 0.0, 0.0, 16.0, 24.0 }, { x, y, 16.0, 24.0 }, FLIP_NONE, 0.0 } }};
+    graphics_t graphics = { GRAPHICS_REGULAR, LAYER_SPR1, {{ render_get_texture_id( "sprites/autumn.png" ), { 0.0, 0.0, 16.0, 24.0 }, { x, y, 16.0, 24.0 }, FLIP_NONE, 0.0 } }};
     sprite_t sprite =
     {
         { x, y, w, h },
@@ -146,27 +146,27 @@ void sprite_update( sprite_t * sprite, int * map, const struct camera_t * camera
     const int right_x = ( int )( floor( sprite_right( sprite ) / ( double )( BLOCK_SIZE ) ) );
     const int x_bottom = ( int )( floor( ( sprite_bottom( sprite ) - 5.0 ) / ( double )( BLOCK_SIZE ) ) );
     const int x_top = ( int )( floor( ( sprite->position.y + 5.0 ) / ( double )( BLOCK_SIZE ) ) );
-    /*
-    if ( map_test_pixel_gem_collision( map, left_x, x_bottom ) )
+    int gems_collected = 0;
+    if ( gems_collected = map_test_pixel_gem_collision( map, left_x, x_bottom ) )
     {
-        inventory_add_gems( 100 );
+        inventory_add_gems( gems_collected );
         map_remove( map, left_x, x_bottom );
     }
-    if ( map_test_pixel_gem_collision( map, right_x, x_bottom ) )
+    if ( gems_collected = map_test_pixel_gem_collision( map, right_x, x_bottom ) )
     {
-        inventory_add_gems( 100 );
+        inventory_add_gems( gems_collected );
         map_remove( map, right_x, x_bottom );
     }
-    if ( map_test_pixel_gem_collision( map, left_x, x_top ) )
+    if ( gems_collected = map_test_pixel_gem_collision( map, left_x, x_top ) )
     {
-        inventory_add_gems( 100 );
+        inventory_add_gems( gems_collected );
         map_remove( map, left_x, x_top );
     }
-    if ( map_test_pixel_gem_collision( map, left_x, x_bottom ) )
+    if ( gems_collected = map_test_pixel_gem_collision( map, right_x, x_top ) )
     {
-        inventory_add_gems( 100 );
+        inventory_add_gems( gems_collected );
         map_remove( map, right_x, x_top );
-    }*/
+    }
 
     if
     (

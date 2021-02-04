@@ -13,6 +13,7 @@ void render_sprite( const struct graphics_data_regular_t * data );
 void render_rect( const struct rect_t * rect, const struct color_t * color );
 int render_get_texture_id( const char * filename );
 int render_add_graphics( const struct graphics_t * gfx );
+void render_remove_graphics( int id );
 struct graphics_t * render_get_graphics( int id );
 int render_create_custom_texture( const char * name, int width, int height );
 void render_set_target_texture( int id );

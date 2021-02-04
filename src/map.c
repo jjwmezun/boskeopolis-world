@@ -14,15 +14,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-int map_width( const int * map )
-{
-    return map[ 0 ];
-}
+#define TILEMAP_SIZE 4096
 
-int map_height( const int * map )
+typedef struct map_layer_t
 {
-    return map[ 1 ];
-}
+    char * type;
+    int_fast16_t * tiles;
+    int num_o_tiles;
+} map_layer_t;
 
 static const char * layer_types[ NUM_O_LAYER_TYPES ] = {
     "bg1t",
@@ -33,16 +32,18 @@ static const char * layer_types[ NUM_O_LAYER_TYPES ] = {
     "fg3t"
 };
 
-typedef struct map_layer_t
-{
-    char * type;
-    int_fast16_t * tiles;
-    int num_o_tiles;
-} map_layer_t;
+static const char * obj_layer_types[ NUM_O_LAYER_TYPES ] = {
+    "objbg1",
+    "objbg2",
+    "objbg3",
+    "objfg1",
+    "objfg2",
+    "objfg3"
+};
 
 static int map_test_generic_collision( const int * map, int x, int y, int_fast16_t index );
 
-void map_update( const int * map, const struct camera_t * camera )
+void map_update( const int * map, const struct camera_t * camera, int time )
 {
     for ( int i = 0; i < NUM_O_LAYER_TYPES; ++i )
     {
@@ -53,6 +54,36 @@ void map_update( const int * map, const struct camera_t * camera )
             graphics_data_regular_t * graphics = &render_get_graphics( id )->data.regular;
             graphics->dest.x = -camera->position.x;
             graphics->dest.y = -camera->position.y;
+        }
+    }
+
+    for ( int i = 0; i < map_obj_number( map ); ++i )
+    {
+        map_obj_t * obj = map_obj( map, i );
+        if ( obj->graphics_id )
+        {
+            graphics_data_regular_t * graphics = &render_get_graphics( obj->graphics_id )->data.regular;
+            graphics->dest.x = ( double)( obj->x - camera->position.x );
+            graphics->dest.y = ( double )( obj->y - camera->position.y );
+            switch ( obj->type )
+            {
+                case ( MAP_OBJ_GEM1 ):
+                case ( MAP_OBJ_GEM2 ):
+                case ( MAP_OBJ_GEM3 ):
+                case ( MAP_OBJ_GEM4 ):
+                case ( MAP_OBJ_GEM5 ):
+                {
+                    if ( time % 8 == 0 )
+                    {
+                        graphics->src.x += 16.0;
+                        if ( graphics->src.x == 96.0 )
+                        {
+                            graphics->src.x = 0.0;
+                        }
+                    }
+                }
+                break;
+            }
         }
     }
 };
@@ -79,7 +110,11 @@ int map_test_pixel_ladder_collision( const int * map, int x, int y )
 
 int map_test_pixel_gem_collision( const int * map, int x, int y )
 {
-    return map_test_generic_collision( map, x, y, 4 );
+    if ( x < 0 || x >= map[ MAP_WIDTH_LOCATION ] || y < 0 || y > map[ MAP_HEIGHT_LOCATION ] )
+    {
+        return 0;
+    }
+    return inventory_get_gem_value( map[ MAP_COLLISION_LOCATION + map_index( map, x, y ) ] - 129 );
 };
 
 int map_test_pixel_treasure_collision( const int * map, int x, int y )
@@ -196,6 +231,8 @@ int map_create( struct game_state_level_data_t * state )
         }
     }
 
+    state->extra[ MAP_MAX_MONEY_LOCATION ] = 0; // Set max money to 0.
+    map_obj_number( state->extra ) = 0; // Set # o’ objects to 0.
     int_fast16_t gfx_layers[ NUM_O_LAYER_TYPES ][ 3 ][ state->extra[ MAP_WIDTH_LOCATION ] * state->extra[ MAP_HEIGHT_LOCATION ] ];
     int gfx_layers_nums[ NUM_O_LAYER_TYPES ] = { 0, 0, 0, 0, 0, 0 };
     for ( int i = 0; i < num_o_layers; ++i )
@@ -207,6 +244,35 @@ int map_create( struct game_state_level_data_t * state )
                 if ( layers[ i ].tiles[ tile ] )
                 {
                     state->extra[ MAP_COLLISION_LOCATION + tile ] = layers[ i ].tiles[ tile ];
+                }
+            }
+            continue;
+        }
+        else if ( strcmp( layers[ i ].type, "obj" ) == 0 )
+        {
+            for ( int tile = 0; tile < layers[ i ].num_o_tiles && i < state->extra[ MAP_WIDTH_LOCATION ] * state->extra[ MAP_HEIGHT_LOCATION ]; ++tile )
+            {
+                switch ( layers[ i ].tiles[ tile ] )
+                {
+                    case ( 129 ):
+                    case ( 130 ):
+                    case ( 131 ):
+                    case ( 132 ):
+                    case ( 133 ):
+                    {
+                        int gem_type = layers[ i ].tiles[ tile ] - 129;
+                        state->extra[ MAP_COLLISION_LOCATION + tile ] = layers[ i ].tiles[ tile ];
+                        map_obj_t * obj = map_obj( state->extra, map_obj_number( state->extra ) );
+                        obj->type = MAP_OBJ_GEM1 + gem_type;
+                        obj->location = tile;
+                        obj->x = BLOCKS_TO_PIXELS( ITOX( state->extra[ MAP_WIDTH_LOCATION ], tile ) );
+                        obj->y = BLOCKS_TO_PIXELS( ITOY( state->extra[ MAP_WIDTH_LOCATION ], tile ) );
+                        graphics_t graphics = { GRAPHICS_REGULAR, LAYER_OBJ1, {{ render_get_texture_id( "tilesets/objects.png" ), { 0.0, 16.0 * ( double )( gem_type ), 16.0, 16.0 }, { 0.0, 0.0, 16.0, 16.0 }, FLIP_NONE, 0.0 } }};
+                        obj->graphics_id = render_add_graphics( &graphics );
+                        ++map_obj_number( state->extra );
+                        state->extra[ MAP_MAX_MONEY_LOCATION ] += inventory_get_gem_value( gem_type );
+                    }
+                    break;
                 }
             }
             continue;
@@ -250,7 +316,7 @@ int map_create( struct game_state_level_data_t * state )
             {
                 for ( int tile = 0; tile < state->extra[ MAP_WIDTH_LOCATION ] * state->extra[ MAP_HEIGHT_LOCATION ]; ++tile )
                 {
-                    const int tile_type = gfx_layers[ lti ][ li ][ tile ] - 6;
+                    const int tile_type = gfx_layers[ lti ][ li ][ tile ] - TILEMAP_SIZE - 1;
                     graphics_box.dest.x = BLOCKS_TO_PIXELS( ITOX( state->extra[ MAP_WIDTH_LOCATION ], tile ) );
                     graphics_box.dest.y = BLOCKS_TO_PIXELS( ITOY( state->extra[ MAP_WIDTH_LOCATION ], tile ) );
                     graphics_box.src.x = BLOCKS_TO_PIXELS( ITOX( 16, tile_type ) );
@@ -268,7 +334,7 @@ int map_create( struct game_state_level_data_t * state )
         {
             free( layers[ i ].tiles );
         }
-        state->map_size = MAP_COLLISION_LOCATION + ( state->extra[ MAP_WIDTH_LOCATION ] * state->extra[ MAP_HEIGHT_LOCATION ] );
+        state->map_size = map_obj_number_location( state->extra ) + 1 + ( MAP_OBJ_SIZE * map_obj_number( state->extra ) );
         return 0;
 };
 
@@ -280,4 +346,19 @@ static int map_test_generic_collision( const int * map, int x, int y, int_fast16
         y >= 0 &&
         y < map[ MAP_WIDTH_LOCATION ] &&
         map[ MAP_COLLISION_LOCATION + map_index( map, x, y ) ] == index;
+};
+
+void map_remove( int * map, int x, int y )
+{
+    const int index = map_index( map, x, y );
+    map[ MAP_COLLISION_LOCATION + index ] = 0;
+    for ( int i = 0; i < map_obj_number( map ); ++i )
+    {
+        map_obj_t * obj = map_obj( map, i );
+        if ( obj->location == index )
+        {
+            render_remove_graphics( obj->graphics_id );
+            return;
+        }
+    }
 };

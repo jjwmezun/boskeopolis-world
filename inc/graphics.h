@@ -14,6 +14,7 @@ typedef enum
 
 typedef enum
 {
+    GRAPHICS_NULL,
     GRAPHICS_REGULAR
 } graphics_type_t;
 

@@ -5,7 +5,15 @@
 #include "sprite.h"
 #include "treasure.h"
 
-#define MAX_EXTRA 10000
+#define MAX_EXTRA 100000
+
+typedef enum
+{
+    GSTATE_TITLE,
+    GSTATE_LEVEL,
+    GSTATE_MESSAGE,
+    GSTATE_NULL
+} game_state_type_t;
 
 typedef struct game_state_level_data_t
 {
@@ -14,6 +22,18 @@ typedef struct game_state_level_data_t
     int map_size;
     int extra[ MAX_EXTRA ];
 } game_state_level_data_t;
+
+typedef union game_state_data_t
+{
+    game_state_level_data_t level;
+} game_state_data_t;
+
+typedef struct game_state_t
+{
+    game_state_type_t type;
+    game_state_data_t data;
+    int timer;
+} game_state_t;
 
 void game_state_update();
 

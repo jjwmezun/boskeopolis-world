@@ -91,3 +91,16 @@ void inventory_init()
         treasures_collected[ i ] = 0;
     }
 }
+
+int inventory_get_gem_value( int gem_type )
+{
+    switch ( gem_type )
+    {
+        case ( 0 ): return 50;
+        case ( 1 ): return 100;
+        case ( 2 ): return 200;
+        case ( 3 ): return 500;
+        case ( 4 ): return 1000;
+    }
+    return 0;
+};

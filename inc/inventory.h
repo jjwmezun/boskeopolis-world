@@ -9,5 +9,6 @@ int inventory_get_gems();
 int inventory_has_treasure( treasure_t type );
 void inventory_get_treasure( int x );
 void inventory_init();
+int inventory_get_gem_value( int gem_type );
 
 #endif
