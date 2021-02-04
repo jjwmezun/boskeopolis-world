@@ -4,6 +4,7 @@
 #include "graphics.h"
 #include "input.h"
 #include "inventory.h"
+#include "layers.h"
 #include "map.h"
 #include "math.h"
 #include "rect.h"
@@ -18,7 +19,7 @@ sprite_t sprite_create
     double h
 )
 {
-    graphics_t graphics = { GRAPHICS_REGULAR, {{ render_get_texture_id( "sprites/autumn.png" ), { 0.0, 0.0, 16.0, 24.0 }, { x, y, 16.0, 24.0 }, FLIP_NONE, 0.0 } }};
+    graphics_t graphics = { GRAPHICS_REGULAR, LAYER_OBJ1, {{ render_get_texture_id( "sprites/autumn.png" ), { 0.0, 0.0, 16.0, 24.0 }, { x, y, 16.0, 24.0 }, FLIP_NONE, 0.0 } }};
     sprite_t sprite =
     {
         { x, y, w, h },
@@ -280,6 +281,9 @@ void sprite_update( sprite_t * sprite, struct map_t * map, const struct camera_t
         }
     }
 
-    graphics_data_regular_t * graphics = &render_get_graphics( sprite->graphics_id )->data.regular;
-    graphics->dest = camera_relative( camera, sprite->position );
+    if ( sprite->graphics_id > 0 )
+    {
+        graphics_data_regular_t * graphics = &render_get_graphics( sprite->graphics_id )->data.regular;
+        graphics->dest = camera_relative( camera, sprite->position );
+    }
 };

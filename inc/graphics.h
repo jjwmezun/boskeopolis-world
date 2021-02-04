@@ -1,6 +1,7 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
+#include "layers.h"
 #include "rect.h"
 
 typedef enum
@@ -33,6 +34,7 @@ typedef union graphics_data_t
 typedef struct graphics_t
 {
     graphics_type_t type;
+    layer_t layer;
     graphics_data_t data;
 } graphics_t;
 

@@ -1,6 +1,8 @@
+#include "assert.h"
 #include "asset.h"
 #include "color.h"
 #include "config.h"
+#include "layers.h"
 #include "graphics.h"
 #include "render.h"
 #include "rect.h"
@@ -12,6 +14,7 @@
 #define MAX_GRAPHICS 64
 
 static graphics_t graphics[ MAX_GRAPHICS ];
+static int graphics_ids[ MAX_GRAPHICS ];
 static char texture_names[ MAX_TEXTURES ][ MAX_TEXTURE_STRING ];
 static SDL_Texture * textures[ MAX_TEXTURES ];
 static color_t background_color = { 0, 0, 0, 255 };
@@ -21,11 +24,6 @@ static SDL_Texture * canvas;
 static SDL_Texture * master_texture;
 static int number_of_graphics = 0;
 static int number_of_textures = 0;
-
-struct graphics_t * render_get_graphics( int id )
-{
-    return &graphics[ id ];
-};
 
 void render_execute()
 {
@@ -79,7 +77,9 @@ int render_init( const char * title, int width, int height )
     }
 
     canvas = SDL_GetRenderTarget( renderer );
+    SDL_SetTextureBlendMode( canvas, SDL_BLENDMODE_BLEND );
     master_texture = SDL_CreateTexture( renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WINDOW_WIDTH_PIXELS * 4, WINDOW_HEIGHT_PIXELS * 4 );
+    SDL_SetTextureBlendMode( master_texture, SDL_BLENDMODE_BLEND );
     SDL_SetRenderTarget( renderer, master_texture );
 
     return 0;
@@ -149,15 +149,37 @@ int render_get_texture_id( const char * filename )
     return number_of_textures++;
 };
 
+struct graphics_t * render_get_graphics( int id )
+{
+    assert( id > 0 );
+    return &graphics[ graphics_ids[ id - 1 ] ];
+};
+
 int render_add_graphics( const struct graphics_t * gfx )
 {
-    memcpy( &graphics[ number_of_graphics++ ], gfx, sizeof( graphics_t ) );
-    return number_of_graphics - 1;
+    assert( number_of_graphics < MAX_GRAPHICS );
+    ++number_of_graphics;
+    int i = number_of_graphics - 2;
+    while ( i >= 0 && gfx->layer < graphics[ i ].layer )
+    {
+        memcpy( &graphics[ i + 1 ], &graphics[ i ], sizeof( graphics_t ) );
+        for ( int j = 0; j < number_of_graphics; ++j )
+        {
+            if ( graphics_ids[ j ] == i )
+            {
+                ++graphics_ids[ j ];
+            }
+        }
+        --i;
+    }
+    memcpy( &graphics[ i + 1 ], gfx, sizeof( graphics_t ) );
+    graphics_ids[ number_of_graphics - 1 ] = i + 1;
+    return number_of_graphics;
 };
 
 int render_create_custom_texture( const char * name, int width, int height )
 {
-    SDL_Texture * texture = SDL_CreateTexture( renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_TARGET, width, height );
+    SDL_Texture * texture = SDL_CreateTexture( renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height );
     if ( !texture )
     {
         SDL_Log( "SDL_CreateTexture failed: %s", SDL_GetError() );
@@ -165,6 +187,7 @@ int render_create_custom_texture( const char * name, int width, int height )
     }
     textures[ number_of_textures ] = texture;
     strncpy( texture_names[ number_of_textures ], name, MAX_TEXTURE_STRING );
+    SDL_SetTextureBlendMode( texture, SDL_BLENDMODE_BLEND );
     return number_of_textures++;
 };
 
@@ -177,3 +200,9 @@ void render_release_target_texture()
 {
     SDL_SetRenderTarget( renderer, master_texture );
 };
+
+void render_clear()
+{
+    SDL_SetRenderDrawColor( renderer, 0, 0, 0, 0 );
+    SDL_RenderClear( renderer );
+}

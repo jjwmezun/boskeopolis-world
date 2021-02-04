@@ -17,5 +17,6 @@ struct graphics_t * render_get_graphics( int id );
 int render_create_custom_texture( const char * name, int width, int height );
 void render_set_target_texture( int id );
 void render_release_target_texture();
+void render_clear();
 
 #endif

@@ -13,4 +13,6 @@ typedef enum layer_t
     LAYER_FG3
 } layer_t;
 
+#define NUMBER_OF_LAYERS ( LAYER_FG3 + 1 )
+
 #endif

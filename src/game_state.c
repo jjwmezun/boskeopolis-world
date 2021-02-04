@@ -42,6 +42,8 @@ typedef struct game_state_t
 static game_state_t states[ MAX_STATES ];
 static int number_of_states = 0;
 
+static void game_state_destroy( game_state_t * state );
+
 void game_state_init()
 {
     for ( int i = 1; i < MAX_STATES; ++i )
@@ -53,12 +55,13 @@ void game_state_init()
 
 void game_state_pop()
 {
-    --number_of_states;
+    game_state_destroy( &states[ --number_of_states ] );
     input_reset();
 };
 
 void game_state_change_level()
 {
+    game_state_destroy_all();
     states[ 0 ].type = GSTATE_LEVEL;
     states[ 0 ].data.level.camera.position.x = ( double )( BLOCKS_TO_PIXELS( 120 ) );
     states[ 0 ].data.level.camera.position.y = ( double )( BLOCKS_TO_PIXELS( 17 ) );
@@ -109,5 +112,33 @@ void game_state_update()
             }
             break;
         }
+    }
+};
+
+void game_state_destroy_all()
+{
+    for ( int i = 0; i < number_of_states; ++i )
+    {
+        game_state_destroy( &states[ i ] );
+    }
+};
+
+static void game_state_destroy( game_state_t * state )
+{
+    switch ( state->type )
+    {
+        case ( GSTATE_TITLE ):
+        {
+        }
+        break;
+        case ( GSTATE_LEVEL ):
+        {
+            map_destroy( &state->data.level.map );
+        }
+        break;
+        case ( GSTATE_MESSAGE ):
+        {
+        }
+        break;
     }
 };

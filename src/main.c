@@ -49,6 +49,7 @@ int main( int argc, char ** argv )
     }
 
     // Close
+    game_state_destroy_all();
     asset_close();
     render_close();
     engine_close();

@@ -35,6 +35,26 @@ char * asset_image( const char * local )
     return get_path( graphics_path, graphics_path_length, local );
 };
 
+char * asset_read_file_text( const char * filename )
+{
+    FILE * file = fopen( filename, "rb" );
+    long length = 0;
+    char * text = NULL;
+    if ( file )
+    {
+        fseek( file, 0, SEEK_END );
+        length = ftell( file );
+        fseek( file, 0, SEEK_SET );
+        text = calloc( sizeof( char ), length );
+        if ( text )
+        {
+            fread( text, 1, length, file );
+        }
+        fclose ( file );
+    }
+    return text;
+}
+
 static int create_path( char ** dest, const char * base_path, int base_length, const char * local_path )
 {
     const int full_length = base_length + strlen( local_path );
