@@ -6,13 +6,16 @@
 #include "treasure.h"
 
 #define MAX_EXTRA 100000
+#define MAX_STATES 3
 
 typedef enum
 {
     GSTATE_NULL,
     GSTATE_TITLE,
     GSTATE_LEVEL,
-    GSTATE_MESSAGE
+    GSTATE_PAUSE,
+    GSTATE_MESSAGE,
+    GSTATE_TREASURES
 } game_state_type_t;
 
 typedef struct game_state_level_data_t
@@ -39,8 +42,8 @@ void game_state_update();
 
 void game_state_init();
 void game_state_pop();
-void game_state_change_level();
 void game_state_destroy_all();
 void game_state_add_treasure_message( treasure_t treasure );
+int game_state_current_index();
 
 #endif

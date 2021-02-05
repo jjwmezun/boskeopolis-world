@@ -25,5 +25,6 @@ void render_release_target_texture();
 void render_clear();
 void render_color_canvas( const struct color_t * color );
 void render_clear_graphics();
+void render_clear_textures();
 
 #endif

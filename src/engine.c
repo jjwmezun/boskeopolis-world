@@ -75,6 +75,8 @@ static input_t sdl_key_to_input( SDL_Keycode key )
         case ( SDLK_DOWN ) : { return INPUT_DOWN;  } break;
         case ( SDLK_LEFT ) : { return INPUT_LEFT;  } break;
         case ( SDLK_z )    : { return INPUT_JUMP;  } break;
+        case ( SDLK_x )    : { return INPUT_RUN;  } break;
+        case ( SDLK_c )    : { return INPUT_MENU;  } break;
         default            : { return INPUT_NULL;  } break;
     }
 }

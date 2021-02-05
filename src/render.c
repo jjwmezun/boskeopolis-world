@@ -4,6 +4,7 @@
 #include "color.h"
 #include "config.h"
 #include "layers.h"
+#include "game_state.h"
 #include "graphics.h"
 #include "render.h"
 #include "rect.h"
@@ -15,8 +16,8 @@
 #define MAX_TEXTURE_STRING 32
 #define MAX_GRAPHICS 64
 
-static graphics_t graphics[ MAX_GRAPHICS ];
-static int graphics_ids[ MAX_GRAPHICS ];
+static graphics_t graphics[ MAX_STATES ][ MAX_GRAPHICS ];
+static int graphics_ids[ MAX_STATES ][ MAX_GRAPHICS ];
 static char texture_names[ MAX_TEXTURES ][ MAX_TEXTURE_STRING ];
 static color_t background_color = { 0, 0, 0, 255 };
 static SDL_Rect canvas_rect = { 0, 0, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS };
@@ -26,25 +27,36 @@ static SDL_Renderer * renderer;
 static SDL_Texture * canvas;
 static SDL_Texture * master_texture;
 static SDL_Texture * current_target;
-static int number_of_graphics = 0;
+static int number_of_graphics[ MAX_STATES ];
 static int number_of_textures = 0;
 static SDL_Surface * text_surface = NULL;
 static SDL_Texture * text_texture = NULL;
 static color_t text_color = { 0, 0, 0, 255 };
 
+static int render_find_texture_id( const char * filename );
+
 void render_execute()
 {
     SDL_SetRenderDrawColor( renderer, background_color.r, background_color.g, background_color.b, background_color.a );
     SDL_RenderClear( renderer );
-    for ( int i = 0; i < number_of_graphics; ++i )
+    int last_state = game_state_current_index();
+    for ( int state = 0; state <= last_state; ++state )
     {
-        switch ( graphics[ i ].type )
+        for ( int i = 0; i < number_of_graphics[ state ]; ++i )
         {
-            case ( GRAPHICS_REGULAR ):
+            switch ( graphics[ state ][ i ].type )
             {
-                render_sprite( &graphics[ i ].data.regular );
+                case ( GRAPHICS_REGULAR ):
+                {
+                    render_sprite( &graphics[ state ][ i ].data.regular );
+                }
+                break;
+                case ( GRAPHICS_RECT ):
+                {
+                    render_rect( &graphics[ state ][ i ].data.rect.dest, &graphics[ state ][ i ].data.rect.color );
+                }
+                break;
             }
-            break;
         }
     }
 
@@ -196,13 +208,7 @@ void render_close()
 int render_get_texture_id( const char * filename )
 {
     // Look for texture ID.
-    for ( int i = 0; i < number_of_textures; ++i )
-    {
-        if ( strncmp( texture_names[ i ], filename, MAX_TEXTURE_STRING ) == 0 )
-        {
-            return i;
-        }
-    }
+    render_find_texture_id( filename );
 
     // If not texture not found, load it.
     char * full_filename = asset_image( filename );
@@ -236,42 +242,50 @@ int render_get_texture_id( const char * filename )
 
 struct graphics_t * render_get_graphics( int id )
 {
+    int state = game_state_current_index();
     assert( id > 0 );
-    return &graphics[ graphics_ids[ id - 1 ] ];
+    return &graphics[ state ][ graphics_ids[ state ][ id - 1 ] ];
 };
 
 int render_add_graphics( const struct graphics_t * gfx )
 {
-    assert( number_of_graphics < MAX_GRAPHICS );
-    ++number_of_graphics;
-    int i = number_of_graphics - 2;
-    while ( i >= 0 && gfx->layer < graphics[ i ].layer )
+    int state = game_state_current_index();
+    assert( number_of_graphics[ state ] < MAX_GRAPHICS );
+    ++number_of_graphics[ state ];
+    int i = number_of_graphics[ state ] - 2;
+    while ( i >= 0 && gfx->layer < graphics[ state ][ i ].layer )
     {
-        memcpy( &graphics[ i + 1 ], &graphics[ i ], sizeof( graphics_t ) );
-        for ( int j = 0; j < number_of_graphics; ++j )
+        memcpy( &graphics[ state ][ i + 1 ], &graphics[ state ][ i ], sizeof( graphics_t ) );
+        for ( int j = 0; j < number_of_graphics[ state ]; ++j )
         {
-            if ( graphics_ids[ j ] == i )
+            if ( graphics_ids[ state ][ j ] == i )
             {
-                ++graphics_ids[ j ];
+                ++graphics_ids[ state ][ j ];
             }
         }
         --i;
     }
-    memcpy( &graphics[ i + 1 ], gfx, sizeof( graphics_t ) );
-    graphics_ids[ number_of_graphics - 1 ] = i + 1;
-    return number_of_graphics;
+    memcpy( &graphics[ state ][ i + 1 ], gfx, sizeof( graphics_t ) );
+    graphics_ids[ state ][ number_of_graphics[ state ] - 1 ] = i + 1;
+    return number_of_graphics[ state ];
 };
 
 void render_remove_graphics( int id )
 {
+    int state = game_state_current_index();
     if ( id > 0 )
     {
-        graphics[ graphics_ids[ id - 1 ] ].type = GRAPHICS_NULL;
+        graphics[ state ][ graphics_ids[ state ][ id - 1 ] ].type = GRAPHICS_NULL;
     }
 };
 
 int render_create_custom_texture( const char * name, int width, int height )
 {
+    int texture_id = render_find_texture_id( name );
+    if ( texture_id >= 0 )
+    {
+        return texture_id;
+    }
     SDL_Texture * texture = SDL_CreateTexture( renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height );
     if ( !texture )
     {
@@ -310,5 +324,33 @@ void render_color_canvas( const struct color_t * color )
 
 void render_clear_graphics()
 {
-    number_of_graphics = 0;
+    number_of_graphics[ game_state_current_index() ] = 0;
+};
+
+void render_clear_textures()
+{
+    for ( int i = 0; i < MAX_STATES; ++i )
+    {
+        number_of_graphics[ i ] = 0;
+    }
+    for ( int i = 0; i < number_of_textures; ++i )
+    {
+        if ( textures[ i ] )
+        {
+            SDL_DestroyTexture( textures[ i ] );
+        }
+    }
+    number_of_textures = 0;
+};
+
+static int render_find_texture_id( const char * filename )
+{
+    for ( int i = 0; i < number_of_textures; ++i )
+    {
+        if ( strncmp( texture_names[ i ], filename, MAX_TEXTURE_STRING ) == 0 )
+        {
+            return i;
+        }
+    }
+    return -1;
 };

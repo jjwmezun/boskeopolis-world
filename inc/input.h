@@ -8,6 +8,8 @@ typedef enum input_t
     INPUT_DOWN,
     INPUT_LEFT,
     INPUT_JUMP,
+    INPUT_RUN,
+    INPUT_MENU,
     INPUT_NULL
 } input_t;
 
