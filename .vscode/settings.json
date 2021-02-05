@@ -9,6 +9,7 @@
         "tuple": "c",
         "type_traits": "c",
         "utility": "c",
-        "map": "cpp"
+        "map": "cpp",
+        "string": "c"
     }
 }

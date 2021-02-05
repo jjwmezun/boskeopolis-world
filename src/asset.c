@@ -4,8 +4,10 @@
 
 static char * graphics_path;
 static char * map_path;
+static char * localization_path;
 static int graphics_path_length = 0;
 static int map_path_length = 0;
+static int localization_path_length = 0;
 
 static int create_path( char ** dest, const char * base_path, int base_length, const char * local_path );
 static char * get_path( const char * base_path, int base_path_length, const char * local );
@@ -17,6 +19,7 @@ void asset_init()
     const int base_length = strlen( base_path ) + 1;
     graphics_path_length = create_path( &graphics_path, base_path, base_length, "assets/graphics/" );
     map_path_length = create_path( &map_path, base_path, base_length, "assets/maps/" );
+    localization_path_length = create_path( &localization_path, base_path, base_length, "assets/localization/" );
     SDL_free( base_path );
 };
 
@@ -24,6 +27,11 @@ void asset_close()
 {
     free( graphics_path );
 }
+
+char * asset_localization( const char * local )
+{
+    return get_path( localization_path, localization_path_length, local );
+};
 
 char * asset_map( const char * local )
 {

@@ -6,6 +6,7 @@
 #include "input.h"
 #include "inventory.h"
 #include "render.h"
+#include "text.h"
 
 #include "speed.h"
 
@@ -23,12 +24,16 @@ int main( int argc, char ** argv )
     {
         return 1;
     }
+    asset_init();
     if ( render_init( "Boskeopolis World", WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS ) != 0 )
     {
         return 1;
     }
-    asset_init();
     input_init();
+    if ( text_init() != 0 )
+    {
+        return 1;
+    };
     inventory_init();
     game_state_init();
 

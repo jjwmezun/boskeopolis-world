@@ -1,5 +1,6 @@
 #include "assert.h"
 #include "asset.h"
+#include "character.h"
 #include "color.h"
 #include "config.h"
 #include "layers.h"
@@ -8,6 +9,7 @@
 #include "rect.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include "text.h"
 
 #define MAX_TEXTURES 255
 #define MAX_TEXTURE_STRING 32
@@ -16,14 +18,19 @@
 static graphics_t graphics[ MAX_GRAPHICS ];
 static int graphics_ids[ MAX_GRAPHICS ];
 static char texture_names[ MAX_TEXTURES ][ MAX_TEXTURE_STRING ];
-static SDL_Texture * textures[ MAX_TEXTURES ];
 static color_t background_color = { 0, 0, 0, 255 };
+static SDL_Rect canvas_rect = { 0, 0, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS };
+static SDL_Texture * textures[ MAX_TEXTURES ];
 static SDL_Window * window;
 static SDL_Renderer * renderer;
 static SDL_Texture * canvas;
 static SDL_Texture * master_texture;
+static SDL_Texture * current_target;
 static int number_of_graphics = 0;
 static int number_of_textures = 0;
+static SDL_Surface * text_surface = NULL;
+static SDL_Texture * text_texture = NULL;
+static color_t text_color = { 0, 0, 0, 255 };
 
 void render_execute()
 {
@@ -43,9 +50,8 @@ void render_execute()
 
     SDL_SetRenderTarget( renderer, canvas );
     SDL_RenderClear( renderer );
-    const SDL_Rect src = { 0, 0, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS };
     const SDL_Rect dest = { 0, 0, WINDOW_WIDTH_PIXELS * 4, WINDOW_HEIGHT_PIXELS * 4 };
-    if ( SDL_RenderCopy( renderer, master_texture, &src, &dest ) != 0 )
+    if ( SDL_RenderCopy( renderer, master_texture, &canvas_rect, &dest ) != 0 )
     {
         SDL_Log( "Render failure: %s\n", SDL_GetError() );
     }
@@ -81,6 +87,30 @@ int render_init( const char * title, int width, int height )
     master_texture = SDL_CreateTexture( renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WINDOW_WIDTH_PIXELS * 4, WINDOW_HEIGHT_PIXELS * 4 );
     SDL_SetTextureBlendMode( master_texture, SDL_BLENDMODE_BLEND );
     SDL_SetRenderTarget( renderer, master_texture );
+    current_target = master_texture;
+
+    // If not texture not found, load it.
+    char * filename = asset_image( "text/latin.png" );
+    SDL_RWops * rwop = SDL_RWFromFile( filename, "rb" );
+    free( filename );
+    if ( !rwop )
+    {
+        SDL_Log( "SDL_RWFromFile failed: %s", SDL_GetError() );
+        return -1;
+    }
+    text_surface = IMG_LoadPNG_RW( rwop );
+    SDL_RWclose( rwop );
+    if ( !text_surface )
+    {
+        SDL_Log( "SDL_Surface failed: %s", SDL_GetError() );
+        return -1;
+    }
+    text_texture = SDL_CreateTextureFromSurface( renderer, text_surface );
+    if ( !text_texture )
+    {
+        SDL_Log( "SDL_CreateTextureFromSurface failed: %s", SDL_GetError() );
+        return -1;
+    }
 
     return 0;
 };
@@ -102,8 +132,63 @@ void render_rect( const struct rect_t * rect, const struct color_t * color )
     SDL_RenderFillRect( renderer, &raw_rect );
 };
 
+void render_text( const struct text_t * text )
+{
+    for ( int i = 0; i < text->count; ++i )
+    {
+        render_character( &text->characters[ i ] );
+    }
+};
+
+void render_character( const struct character_t * character )
+{
+    if ( character->color.r != text_color.r || character->color.g != text_color.g || character->color.b != text_color.b || character->color.a != text_color.a )
+    {
+        text_color = character->color;
+        SDL_LockSurface( text_surface );
+        Uint32 * pixels = ( Uint32 * )( text_surface->pixels );
+        Uint32 pixel_color = SDL_MapRGBA( text_surface->format, character->color.r, character->color.g, character->color.b, character->color.a );
+        for ( int i = 0; i < ( text_surface->h * text_surface->pitch ) / text_surface->format->BytesPerPixel; ++i )
+        {
+            Uint32 a = pixels[ i ] & text_surface->format->Amask;
+            a = a >> text_surface->format->Ashift;
+            a = a << text_surface->format->Aloss;
+            if ( a != 0 )
+            {
+                pixels[ i ] = pixel_color;
+            }
+        }
+        SDL_UnlockSurface( text_surface );
+        SDL_Texture * temp = SDL_CreateTextureFromSurface( renderer, text_surface );
+        if ( !temp )
+        {
+            SDL_Log( "SDL_CreateTextureFromSurface failed: %s", SDL_GetError() );
+        }
+        else
+        {
+            SDL_DestroyTexture( text_texture );
+            text_texture = temp;
+        }
+    }
+    SDL_Rect raw_src = { character->src.x, character->src.y, character->src.w, character->src.h };
+    SDL_Rect raw_dest = { character->dest.x, character->dest.y, character->dest.w, character->dest.h };
+    if ( SDL_RenderCopyEx( renderer, text_texture, &raw_src, &raw_dest, 0.0, NULL, SDL_FLIP_NONE ) != 0 )
+    {
+        SDL_Log( "Render failure: %s\n", SDL_GetError() );
+    }
+};
+
 void render_close()
 {
+    SDL_FreeSurface( text_surface );
+    SDL_DestroyTexture( text_texture );
+    for ( int i = 0; i < number_of_textures; ++i )
+    {
+        if ( textures[ i ] )
+        {
+            SDL_DestroyTexture( textures[ i ] );
+        }
+    }
     SDL_DestroyRenderer( renderer );
     SDL_DestroyWindow( window );
 };
@@ -201,11 +286,13 @@ int render_create_custom_texture( const char * name, int width, int height )
 
 void render_set_target_texture( int id )
 {
+    current_target = textures[ id ];
     SDL_SetRenderTarget( renderer, textures[ id ] );
 };
 
 void render_release_target_texture()
 {
+    current_target = master_texture;
     SDL_SetRenderTarget( renderer, master_texture );
 };
 
@@ -213,4 +300,15 @@ void render_clear()
 {
     SDL_SetRenderDrawColor( renderer, 0, 0, 0, 0 );
     SDL_RenderClear( renderer );
-}
+};
+
+void render_color_canvas( const struct color_t * color )
+{
+    SDL_SetRenderDrawColor( renderer, color->r, color->g, color->b, color->a );
+    SDL_RenderFillRect( renderer, &canvas_rect );
+};
+
+void render_clear_graphics()
+{
+    number_of_graphics = 0;
+};

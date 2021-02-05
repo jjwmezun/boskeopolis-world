@@ -9,10 +9,10 @@
 
 typedef enum
 {
+    GSTATE_NULL,
     GSTATE_TITLE,
     GSTATE_LEVEL,
-    GSTATE_MESSAGE,
-    GSTATE_NULL
+    GSTATE_MESSAGE
 } game_state_type_t;
 
 typedef struct game_state_level_data_t

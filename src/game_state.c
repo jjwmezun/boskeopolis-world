@@ -1,6 +1,7 @@
 #include "color.h"
 #include "config.h"
 #include "game_state.h"
+#include "graphics.h"
 #include "input.h"
 #include "inventory.h"
 #include "rect.h"
@@ -10,6 +11,7 @@
 #include "inventory.h"
 #include "map.h"
 #include "sprite.h"
+#include "text.h"
 
 #define MAX_STATES 3
 
@@ -25,6 +27,39 @@ void game_state_init()
         states[ i ].type = GSTATE_NULL;
     }
     number_of_states = 1;
+
+    states[ 0 ].type = GSTATE_TITLE;
+    const int texture_id = render_create_custom_texture( "title", WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS );
+    render_set_target_texture( texture_id );
+    render_clear();
+    color_t bg = { 255, 255, 255, 255 };
+    render_color_canvas( &bg );
+
+    text_args_t title_args = text_default_args();
+    title_args.y = 16.0;
+    title_args.x_padding = 16.0;
+    title_args.align = ALIGN_CENTER;
+    text_t title = text_create( "¡BOSKEOPOLIS WORLD!", title_args );
+    render_text( &title );
+
+    text_args_t desc_args = text_default_args();
+    desc_args.y = 64.0;
+    desc_args.x_padding = 16.0;
+    text_t desc = text_create( "Boskeopolis is an obscure city-state in the Verdazul archipelago in Orange Ocean ( or, as other countries call it, the Pacific Ocean ).", desc_args );
+    render_text( &desc );
+
+    text_args_t desc2_args = text_default_args();
+    desc2_args.x_padding = 16.0;
+    desc2_args.y_padding = 16.0;
+    desc2_args.align = ALIGN_RIGHT;
+    desc2_args.valign = VALIGN_BOTTOM;
+    desc2_args.color.r = 255;
+    text_t desc2 = text_create( "Boskeopolis is an obscure city-state in the Verdazul archipelago in Orange Ocean ( or, as other countries call it, the Pacific Ocean ).", desc2_args );
+    render_text( &desc2 );
+
+    graphics_t graphics = { GRAPHICS_REGULAR, LAYER_BG1, {{ texture_id, { 0, 0, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS }, { 0, 0, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS }, FLIP_NONE, 0.0 }}};
+    render_add_graphics( &graphics );
+    render_release_target_texture();
 };
 
 void game_state_pop()
@@ -63,7 +98,10 @@ void game_state_update()
         {
             case ( GSTATE_TITLE ):
             {
-                game_state_change_level();
+                if ( input_held( INPUT_JUMP ) )
+                {
+                    game_state_change_level();
+                }
             }
             break;
             case ( GSTATE_LEVEL ):
@@ -113,4 +151,5 @@ static void game_state_destroy( game_state_t * state )
         }
         break;
     }
+    render_clear_graphics();
 };
