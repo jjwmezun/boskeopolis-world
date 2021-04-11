@@ -6,6 +6,7 @@
 class GameState
 {
     public:
+        virtual ~GameState();
         virtual void update( bool top_state ) = 0;
         virtual void init();
         virtual void close();

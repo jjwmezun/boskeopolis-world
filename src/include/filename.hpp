@@ -7,6 +7,7 @@ namespace Filename
 {
     void init();
     std::string image( std::string local );
+    std::string localization( std::string local );
 };
 
 #endif // FILENAME_H

@@ -1,6 +1,7 @@
 #ifndef RENDER_H
 #define RENDER_H
 
+class Character;
 class Color;
 class Rect;
 
@@ -15,6 +16,7 @@ namespace Render
 
     void rect( const Rect & rect, const Color & color );
     void sprite( int texture_id, const Rect & src, const Rect & dest );
+    void character( const Character & character );
 }
 
 #endif // RENDER_H

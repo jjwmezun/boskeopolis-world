@@ -8,6 +8,7 @@ class TextGraphic : public Graphic
 {
     public:
         TextGraphic( Text text );
+        ~TextGraphic();
         void render() const override;
 
     private:

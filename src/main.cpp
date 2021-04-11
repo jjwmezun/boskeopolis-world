@@ -5,6 +5,7 @@
 #include "game_state_machine.hpp"
 #include "graphic.hpp"
 #include "input.hpp"
+#include "localization.hpp"
 #include "rect.hpp"
 #include "render.hpp"
 #include "unit.hpp"
@@ -23,13 +24,14 @@ int main()
         printf( "¡Error! Failed to initialize game!\n" );
         return -1;
     }
+    Filename::init();
     if ( !Render::init( "Boskeopolis World", Unit::WINDOW_WIDTH_PIXELS, Unit::WINDOW_HEIGHT_PIXELS, { 0, 0, 0, 255 } ) )
     {
         printf( "¡Error! ¡Failed to initialize game renderer!\n" );
         return -1;
     }
 
-    Filename::init();
+    Localization::init();
     Input::init();
     GameStateMachine::init();
 

@@ -4,6 +4,7 @@
 class Graphic
 {
     public:
+        virtual ~Graphic();
         virtual void render() const = 0;
         void setId( int id );
         int getId() const;
