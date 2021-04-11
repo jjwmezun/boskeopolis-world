@@ -2,8 +2,7 @@
 #define RENDER_H
 
 class Color;
-class RectGraphic;
-class SpriteGraphic;
+class Rect;
 
 namespace Render
 {
@@ -14,8 +13,8 @@ namespace Render
     unsigned int getTextureId( const char * filename );
     void clearTextures();
 
-    void rect( const RectGraphic & graphic );
-    void sprite( const SpriteGraphic & graphic );
+    void rect( const Rect & rect, const Color & color );
+    void sprite( int texture_id, const Rect & src, const Rect & dest );
 }
 
 #endif // RENDER_H

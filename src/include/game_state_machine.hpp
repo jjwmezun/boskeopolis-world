@@ -8,8 +8,8 @@ namespace GameStateMachine
     void init();
     void update();
     void render();
-    void pushState( GameState state );
-    void changeState( GameState state );
+    void pushState( GameState * state );
+    void changeState( GameState * state );
     void popState();
 };
 

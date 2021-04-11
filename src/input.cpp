@@ -116,6 +116,6 @@ namespace Input
 
     bool pressedLeft()
     {
-        return pressed[ ( int )( Key::RIGHT ) ];
+        return pressed[ ( int )( Key::LEFT ) ];
     };
 };

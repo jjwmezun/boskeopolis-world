@@ -1,11 +1,9 @@
 #include "color.hpp"
 #include "filename.hpp"
 #include "rect.hpp"
-#include "rect_graphic.hpp"
 #include "render.hpp"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "sprite_graphic.hpp"
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -103,24 +101,24 @@ namespace Render
         return textures.size() - 1;
     };
 
-    void rect( const RectGraphic & graphic )
+    void rect( const Rect & rect, const Color & color )
     {
-        SDL_Color raw_color = generateRawColor( graphic.color );
-        SDL_Rect raw_rect = generateRawRect( graphic.rect );
+        SDL_Color raw_color = generateRawColor( color );
+        SDL_Rect raw_rect = generateRawRect( rect );
         SDL_SetRenderDrawColor( renderer, raw_color.r, raw_color.g, raw_color.b, raw_color.a );
         SDL_RenderFillRect( renderer, &raw_rect );
     };
 
-    void sprite( const SpriteGraphic & graphic )
+    void sprite( int texture_id, const Rect & src, const Rect & dest )
     {
-        const auto src = generateRawRect( graphic.src );
-        const auto dest = generateRawRect( graphic.dest );
+        const auto raw_src = generateRawRect( src );
+        const auto raw_dest = generateRawRect( dest );
         SDL_RenderCopyEx
         (
             renderer,
-            textures[ graphic.texture_id ],
-            &src,
-            &dest,
+            textures[ texture_id ],
+            &raw_src,
+            &raw_dest,
             0.0,
             nullptr,
             SDL_FLIP_NONE
