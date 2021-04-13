@@ -20,13 +20,18 @@ namespace Render
     static SDL_Surface * text_surface = nullptr;
     static SDL_Texture * text_texture = nullptr;
     static SDL_Color text_color = { 0, 0, 0, 255 };
+    static int magnification = 4;
+    static SDL_Texture * canvas = nullptr;
+    static SDL_Texture * final_target = nullptr;
+    static SDL_Rect canvas_src;
+    static SDL_Rect canvas_dest;
 
     static constexpr SDL_Color generateRawColor( Color color );
     static constexpr SDL_Rect generateRawRect( Rect rect );
 
     bool init( const char * title, int width, int height, Color background )
     {
-        window = SDL_CreateWindow( title, 32, 32, width, height, SDL_WINDOW_RESIZABLE );
+        window = SDL_CreateWindow( title, 32, 32, width * magnification, height * magnification, SDL_WINDOW_RESIZABLE );
         if ( !window )
         {
             return false;
@@ -61,11 +66,18 @@ namespace Render
             throw std::runtime_error( "Could not generate texture for text" );
         }
 
+        canvas = SDL_CreateTexture( renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height );
+        final_target = SDL_GetRenderTarget( renderer );
+
+        canvas_src = { 0, 0, width, height };
+        canvas_dest = { 0, 0, width * magnification, height * magnification };
+
         return true;
     };
 
     void close()
     {
+        SDL_DestroyTexture( canvas );
         SDL_DestroyTexture( text_texture );
         SDL_FreeSurface( text_surface );
         clearTextures();
@@ -75,12 +87,15 @@ namespace Render
 
     void startUpdate()
     {
+        SDL_SetRenderTarget( renderer, canvas );
         SDL_SetRenderDrawColor( renderer, background_color.r, background_color.g, background_color.b, background_color.a );
         SDL_RenderClear( renderer );
     };
 
     void endUpdate()
     {
+        SDL_SetRenderTarget( renderer, final_target );
+        SDL_RenderCopy( renderer, canvas, &canvas_src, &canvas_dest );
         SDL_RenderPresent( renderer );
     };
 
