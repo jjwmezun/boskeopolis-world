@@ -24,36 +24,32 @@ namespace Render
     static GLFWwindow * window;
     static const char * vertexShaderSource = "#version 330 core\n"
         "layout (location = 0) in vec2 aPos;   // the position variable has attribute position 0\n"
-        "layout (location = 1) in vec4 aColor; // the color variable has attribute position 1\n"
-        "  \n"
-        "out vec4 ourColor; // output a color to the fragment shader\n"
         "\n"
         "uniform mat4 model;\n"
         "uniform mat4 view;\n"
         "uniform mat4 ortho;\n"
-        "uniform vec4 color;\n"
         "\n"
         "void main()\n"
         "{\n"
         "    gl_Position = ortho * view * model * vec4(aPos, 0.0, 1.0);\n"
-        "    ourColor = color; // set ourColor to the input color we got from the vertex data\n"
         "}";
 
     static const char * fragmentShaderSource = "#version 330 core\n"
-        "out vec4 FragColor;  \n"
-        "in vec4 ourColor;\n"
+        "out vec4 FragColor;\n"
+        "  \n"
+        "uniform vec4 color;\n"
         "  \n"
         "void main()\n"
         "{\n"
-        "    FragColor = ourColor;\n"
+        "    FragColor = color;\n"
         "}\n";
 
 
     static float vertices[] = {
-         0.5f, 0.5f, 1.0f, 1.0f, 1.0f, 1.0f, // top right
-         0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, // bottom right
-        -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, // bottom left
-        -0.5f, 0.5f, 1.0f, 1.0f, 1.0f, 1.0f  // top left 
+         0.5f, 0.5f, // top right
+         0.5f, -0.5f, // bottom right
+        -0.5f, -0.5f, // bottom left
+        -0.5f, 0.5f  // top left 
     };
     static unsigned int indices[] = {  // note that we start from 0!
         0, 1, 3,   // first triangle
@@ -144,10 +140,8 @@ namespace Render
 
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3* sizeof(float)));
-        glEnableVertexAttribArray(1);
 
         glUseProgram(shaderProgram);
 
