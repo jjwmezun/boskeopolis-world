@@ -11,7 +11,6 @@
 #include <unordered_map>
 #include <vector>
 
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -20,6 +19,8 @@
 namespace Render
 {
     static int magnification = 1;
+    static int canvas_width = 0;
+    static int canvas_height = 0;
     static GLFWwindow * window;
     static const char * vertexShaderSource = "#version 330 core\n"
         "layout (location = 0) in vec2 aPos;   // the position variable has attribute position 0\n"
@@ -62,9 +63,12 @@ namespace Render
     static unsigned int shaderProgram;
 
     static void drawBox( const Rect & rect, const Color & color );
+    static void framebufferSizeCallback( GLFWwindow* window, int width, int height );
 
     bool init( const char * title, int width, int height, Color background )
     {
+        canvas_width = width;
+        canvas_height = height;
         window = glfwCreateWindow( width * magnification, height * magnification, title, nullptr, nullptr );
         if ( window == nullptr )
         {
@@ -151,6 +155,8 @@ namespace Render
         unsigned int ortho_location = glGetUniformLocation(shaderProgram, "ortho");
         glUniformMatrix4fv( ortho_location, 1, GL_FALSE, glm::value_ptr(ortho));
 
+        glfwSetFramebufferSizeCallback( window, framebufferSizeCallback );
+
         return true;
     };
 
@@ -164,6 +170,7 @@ namespace Render
         glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
         glClear( GL_COLOR_BUFFER_BIT );
 
+        drawBox({ 0.0, 0.0, 400.0, 224.0 }, { 255, 255, 255, 255 });
         drawBox({ 200.0, 124.0, 8.0, 8.0 }, { 255, 0, 0, 255 });
         drawBox({ 384.0, -8.0, 32.0, 32.0 }, { 0, 0, 255, 255 });
     };
@@ -230,4 +237,25 @@ namespace Render
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
     };
+
+    void framebufferSizeCallback( GLFWwindow* window, int screen_width, int screen_height )
+    {
+        double screen_aspect_ratio = ( double )( canvas_width / canvas_height );
+        double monitor_aspect_ratio = ( double )( screen_width ) / ( double )( screen_height );
+
+        magnification = std::max(
+            ( int )( floor(
+                ( monitor_aspect_ratio > screen_aspect_ratio )
+                    ? ( double )( screen_height ) / ( double )( canvas_height )
+                    : ( double )( screen_width ) / ( double )( canvas_width )
+            )),
+            1
+        );
+
+        GLint magnified_canvas_width = canvas_width * magnification;
+        GLint magnified_canvas_height = canvas_height * magnification;
+        GLint x = ( int )( floor( ( double )( screen_width - magnified_canvas_width ) / 2.0 ) );
+        GLint y = ( int )( floor( ( double )( screen_height - magnified_canvas_height ) / 2.0 ) );
+        glViewport( x, y, magnified_canvas_width, magnified_canvas_height );
+    }
 }
