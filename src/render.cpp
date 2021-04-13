@@ -2,6 +2,7 @@
 #include "color.hpp"
 #include <cstdio>
 #include "filename.hpp"
+#include <fstream>
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
 #include "rect.hpp"
@@ -25,34 +26,6 @@ namespace Render
     static int canvas_width = 0;
     static int canvas_height = 0;
     static GLFWwindow * window;
-    static const char * vertexShaderSource = "#version 330 core\n"
-        "layout ( location = 0 ) in vec2 in_position;\n"
-        "layout ( location = 1 ) in vec2 in_texture_coords;\n"
-        "\n"
-        "out vec2 texture_coords;\n"
-        "\n"
-        "uniform mat4 model;\n"
-        "uniform mat4 view;\n"
-        "uniform mat4 ortho;\n"
-        "\n"
-        "void main()\n"
-        "{\n"
-        "   gl_Position = ortho * view * model * vec4( in_position, 0.0, 1.0 );\n"
-        "   texture_coords = in_texture_coords;\n"
-        "}";
-
-    static const char * fragmentShaderSource = "#version 330 core\n"
-        "out vec4 final_color;\n"
-        "\n"
-        "in vec2 texture_coords;\n"
-        "\n"
-        "uniform sampler2D texture_data;\n"
-        "uniform vec4 color;\n"
-        "  \n"
-        "void main()\n"
-        "{\n"
-        "    final_color = texture( texture_data, texture_coords );\n"
-        "}\n";
 
     static float vertices[] = {
         // Vertices     // Texture coords
@@ -68,11 +41,16 @@ namespace Render
     };
 
     static unsigned int VAO;
-    static unsigned int shaderProgram;
+    static unsigned int sprite_shader, rect_shader;
     static unsigned int texture;
+    static int texture_width, texture_height;
 
     static void drawBox( const Rect & rect, const Color & color );
+    static void drawSprite( const Rect & src, const Rect & dest );
     static void framebufferSizeCallback( GLFWwindow* window, int width, int height );
+    static unsigned int generateShaderProgram( std::vector<const char *> vertex_shaders, std::vector<const char *> fragment_shaders );
+    static unsigned int generateShader( GLenum type, const char * file );
+    static std::string loadShader( const char * local );
 
     bool init( const char * title, int width, int height, Color background )
     {
@@ -93,44 +71,11 @@ namespace Render
         }
         glViewport( 0, 0, width * magnification, height * magnification );
 
-        // Vertex Shader
-        unsigned int vertexShader;
-        vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-        glCompileShader(vertexShader);
-        int  success;
-        char infoLog[512];
-        glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-        if( !success )
-        {
-            glGetShaderInfoLog( vertexShader, 512, NULL, infoLog );
-            printf( "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n%s\n", infoLog );
-        }
+        sprite_shader = generateShaderProgram({ "vertex" }, { "sprite" });
+        rect_shader = generateShaderProgram({ "vertex" }, { "rect" });
 
-        // Fragment Shader
-        unsigned int fragmentShader;
-        fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-        glCompileShader(fragmentShader);
-        glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-        if( !success )
-        {
-            glGetShaderInfoLog( fragmentShader, 512, NULL, infoLog );
-            printf( "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n%s\n", infoLog );
-        }
-
-        // Shader Program
-        shaderProgram = glCreateProgram();
-        glAttachShader(shaderProgram, vertexShader);
-        glAttachShader(shaderProgram, fragmentShader);
-        glLinkProgram(shaderProgram);
-
-        // Clean up shaders
-        glDeleteShader(vertexShader);
-        glDeleteShader(fragmentShader);
-
-        int texture_width, texture_height, texture_channels;
-        unsigned char * texture_data = stbi_load( "assets/graphics/sprites/autumn.png", &texture_width, &texture_height, &texture_channels, 0 );
+        int texture_channels;
+        unsigned char * texture_data = stbi_load( "assets/graphics/sprites/autumn.png", &texture_width, &texture_height, &texture_channels, STBI_rgb_alpha );
         if ( texture_data == nullptr )
         {
             printf( "Error loading texture.\n" );
@@ -149,12 +94,6 @@ namespace Render
         glGenBuffers(1, &VBO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-        if(!success)
-        {
-            glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-            printf( "ERROR: Failed to create shader program\n%s\n", infoLog );
-        }
 
         // VAO
         glGenVertexArrays(1, &VAO);
@@ -173,11 +112,13 @@ namespace Render
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2* sizeof(float)));
         glEnableVertexAttribArray(1);
 
-        glUseProgram(shaderProgram);
-
-        glm::mat4 ortho = glm::ortho( 0.0f, 400.0f, 224.0f, 0.0f, -1.0f, 1.0f );
-        unsigned int ortho_location = glGetUniformLocation(shaderProgram, "ortho");
-        glUniformMatrix4fv( ortho_location, 1, GL_FALSE, glm::value_ptr(ortho));
+        for ( unsigned int shader : { sprite_shader, rect_shader } )
+        {
+            glUseProgram(shader);
+            glm::mat4 ortho = glm::ortho( 0.0f, 400.0f, 224.0f, 0.0f, -1.0f, 1.0f );
+            unsigned int ortho_location = glGetUniformLocation(shader, "ortho");
+            glUniformMatrix4fv( ortho_location, 1, GL_FALSE, glm::value_ptr(ortho));
+        }
 
         glfwSetFramebufferSizeCallback( window, framebufferSizeCallback );
 
@@ -194,7 +135,8 @@ namespace Render
         glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
         glClear( GL_COLOR_BUFFER_BIT );
 
-        drawBox({ 200.0, 100.0, 162.0, 78.0 }, { 0, 0, 255, 255 });
+        drawBox({ 0.0, 0.0, 400.0, 224.0 }, { 255, 255, 255, 255 });
+        drawSprite({ 48.0, 30.0, 16.0, 21.0 }, { 200.0, 100.0, 16.0, 21.0 });
     };
 
     void endUpdate()
@@ -235,24 +177,59 @@ namespace Render
 
     void drawBox( const Rect & rect, const Color & color )
     {
+        glUseProgram(rect_shader);
         float r = ( float )( color.r ) / 255.0f;
         float g = ( float )( color.g ) / 255.0f;
         float b = ( float )( color.b ) / 255.0f;
         float a = ( float )( color.a ) / 255.0f;
 
-        unsigned int color_location = glGetUniformLocation(shaderProgram, "color");
+        unsigned int color_location = glGetUniformLocation(rect_shader, "color");
         glUniform4f(color_location, r, g, b, a );
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2* sizeof(float)));
+        glEnableVertexAttribArray(1);
 
         glm::mat4 view = glm::mat4(1.0f);
         view = glm::translate(view, glm::vec3(rect.x + ( rect.w / 2.0f ), rect.y + ( rect.h / 2.0f ), 0.0f));
-        unsigned int view_location = glGetUniformLocation(shaderProgram, "view");
+        unsigned int view_location = glGetUniformLocation(rect_shader, "view");
         glUniformMatrix4fv( view_location, 1, GL_FALSE, glm::value_ptr(view));
 
-        auto identity = glm::mat4(1.0f);
-        glm::mat4 model = identity;
-        auto scale = glm::vec3( rect.w, rect.h, 0.0 );
-        model = glm::scale( model, scale );
-        unsigned int model_location = glGetUniformLocation(shaderProgram, "model");
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::scale( model, glm::vec3( rect.w, rect.h, 0.0 ) );
+        unsigned int model_location = glGetUniformLocation(rect_shader, "model");
+        glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
+    
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+    };
+
+    void drawSprite( const Rect & src, const Rect & dest )
+    {
+        glUseProgram(sprite_shader);
+        // Src Coords
+        vertices[ 14 ] = vertices[ 10 ] = 1.0f / ( float )( texture_width ) * src.x; // Left X
+        vertices[ 2 ] = vertices[ 6 ] = 1.0f / ( float )( texture_width ) * ( src.x + src.w );  // Right X
+        vertices[ 15 ] = vertices[ 3 ] = 1.0f / ( float )( texture_height ) * ( src.y + src.h ); // Top Y
+        vertices[ 11 ] = vertices[ 7 ] = 1.0f / ( float )( texture_height ) * src.y;  // Bottom Y
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2* sizeof(float)));
+        glEnableVertexAttribArray(1);
+
+        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3( dest.x + ( dest.w / 2.0f ), dest.y + ( dest.h / 2.0f ), 0.0f));
+        unsigned int view_location = glGetUniformLocation(sprite_shader, "view");
+        glUniformMatrix4fv( view_location, 1, GL_FALSE, glm::value_ptr(view));
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::scale( model, glm::vec3( dest.w, dest.h, 0.0 ) );
+        unsigned int model_location = glGetUniformLocation(sprite_shader, "model");
         glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
     
         glActiveTexture(GL_TEXTURE0);
@@ -282,4 +259,79 @@ namespace Render
         GLint y = ( int )( floor( ( double )( screen_height - magnified_canvas_height ) / 2.0 ) );
         glViewport( x, y, magnified_canvas_width, magnified_canvas_height );
     }
+
+    static unsigned int generateShaderProgram( std::vector<const char *> vertex_shaders, std::vector<const char *> fragment_shaders )
+    {
+        // Shader Program
+        unsigned int program = glCreateProgram();
+
+        std::vector<unsigned int> shaders;
+        for ( auto shader : vertex_shaders )
+        {
+            shaders.emplace_back( generateShader( GL_VERTEX_SHADER, shader ) );
+        }
+        for ( auto shader : fragment_shaders )
+        {
+            shaders.emplace_back( generateShader( GL_FRAGMENT_SHADER, shader ) );
+        }
+
+        for ( auto shader : shaders )
+        {
+            glAttachShader( program, shader );
+        }
+
+        glLinkProgram(program);
+
+        int  success;
+        char infoLog[512];
+        glGetProgramiv(program, GL_LINK_STATUS, &success);
+        if(!success)
+        {
+            glGetProgramInfoLog(program, 512, NULL, infoLog);
+            printf( "ERROR: Failed to create shader program\n%s\n", infoLog );
+        }
+
+        // Clean up shaders.
+        for ( auto shader : shaders )
+        {
+            glDeleteShader( shader );
+        }
+
+        return program;
+    }
+
+    static unsigned int generateShader( GLenum type, const char * file )
+    {
+        int success;
+        char infoLog[ 512 ];
+        unsigned int shader;
+        shader = glCreateShader( type );
+        std::string string = loadShader( file );
+        const char * cstring = string.c_str();
+        glShaderSource( shader, 1, &cstring, NULL );
+        glCompileShader( shader );
+        glGetShaderiv( shader, GL_COMPILE_STATUS, &success );
+        if( !success )
+        {
+            glGetShaderInfoLog( shader, 512, NULL, infoLog );
+            printf( "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n%s\n", infoLog );
+        }
+        return shader;
+    }
+
+    static std::string loadShader( const char * local )
+    {
+        const std::string full_filename = Filename::shader( local );
+        std::ifstream ifs( full_filename );
+        if( !ifs.is_open() )
+        {
+            throw std::runtime_error( "Failed to open shaders." );
+        }
+        std::string content{
+            (std::istreambuf_iterator<char>(ifs) ),
+            (std::istreambuf_iterator<char>()    )
+        };
+        ifs.close();
+        return content;
+    };
 }
