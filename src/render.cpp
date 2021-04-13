@@ -15,6 +15,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image/stb_image.h>
+
 
 namespace Render
 {
@@ -23,7 +26,10 @@ namespace Render
     static int canvas_height = 0;
     static GLFWwindow * window;
     static const char * vertexShaderSource = "#version 330 core\n"
-        "layout (location = 0) in vec2 aPos;   // the position variable has attribute position 0\n"
+        "layout ( location = 0 ) in vec2 in_position;\n"
+        "layout ( location = 1 ) in vec2 in_texture_coords;\n"
+        "\n"
+        "out vec2 texture_coords;\n"
         "\n"
         "uniform mat4 model;\n"
         "uniform mat4 view;\n"
@@ -31,32 +37,39 @@ namespace Render
         "\n"
         "void main()\n"
         "{\n"
-        "    gl_Position = ortho * view * model * vec4(aPos, 0.0, 1.0);\n"
+        "   gl_Position = ortho * view * model * vec4( in_position, 0.0, 1.0 );\n"
+        "   texture_coords = in_texture_coords;\n"
         "}";
 
     static const char * fragmentShaderSource = "#version 330 core\n"
-        "out vec4 FragColor;\n"
-        "  \n"
+        "out vec4 final_color;\n"
+        "\n"
+        "in vec2 texture_coords;\n"
+        "\n"
+        "uniform sampler2D texture_data;\n"
         "uniform vec4 color;\n"
         "  \n"
         "void main()\n"
         "{\n"
-        "    FragColor = color;\n"
+        "    final_color = texture( texture_data, texture_coords );\n"
         "}\n";
 
-
     static float vertices[] = {
-         0.5f, 0.5f, // top right
-         0.5f, -0.5f, // bottom right
-        -0.5f, -0.5f, // bottom left
-        -0.5f, 0.5f  // top left 
+        // Vertices     // Texture coords
+         0.5f,  0.5f,   1.0f, 1.0f, // top right
+         0.5f, -0.5f,   1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f,   0.0f, 0.0f, // bottom left
+        -0.5f,  0.5f,   0.0f, 1.0f  // top left 
     };
+
     static unsigned int indices[] = {  // note that we start from 0!
         0, 1, 3,   // first triangle
         1, 2, 3    // second triangle
-    };  
+    };
+
     static unsigned int VAO;
     static unsigned int shaderProgram;
+    static unsigned int texture;
 
     static void drawBox( const Rect & rect, const Color & color );
     static void framebufferSizeCallback( GLFWwindow* window, int width, int height );
@@ -116,6 +129,21 @@ namespace Render
         glDeleteShader(vertexShader);
         glDeleteShader(fragmentShader);
 
+        int texture_width, texture_height, texture_channels;
+        unsigned char * texture_data = stbi_load( "assets/graphics/sprites/autumn.png", &texture_width, &texture_height, &texture_channels, 0 );
+        if ( texture_data == nullptr )
+        {
+            printf( "Error loading texture.\n" );
+            return false;
+        }
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture_width, texture_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        stbi_image_free(texture_data);
 
         unsigned int VBO;
         glGenBuffers(1, &VBO);
@@ -140,8 +168,10 @@ namespace Render
 
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2* sizeof(float)));
+        glEnableVertexAttribArray(1);
 
         glUseProgram(shaderProgram);
 
@@ -164,9 +194,7 @@ namespace Render
         glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
         glClear( GL_COLOR_BUFFER_BIT );
 
-        drawBox({ 0.0, 0.0, 400.0, 224.0 }, { 255, 255, 255, 255 });
-        drawBox({ 200.0, 124.0, 8.0, 8.0 }, { 255, 0, 0, 255 });
-        drawBox({ 384.0, -8.0, 32.0, 32.0 }, { 0, 0, 255, 255 });
+        drawBox({ 200.0, 100.0, 162.0, 78.0 }, { 0, 0, 255, 255 });
     };
 
     void endUpdate()
@@ -227,6 +255,8 @@ namespace Render
         unsigned int model_location = glGetUniformLocation(shaderProgram, "model");
         glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
     
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
