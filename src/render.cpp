@@ -11,30 +11,48 @@
 #include <unordered_map>
 #include <vector>
 
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+
 namespace Render
 {
-    static int magnification = 4;
+    static int magnification = 1;
     static GLFWwindow * window;
     static const char * vertexShaderSource = "#version 330 core\n"
-        "layout (location = 0) in vec3 aPos;\n"
+        "layout (location = 0) in vec2 aPos;   // the position variable has attribute position 0\n"
+        "layout (location = 1) in vec4 aColor; // the color variable has attribute position 1\n"
+        "  \n"
+        "out vec4 ourColor; // output a color to the fragment shader\n"
+        "\n"
+        "uniform mat4 model;\n"
+        "uniform mat4 view;\n"
+        "uniform mat4 ortho;\n"
+        "uniform vec4 color;\n"
+        "\n"
         "void main()\n"
         "{\n"
-        "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-        "}\0";
+        "    gl_Position = ortho * view * model * vec4(aPos, 0.0, 1.0);\n"
+        "    ourColor = color; // set ourColor to the input color we got from the vertex data\n"
+        "}";
 
     static const char * fragmentShaderSource = "#version 330 core\n"
-        "out vec4 FragColor;\n"
+        "out vec4 FragColor;  \n"
+        "in vec4 ourColor;\n"
+        "  \n"
         "void main()\n"
         "{\n"
-        "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-        "}\0";
+        "    FragColor = ourColor;\n"
+        "}\n";
 
 
     static float vertices[] = {
-         0.5f,  0.5f, 0.0f,  // top right
-         0.5f, -0.5f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f,  // bottom left
-        -0.5f,  0.5f, 0.0f   // top left 
+         0.5f, 0.5f, 1.0f, 1.0f, 1.0f, 1.0f, // top right
+         0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, // bottom right
+        -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, // bottom left
+        -0.5f, 0.5f, 1.0f, 1.0f, 1.0f, 1.0f  // top left 
     };
     static unsigned int indices[] = {  // note that we start from 0!
         0, 1, 3,   // first triangle
@@ -42,6 +60,8 @@ namespace Render
     };  
     static unsigned int VAO;
     static unsigned int shaderProgram;
+
+    static void drawBox( const Rect & rect, const Color & color );
 
     bool init( const char * title, int width, int height, Color background )
     {
@@ -108,10 +128,6 @@ namespace Render
             printf( "ERROR: Failed to create shader program\n%s\n", infoLog );
         }
 
-        // Vertex Attrib
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-
         // VAO
         glGenVertexArrays(1, &VAO);
         glBindVertexArray(VAO);
@@ -124,8 +140,17 @@ namespace Render
 
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3* sizeof(float)));
+        glEnableVertexAttribArray(1);
+
+        glUseProgram(shaderProgram);
+
+        glm::mat4 ortho = glm::ortho( 0.0f, 400.0f, 224.0f, 0.0f, -1.0f, 1.0f );
+        unsigned int ortho_location = glGetUniformLocation(shaderProgram, "ortho");
+        glUniformMatrix4fv( ortho_location, 1, GL_FALSE, glm::value_ptr(ortho));
+
         return true;
     };
 
@@ -136,12 +161,11 @@ namespace Render
 
     void startUpdate()
     {
-        glClearColor( 0.3f, 0.2f, 0.4f, 1.0f );
+        glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
         glClear( GL_COLOR_BUFFER_BIT );
-        glUseProgram(shaderProgram);
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
+
+        drawBox({ 200.0, 124.0, 8.0, 8.0 }, { 255, 0, 0, 255 });
+        drawBox({ 384.0, -8.0, 32.0, 32.0 }, { 0, 0, 255, 255 });
     };
 
     void endUpdate()
@@ -178,5 +202,32 @@ namespace Render
     void * getWindow()
     {
         return ( void * )( window );
+    };
+
+    void drawBox( const Rect & rect, const Color & color )
+    {
+        float r = ( float )( color.r ) / 255.0f;
+        float g = ( float )( color.g ) / 255.0f;
+        float b = ( float )( color.b ) / 255.0f;
+        float a = ( float )( color.a ) / 255.0f;
+
+        unsigned int color_location = glGetUniformLocation(shaderProgram, "color");
+        glUniform4f(color_location, r, g, b, a );
+
+        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3(rect.x + ( rect.w / 2.0f ), rect.y + ( rect.h / 2.0f ), 0.0f));
+        unsigned int view_location = glGetUniformLocation(shaderProgram, "view");
+        glUniformMatrix4fv( view_location, 1, GL_FALSE, glm::value_ptr(view));
+
+        auto identity = glm::mat4(1.0f);
+        glm::mat4 model = identity;
+        auto scale = glm::vec3( rect.w, rect.h, 0.0 );
+        model = glm::scale( model, scale );
+        unsigned int model_location = glGetUniformLocation(shaderProgram, "model");
+        glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
+    
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
     };
 }

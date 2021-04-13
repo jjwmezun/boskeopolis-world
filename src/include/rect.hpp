@@ -3,10 +3,10 @@
 
 struct Rect
 {
-    double x;
-    double y;
-    double w;
-    double h;
+    float x;
+    float y;
+    float w;
+    float h;
 };
 
 #endif // RECT_H
