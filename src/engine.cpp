@@ -1,67 +1,48 @@
+#include <cstdio>
 #include "engine.hpp"
+#include <glad/glad.h>
+#include "GLFW/glfw3.h"
 #include "input.hpp"
-#include <SDL2/SDL.h>
+#include "render.hpp"
 
 namespace Engine
 {
     bool init()
     {
-        if ( SDL_Init( SDL_INIT_VIDEO ) != 0 )
-        {
-            SDL_Log( "Unable to initialize SDL: %s", SDL_GetError() );
-            return false;
-        }
+        glfwInit();
+        glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
+        glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
+        glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
+        glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
         Input::initKeys
         ({
-            { Input::Key::RIGHT, { ( int )( SDLK_RIGHT ) } },
-            { Input::Key::LEFT, { ( int )( SDLK_LEFT ) } }
+            { Input::Key::RIGHT, { 0 } },
+            { Input::Key::LEFT, { 1 } }
         });
         return true;
     };
 
     void close()
     {
-        SDL_Quit();
+        glfwTerminate();
     };
 
     int getTicks()
     {
-        return ( int )( SDL_GetTicks() );
+        return 1;
     };
 
     bool handleEvents()
     {
-        int running = 1;
-        SDL_Event event;
-        while ( SDL_PollEvent( &event ) )
+        bool running = !Render::windowShouldClose();
+        if ( running )
         {
-            switch ( event.type )
+            GLFWwindow * window = ( GLFWwindow * )( Render::getWindow() );
+            if( glfwGetKey( window, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
             {
-                case ( SDL_QUIT ):
-                {
-                    running = 0;
-                }
-                break;
-
-                case ( SDL_KEYDOWN ):
-                {
-                    if ( event.key.keysym.sym == SDLK_ESCAPE )
-                    {
-                        running = 0;
-                    }
-                    else
-                    {
-                        Input::press( ( int )( event.key.keysym.sym ) );
-                    }
-                }
-                break;
-
-                case ( SDL_KEYUP ):
-                {
-                    Input::release( ( int )( event.key.keysym.sym ) );
-                }
-                break;
+                glfwSetWindowShouldClose( window, true );
             }
+            glfwPollEvents();
         }
         return running;
     };

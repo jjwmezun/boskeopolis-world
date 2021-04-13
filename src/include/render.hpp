@@ -13,6 +13,8 @@ namespace Render
     void endUpdate();
     unsigned int getTextureId( const char * filename );
     void clearTextures();
+    bool windowShouldClose();
+    void * getWindow();
 
     void rect( const Rect & rect, const Color & color );
     void sprite( int texture_id, const Rect & src, const Rect & dest );

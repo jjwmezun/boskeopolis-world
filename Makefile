@@ -5,7 +5,7 @@
 # Compiler settings - Can be customized.
 CC = g++
 CXXFLAGS = -std=c++2a -Wall
-LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_mixer -lstdc++fs -lpthread
+LDFLAGS = -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lstdc++fs -lpthread
 
 # Makefile settings - Can be customized.
 APPNAME = BoskeopolisWorld

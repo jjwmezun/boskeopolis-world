@@ -1,5 +1,4 @@
 #include "filename.hpp"
-#include <SDL2/SDL.h>
 
 namespace Filename
 {
@@ -15,11 +14,10 @@ namespace Filename
 
     void init()
     {
-		char * base_path_c = SDL_GetBasePath();
+		char * base_path_c = "";
 		master_directory = std::string( base_path_c ) + "assets" + std::string( PATH_DIVIDER );
 		image_directory = master_directory + "graphics" + std::string( PATH_DIVIDER );
 		localization_directory = master_directory + "localization" + std::string( PATH_DIVIDER );
-		SDL_free( base_path_c );
     };
 
     std::string image( std::string local )
