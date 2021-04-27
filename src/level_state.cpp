@@ -13,6 +13,7 @@ void LevelState::init()
         new SpriteGraphic
         (
             Render::getTextureId( "sprites/autumn.png" ),
+            0,
             { 0.0, 0.0, 16.0, 25.0 },
             { 192.0, 100.0, 16.0, 25.0 }
         ),

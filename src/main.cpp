@@ -19,15 +19,10 @@ static int accumulator = 0;
 
 int main()
 {
+    Filename::init();
     if ( !Engine::init() )
     {
         printf( "¡Error! Failed to initialize game!\n" );
-        return -1;
-    }
-    Filename::init();
-    if ( !Render::init( "Boskeopolis World", Unit::WINDOW_WIDTH_PIXELS, Unit::WINDOW_HEIGHT_PIXELS, { 0, 0, 0, 255 } ) )
-    {
-        printf( "¡Error! ¡Failed to initialize game renderer!\n" );
         return -1;
     }
 

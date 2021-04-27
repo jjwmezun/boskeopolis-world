@@ -1,12 +1,16 @@
+#include "color.hpp"
 #include <cstdio>
 #include "engine.hpp"
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
 #include "input.hpp"
 #include "render.hpp"
+#include "unit.hpp"
 
 namespace Engine
 {
+    static void handleInput( GLFWwindow * window, int key, int scancode, int action, int mods );
+
     bool init()
     {
         glfwInit();
@@ -16,9 +20,15 @@ namespace Engine
         glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
         Input::initKeys
         ({
-            { Input::Key::RIGHT, { 0 } },
-            { Input::Key::LEFT, { 1 } }
+            { Input::Key::RIGHT, { ( int )( GLFW_KEY_RIGHT ) } },
+            { Input::Key::LEFT, { ( int )( GLFW_KEY_LEFT ) } }
         });
+        if ( !Render::init( "Boskeopolis World", Unit::WINDOW_WIDTH_PIXELS, Unit::WINDOW_HEIGHT_PIXELS, { 0, 0, 0, 255 } ) )
+        {
+            printf( "¡Error! ¡Failed to initialize game renderer!\n" );
+            return -1;
+        }
+        glfwSetKeyCallback( ( GLFWwindow * )( Render::getWindow() ), &handleInput );
         return true;
     };
 
@@ -29,7 +39,7 @@ namespace Engine
 
     int getTicks()
     {
-        return 1;
+        return ( int )( floor( glfwGetTime() * 1000 ) );
     };
 
     bool handleEvents()
@@ -46,4 +56,21 @@ namespace Engine
         }
         return running;
     };
+
+    static void handleInput( GLFWwindow * window, int key, int scancode, int action, int mods )
+    {
+        switch ( action )
+        {
+            case ( GLFW_PRESS ):
+            {
+                Input::press( key );
+            }
+            break;
+            case ( GLFW_RELEASE ):
+            {
+                Input::release( key );
+            }
+            break;
+        }
+    }
 }

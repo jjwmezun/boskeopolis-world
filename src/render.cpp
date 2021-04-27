@@ -49,24 +49,20 @@ namespace Render
     };
 
     static unsigned int VAO;
-    static unsigned int sprite_shader, rect_shader;
+    static unsigned int sprite_shader, rect_shader, text_shader;
     static unsigned int texture_ids[ MAX_TEXTURES ];
     static Texture textures[ MAX_TEXTURES ];
     std::unordered_map<const char *, int> texture_map;
+    static unsigned int number_of_textures = 0;
+    static unsigned int palette_texture;
+    static unsigned int text_texture;
 
     static void drawBox( const Rect & rect, const Color & top_left_color, const Color & top_right_color, const Color & bottom_left_color, const Color & bottom_right_color );
-    static void drawSprite( int texture_id, float palette, const Rect & src, const Rect & dest, bool flip_x, bool flip_y, float rotation_z, float rotation_y, float rotation_x );
     static void framebufferSizeCallback( GLFWwindow* window, int width, int height );
     static unsigned int generateShaderProgram( std::vector<const char *> vertex_shaders, std::vector<const char *> fragment_shaders );
     static unsigned int generateShader( GLenum type, const char * file );
     static std::string loadShader( const char * local );
-    static int loadTexture( const char * local );
     static void bufferVertices();
-
-    static unsigned int number_of_textures = 0;
-
-    static int autumn_id;
-    static float rotation = 0.0f;
 
     bool init( const char * title, int width, int height, Color background )
     {
@@ -89,14 +85,15 @@ namespace Render
 
         sprite_shader = generateShaderProgram({ "vertex" }, { "sprite" });
         rect_shader = generateShaderProgram({ "vertex" }, { "rect" });
+        text_shader = generateShaderProgram({ "vertex" }, { "text" });
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         glGenTextures( MAX_TEXTURES, texture_ids );
 
-        loadTexture( "sprites/palette.png" );
-        autumn_id = loadTexture( "sprites/autumn.png" );
+        palette_texture = getTextureId( "sprites/palette.png", false );
+        text_texture = getTextureId( "text/latin.png", false );
 
         unsigned int VBO;
         glGenBuffers(1, &VBO);
@@ -116,7 +113,7 @@ namespace Render
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         bufferVertices();
 
-        for ( unsigned int shader : { sprite_shader, rect_shader } )
+        for ( unsigned int shader : { sprite_shader, rect_shader, text_shader } )
         {
             glUseProgram(shader);
             glm::mat4 ortho = glm::ortho( 0.0f, 400.0f, 224.0f, 0.0f, -1.0f, 1.0f );
@@ -131,17 +128,13 @@ namespace Render
 
     void close()
     {
-        clearTextures();
+        glDeleteTextures( MAX_TEXTURES, texture_ids );
     };
 
     void startUpdate()
     {
         glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
         glClear( GL_COLOR_BUFFER_BIT );
-
-        drawBox({ 0.0, 0.0, 400.0, 224.0 }, { 64.0f, 32.0f, 128.0f, 255.0f }, { 64.0f, 32.0f, 128.0f, 255.0f }, { 160.0f, 80.0f, 72.0f, 255.0f }, { 160.0f, 80.0f, 72.0f, 255.0f } );
-        drawSprite( autumn_id, 1.0, { 0.0, 0.0, 16.0, 21.0 }, { 200.0, 100.0, 16.0, 21.0 }, true, true, 0.0, rotation, 0.0 );
-        rotation += 1.0f;
     };
 
     void endUpdate()
@@ -151,24 +144,130 @@ namespace Render
 
     void clearTextures()
     {
-        glDeleteTextures( MAX_TEXTURES, texture_ids );
+        number_of_textures = 2;
     };
 
-    unsigned int getTextureId( const char * filename )
+    unsigned int getTextureId( const char * local, bool indexed )
     {
-        return 0;
+        auto seek = texture_map.find( local );
+        if ( seek != texture_map.end() )
+        {
+            return seek->second;
+        }
+
+        int texture_channels;
+        std::string full_filename = Filename::image( local );
+        unsigned char * texture_data = stbi_load( full_filename.c_str(), &textures[ number_of_textures ].width, &textures[ number_of_textures ].height, &texture_channels, STBI_rgb_alpha );
+        if ( texture_data == nullptr )
+        {
+            throw std::runtime_error( "Couldn’t load texture file." );
+        }
+        glBindTexture(GL_TEXTURE_2D, texture_ids[ number_of_textures ] );
+        glTexImage2D(GL_TEXTURE_2D, 0, ( indexed ) ? GL_R8 : GL_RGBA, textures[ number_of_textures ].width, textures[ number_of_textures ].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        stbi_image_free(texture_data);
+        texture_map.insert( std::pair<const char *, int> ( local, number_of_textures ) );
+        return number_of_textures++;
     };
 
     void rect( const Rect & rect, const Color & color )
     {
+        drawBox( rect, color, color, color, color );
     };
 
-    void sprite( int texture_id, const Rect & src, const Rect & dest )
+    void sprite( unsigned int texture_id, unsigned int palette_id, const Rect & src, const Rect & dest, bool flip_x, bool flip_y )
     {
+        glUseProgram(sprite_shader);
+
+        // Src Coords
+        if ( flip_x )
+        {
+            vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].width ) * src.x; // Left X
+            vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src.x + src.w );  // Right X
+        }
+        else
+        {
+            vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ texture_id ].width ) * src.x; // Left X
+            vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src.x + src.w );  // Right X
+        }
+
+        if ( flip_y )
+        {
+            vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src.y + src.h ); // Top Y
+            vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * src.y;  // Bottom Y
+        }
+        else
+        {
+            vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src.y + src.h ); // Top Y
+            vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].height ) * src.y;  // Bottom Y
+        }
+
+        bufferVertices();
+
+        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3( dest.x + ( dest.w / 2.0f ), dest.y + ( dest.h / 2.0f ), 0.0f));
+        unsigned int view_location = glGetUniformLocation(sprite_shader, "view");
+        glUniformMatrix4fv( view_location, 1, GL_FALSE, glm::value_ptr(view));
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::scale( model, glm::vec3( dest.w, dest.h, 0.0 ) );
+        //model = glm::rotate( model, glm::radians( rotation_z ), glm::vec3( 0.0, 0.0, 1.0 ) );
+        //model = glm::rotate( model, glm::radians( rotation_y ), glm::vec3( 0.0, 1.0, 0.0 ) );
+        //model = glm::rotate( model, glm::radians( rotation_x ), glm::vec3( 1.0, 0.0, 0.0 ) );
+        unsigned int model_location = glGetUniformLocation(sprite_shader, "model");
+        glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
+    
+        GLint palette_id_location = glGetUniformLocation(sprite_shader, "palette_id");
+        glUniform1f( palette_id_location, ( float )( palette_id ) );
+
+        GLint texture_data_location = glGetUniformLocation(sprite_shader, "texture_data");
+        GLint palette_data_location = glGetUniformLocation(sprite_shader, "palette_data");
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture_ids[ texture_id ] );
+        glUniform1i(texture_data_location, 0);
+        glActiveTexture(GL_TEXTURE1 );
+        glBindTexture(GL_TEXTURE_2D, texture_ids[ palette_texture ] );
+        glUniform1i(palette_data_location, 1);
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
     };
 
     void character( const Character & character )
     {
+        glUseProgram(text_shader);
+
+        // Src Coords
+            vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ text_texture ].width ) * character.src.x; // Left X
+            vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ text_texture ].width ) * ( character.src.x + character.src.w );  // Right X
+            vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ text_texture ].height ) * ( character.src.y + character.src.h ); // Top Y
+            vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ text_texture ].height ) * character.src.y;  // Bottom Y
+
+        bufferVertices();
+
+        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3( character.dest.x + ( character.dest.w / 2.0f ), character.dest.y + ( character.dest.h / 2.0f ), 0.0f));
+        unsigned int view_location = glGetUniformLocation(text_shader, "view");
+        glUniformMatrix4fv( view_location, 1, GL_FALSE, glm::value_ptr(view));
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::scale( model, glm::vec3( character.dest.w, character.dest.h, 0.0 ) );
+        unsigned int model_location = glGetUniformLocation(text_shader, "model");
+        glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
+
+        unsigned int color_location = glGetUniformLocation(text_shader, "color");
+        glUniform4f( color_location, character.color.r, character.color.g, character.color.b, character.color.a );
+
+        GLint texture_data_location = glGetUniformLocation(text_shader, "texture_data");
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture_ids[ text_texture ] );
+        glUniform1i(texture_data_location, 0);
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
     };
 
     bool windowShouldClose()
@@ -217,64 +316,6 @@ namespace Render
         unsigned int model_location = glGetUniformLocation(rect_shader, "model");
         glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
     
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
-    };
-
-    void drawSprite( int texture_id, float palette, const Rect & src, const Rect & dest, bool flip_x, bool flip_y, float rotation_z, float rotation_y, float rotation_x )
-    {
-        glUseProgram(sprite_shader);
-
-        // Src Coords
-        if ( flip_x )
-        {
-            vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].width ) * src.x; // Left X
-            vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src.x + src.w );  // Right X
-        }
-        else
-        {
-            vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ texture_id ].width ) * src.x; // Left X
-            vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src.x + src.w );  // Right X
-        }
-
-        if ( flip_y )
-        {
-            vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src.y + src.h ); // Top Y
-            vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * src.y;  // Bottom Y
-        }
-        else
-        {
-            vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src.y + src.h ); // Top Y
-            vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].height ) * src.y;  // Bottom Y
-        }
-
-        bufferVertices();
-
-        glm::mat4 view = glm::mat4(1.0f);
-        view = glm::translate(view, glm::vec3( dest.x + ( dest.w / 2.0f ), dest.y + ( dest.h / 2.0f ), 0.0f));
-        unsigned int view_location = glGetUniformLocation(sprite_shader, "view");
-        glUniformMatrix4fv( view_location, 1, GL_FALSE, glm::value_ptr(view));
-
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::scale( model, glm::vec3( dest.w, dest.h, 0.0 ) );
-        model = glm::rotate( model, glm::radians( rotation_z ), glm::vec3( 0.0, 0.0, 1.0 ) );
-        model = glm::rotate( model, glm::radians( rotation_y ), glm::vec3( 0.0, 1.0, 0.0 ) );
-        model = glm::rotate( model, glm::radians( rotation_x ), glm::vec3( 1.0, 0.0, 0.0 ) );
-        unsigned int model_location = glGetUniformLocation(sprite_shader, "model");
-        glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
-    
-        GLint palette_id_location = glGetUniformLocation(sprite_shader, "palette_id");
-        glUniform1f( palette_id_location, palette );
-
-        GLint texture_data_location = glGetUniformLocation(sprite_shader, "texture_data");
-        GLint palette_data_location = glGetUniformLocation(sprite_shader, "palette_data");
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture_ids[ texture_id ] );
-        glUniform1i(texture_data_location, 0);
-        glActiveTexture(GL_TEXTURE1 );
-        glBindTexture(GL_TEXTURE_2D, texture_ids[ 0 ] );
-        glUniform1i(palette_data_location, 1);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
@@ -374,32 +415,6 @@ namespace Render
         };
         ifs.close();
         return content;
-    };
-
-    static int loadTexture( const char * local )
-    {
-        auto seek = texture_map.find( local );
-        if ( seek != texture_map.end() )
-        {
-            return seek->second;
-        }
-
-        int texture_channels;
-        std::string full_filename = Filename::image( local );
-        unsigned char * texture_data = stbi_load( full_filename.c_str(), &textures[ number_of_textures ].width, &textures[ number_of_textures ].height, &texture_channels, STBI_rgb_alpha );
-        if ( texture_data == nullptr )
-        {
-            throw std::runtime_error( "Couldn’t load texture file." );
-        }
-        glBindTexture(GL_TEXTURE_2D, texture_ids[ number_of_textures ] );
-        glTexImage2D(GL_TEXTURE_2D, 0, ( number_of_textures == 0 ) ? GL_RGBA : GL_R8, textures[ number_of_textures ].width, textures[ number_of_textures ].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        stbi_image_free(texture_data);
-        texture_map.insert( std::pair<const char *, int> ( local, number_of_textures ) );
-        return number_of_textures++;
     };
 
     static void bufferVertices()

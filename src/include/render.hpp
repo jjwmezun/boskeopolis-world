@@ -11,13 +11,13 @@ namespace Render
     void close();
     void startUpdate();
     void endUpdate();
-    unsigned int getTextureId( const char * filename );
+    unsigned int getTextureId( const char * local, bool indexed = true );
     void clearTextures();
     bool windowShouldClose();
     void * getWindow();
 
     void rect( const Rect & rect, const Color & color );
-    void sprite( int texture_id, const Rect & src, const Rect & dest );
+    void sprite( unsigned int texture_id, unsigned int palette_id, const Rect & src, const Rect & dest, bool flip_x, bool flip_y );
     void character( const Character & character );
 }
 
