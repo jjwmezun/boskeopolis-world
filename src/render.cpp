@@ -34,12 +34,13 @@ namespace Render
     static int canvas_height = 0;
     static GLFWwindow * window;
 
+    static constexpr int VERTEX_SIZE = 8;
     static float vertices[] = {
-        // Vertices     // Texture coords
-         0.5f,  0.5f,   1.0f, 1.0f, // top right
-         0.5f, -0.5f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f,   0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f,   0.0f, 1.0f  // top left 
+        // Vertices     // Texture coords   // Color
+         0.5f,  0.5f,   1.0f, 1.0f,         1.0f, 1.0f, 1.0f, 1.0f,// top right
+         0.5f, -0.5f,   1.0f, 0.0f,         1.0f, 1.0f, 1.0f, 1.0f, // bottom right
+        -0.5f, -0.5f,   0.0f, 0.0f,         1.0f, 1.0f, 1.0f, 1.0f, // bottom left
+        -0.5f,  0.5f,   0.0f, 1.0f,         1.0f, 1.0f, 1.0f, 1.0f,  // top left 
     };
 
     static unsigned int indices[] = {  // note that we start from 0!
@@ -53,13 +54,15 @@ namespace Render
     static Texture textures[ MAX_TEXTURES ];
     std::unordered_map<const char *, int> texture_map;
 
-    static void drawBox( const Rect & rect, const Color & color );
+    static void drawBox( const Rect & rect, const Color & top_left_color, const Color & top_right_color, const Color & bottom_left_color, const Color & bottom_right_color );
     static void drawSprite( int texture_id, float palette, const Rect & src, const Rect & dest, bool flip_x, bool flip_y, float rotation_z, float rotation_y, float rotation_x );
     static void framebufferSizeCallback( GLFWwindow* window, int width, int height );
     static unsigned int generateShaderProgram( std::vector<const char *> vertex_shaders, std::vector<const char *> fragment_shaders );
     static unsigned int generateShader( GLenum type, const char * file );
     static std::string loadShader( const char * local );
     static int loadTexture( const char * local );
+    static void bufferVertices();
+
     static unsigned int number_of_textures = 0;
 
     static int autumn_id;
@@ -111,11 +114,7 @@ namespace Render
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2* sizeof(float)));
-        glEnableVertexAttribArray(1);
+        bufferVertices();
 
         for ( unsigned int shader : { sprite_shader, rect_shader } )
         {
@@ -140,7 +139,7 @@ namespace Render
         glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
         glClear( GL_COLOR_BUFFER_BIT );
 
-        drawBox({ 0.0, 0.0, 400.0, 224.0 }, { 255, 255, 255, 255 });
+        drawBox({ 0.0, 0.0, 400.0, 224.0 }, { 64.0f, 32.0f, 128.0f, 255.0f }, { 64.0f, 32.0f, 128.0f, 255.0f }, { 160.0f, 80.0f, 72.0f, 255.0f }, { 160.0f, 80.0f, 72.0f, 255.0f } );
         drawSprite( autumn_id, 1.0, { 0.0, 0.0, 16.0, 21.0 }, { 200.0, 100.0, 16.0, 21.0 }, true, true, 0.0, rotation, 0.0 );
         rotation += 1.0f;
     };
@@ -182,22 +181,31 @@ namespace Render
         return ( void * )( window );
     };
 
-    void drawBox( const Rect & rect, const Color & color )
+    void drawBox( const Rect & rect, const Color & top_left_color, const Color & top_right_color, const Color & bottom_left_color, const Color & bottom_right_color )
     {
         glUseProgram(rect_shader);
-        float r = ( float )( color.r ) / 255.0f;
-        float g = ( float )( color.g ) / 255.0f;
-        float b = ( float )( color.b ) / 255.0f;
-        float a = ( float )( color.a ) / 255.0f;
 
-        unsigned int color_location = glGetUniformLocation(rect_shader, "color");
-        glUniform4f(color_location, r, g, b, a );
+        vertices[ 4 ] = bottom_right_color.r / 255.0f;
+        vertices[ 5 ] = bottom_right_color.g / 255.0f;
+        vertices[ 6 ] = bottom_right_color.b / 255.0f;
+        vertices[ 7 ] = bottom_right_color.a / 255.0f;
 
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2* sizeof(float)));
-        glEnableVertexAttribArray(1);
+        vertices[ 4 + VERTEX_SIZE ] = top_right_color.r / 255.0f;
+        vertices[ 5 + VERTEX_SIZE ] = top_right_color.g / 255.0f;
+        vertices[ 6 + VERTEX_SIZE ] = top_right_color.b / 255.0f;
+        vertices[ 7 + VERTEX_SIZE ] = top_right_color.a / 255.0f;
+
+        vertices[ 4 + VERTEX_SIZE * 2 ] = top_left_color.r / 255.0f;
+        vertices[ 5 + VERTEX_SIZE * 2 ] = top_left_color.g / 255.0f;
+        vertices[ 6 + VERTEX_SIZE * 2 ] = top_left_color.b / 255.0f;
+        vertices[ 7 + VERTEX_SIZE * 2 ] = top_left_color.a / 255.0f;
+
+        vertices[ 4 + VERTEX_SIZE * 3 ] = bottom_left_color.r / 255.0f;
+        vertices[ 5 + VERTEX_SIZE * 3 ] = bottom_left_color.g / 255.0f;
+        vertices[ 6 + VERTEX_SIZE * 3 ] = bottom_left_color.b / 255.0f;
+        vertices[ 7 + VERTEX_SIZE * 3 ] = bottom_left_color.a / 255.0f;
+
+        bufferVertices();
 
         glm::mat4 view = glm::mat4(1.0f);
         view = glm::translate(view, glm::vec3(rect.x + ( rect.w / 2.0f ), rect.y + ( rect.h / 2.0f ), 0.0f));
@@ -221,31 +229,27 @@ namespace Render
         // Src Coords
         if ( flip_x )
         {
-            vertices[ 2 ] = vertices[ 6 ] = 1.0f / ( float )( textures[ texture_id ].width ) * src.x; // Left X
-            vertices[ 14 ] = vertices[ 10 ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src.x + src.w );  // Right X
+            vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].width ) * src.x; // Left X
+            vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src.x + src.w );  // Right X
         }
         else
         {
-            vertices[ 14 ] = vertices[ 10 ] = 1.0f / ( float )( textures[ texture_id ].width ) * src.x; // Left X
-            vertices[ 2 ] = vertices[ 6 ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src.x + src.w );  // Right X
+            vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ texture_id ].width ) * src.x; // Left X
+            vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src.x + src.w );  // Right X
         }
 
         if ( flip_y )
         {
-            vertices[ 11 ] = vertices[ 7 ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src.y + src.h ); // Top Y
-            vertices[ 15 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * src.y;  // Bottom Y
+            vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src.y + src.h ); // Top Y
+            vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * src.y;  // Bottom Y
         }
         else
         {
-            vertices[ 15 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src.y + src.h ); // Top Y
-            vertices[ 11 ] = vertices[ 7 ] = 1.0f / ( float )( textures[ texture_id ].height ) * src.y;  // Bottom Y
+            vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src.y + src.h ); // Top Y
+            vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].height ) * src.y;  // Bottom Y
         }
 
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2* sizeof(float)));
-        glEnableVertexAttribArray(1);
+        bufferVertices();
 
         glm::mat4 view = glm::mat4(1.0f);
         view = glm::translate(view, glm::vec3( dest.x + ( dest.w / 2.0f ), dest.y + ( dest.h / 2.0f ), 0.0f));
@@ -397,4 +401,15 @@ namespace Render
         texture_map.insert( std::pair<const char *, int> ( local, number_of_textures ) );
         return number_of_textures++;
     };
+
+    static void bufferVertices()
+    {
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), 0);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(2* sizeof(float)));
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(4* sizeof(float)));
+        glEnableVertexAttribArray(2);
+    }
 }
