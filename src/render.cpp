@@ -54,7 +54,7 @@ namespace Render
     std::unordered_map<const char *, int> texture_map;
 
     static void drawBox( const Rect & rect, const Color & color );
-    static void drawSprite( int texture_id, const Rect & src, const Rect & dest );
+    static void drawSprite( int texture_id, float palette, const Rect & src, const Rect & dest, bool flip_x, bool flip_y, float rotation_z, float rotation_y, float rotation_x );
     static void framebufferSizeCallback( GLFWwindow* window, int width, int height );
     static unsigned int generateShaderProgram( std::vector<const char *> vertex_shaders, std::vector<const char *> fragment_shaders );
     static unsigned int generateShader( GLenum type, const char * file );
@@ -63,6 +63,7 @@ namespace Render
     static unsigned int number_of_textures = 0;
 
     static int autumn_id;
+    static float rotation = 0.0f;
 
     bool init( const char * title, int width, int height, Color background )
     {
@@ -86,8 +87,12 @@ namespace Render
         sprite_shader = generateShaderProgram({ "vertex" }, { "sprite" });
         rect_shader = generateShaderProgram({ "vertex" }, { "rect" });
 
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         glGenTextures( MAX_TEXTURES, texture_ids );
 
+        loadTexture( "sprites/palette.png" );
         autumn_id = loadTexture( "sprites/autumn.png" );
 
         unsigned int VBO;
@@ -136,7 +141,8 @@ namespace Render
         glClear( GL_COLOR_BUFFER_BIT );
 
         drawBox({ 0.0, 0.0, 400.0, 224.0 }, { 255, 255, 255, 255 });
-        drawSprite( autumn_id, { 48.0, 30.0, 16.0, 21.0 }, { 200.0, 100.0, 16.0, 21.0 });
+        drawSprite( autumn_id, 1.0, { 0.0, 0.0, 16.0, 21.0 }, { 200.0, 100.0, 16.0, 21.0 }, true, true, 0.0, rotation, 0.0 );
+        rotation += 1.0f;
     };
 
     void endUpdate()
@@ -146,6 +152,7 @@ namespace Render
 
     void clearTextures()
     {
+        glDeleteTextures( MAX_TEXTURES, texture_ids );
     };
 
     unsigned int getTextureId( const char * filename )
@@ -207,15 +214,32 @@ namespace Render
         glBindVertexArray(0);
     };
 
-    void drawSprite( int texture_id, const Rect & src, const Rect & dest )
+    void drawSprite( int texture_id, float palette, const Rect & src, const Rect & dest, bool flip_x, bool flip_y, float rotation_z, float rotation_y, float rotation_x )
     {
         glUseProgram(sprite_shader);
 
         // Src Coords
-        vertices[ 14 ] = vertices[ 10 ] = 1.0f / ( float )( textures[ texture_id ].width ) * src.x; // Left X
-        vertices[ 2 ] = vertices[ 6 ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src.x + src.w );  // Right X
-        vertices[ 15 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src.y + src.h ); // Top Y
-        vertices[ 11 ] = vertices[ 7 ] = 1.0f / ( float )( textures[ texture_id ].height ) * src.y;  // Bottom Y
+        if ( flip_x )
+        {
+            vertices[ 2 ] = vertices[ 6 ] = 1.0f / ( float )( textures[ texture_id ].width ) * src.x; // Left X
+            vertices[ 14 ] = vertices[ 10 ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src.x + src.w );  // Right X
+        }
+        else
+        {
+            vertices[ 14 ] = vertices[ 10 ] = 1.0f / ( float )( textures[ texture_id ].width ) * src.x; // Left X
+            vertices[ 2 ] = vertices[ 6 ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src.x + src.w );  // Right X
+        }
+
+        if ( flip_y )
+        {
+            vertices[ 11 ] = vertices[ 7 ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src.y + src.h ); // Top Y
+            vertices[ 15 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * src.y;  // Bottom Y
+        }
+        else
+        {
+            vertices[ 15 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src.y + src.h ); // Top Y
+            vertices[ 11 ] = vertices[ 7 ] = 1.0f / ( float )( textures[ texture_id ].height ) * src.y;  // Bottom Y
+        }
 
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
@@ -230,11 +254,23 @@ namespace Render
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::scale( model, glm::vec3( dest.w, dest.h, 0.0 ) );
+        model = glm::rotate( model, glm::radians( rotation_z ), glm::vec3( 0.0, 0.0, 1.0 ) );
+        model = glm::rotate( model, glm::radians( rotation_y ), glm::vec3( 0.0, 1.0, 0.0 ) );
+        model = glm::rotate( model, glm::radians( rotation_x ), glm::vec3( 1.0, 0.0, 0.0 ) );
         unsigned int model_location = glGetUniformLocation(sprite_shader, "model");
         glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
     
+        GLint palette_id_location = glGetUniformLocation(sprite_shader, "palette_id");
+        glUniform1f( palette_id_location, palette );
+
+        GLint texture_data_location = glGetUniformLocation(sprite_shader, "texture_data");
+        GLint palette_data_location = glGetUniformLocation(sprite_shader, "palette_data");
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture_ids[ texture_id ] );
+        glUniform1i(texture_data_location, 0);
+        glActiveTexture(GL_TEXTURE1 );
+        glBindTexture(GL_TEXTURE_2D, texture_ids[ 0 ] );
+        glUniform1i(palette_data_location, 1);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
@@ -352,7 +388,7 @@ namespace Render
             throw std::runtime_error( "Couldn’t load texture file." );
         }
         glBindTexture(GL_TEXTURE_2D, texture_ids[ number_of_textures ] );
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textures[ number_of_textures ].width, textures[ number_of_textures ].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data);
+        glTexImage2D(GL_TEXTURE_2D, 0, ( number_of_textures == 0 ) ? GL_RGBA : GL_R8, textures[ number_of_textures ].width, textures[ number_of_textures ].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
