@@ -3,30 +3,16 @@
 
 #include "state_graphics.hpp"
 
-struct GameStateTitle
-{
-};
-
 class GameState
 {
     public:
-        static GameState createTitle();
-        static GameState createLevel();
-        void update( bool top_state );
-        void init();
-        void close();
+        virtual ~GameState();
+        virtual void update( bool top_state ) = 0;
+        virtual void init();
+        virtual void close();
         void render() const;
 
-    private:
-        enum class Type
-        {
-            TITLE,
-            LEVEL
-        };
-        Type type_;
-        union {
-            GameStateTitle title;
-        } data_;
+    protected:
         StateGraphics graphics;
 };
 

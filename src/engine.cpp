@@ -1,68 +1,76 @@
+#include "color.hpp"
+#include <cstdio>
 #include "engine.hpp"
+#include <glad/glad.h>
+#include "GLFW/glfw3.h"
 #include "input.hpp"
-#include <SDL2/SDL.h>
+#include "render.hpp"
+#include "unit.hpp"
 
 namespace Engine
 {
+    static void handleInput( GLFWwindow * window, int key, int scancode, int action, int mods );
+
     bool init()
     {
-        if ( SDL_Init( SDL_INIT_VIDEO ) != 0 )
-        {
-            SDL_Log( "Unable to initialize SDL: %s", SDL_GetError() );
-            return false;
-        }
+        glfwInit();
+        glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
+        glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
+        glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
+        glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
         Input::initKeys
         ({
-            { Input::Key::RIGHT, { ( int )( SDLK_RIGHT ) } },
-            { Input::Key::LEFT, { ( int )( SDLK_LEFT ) } }
+            { Input::Key::RIGHT, { ( int )( GLFW_KEY_RIGHT ) } },
+            { Input::Key::LEFT, { ( int )( GLFW_KEY_LEFT ) } }
         });
+        if ( !Render::init( "Boskeopolis World", Unit::WINDOW_WIDTH_PIXELS, Unit::WINDOW_HEIGHT_PIXELS, { 0, 0, 0, 255 } ) )
+        {
+            printf( "¡Error! ¡Failed to initialize game renderer!\n" );
+            return -1;
+        }
+        glfwSetKeyCallback( ( GLFWwindow * )( Render::getWindow() ), &handleInput );
         return true;
     };
 
     void close()
     {
-        SDL_Quit();
+        glfwTerminate();
     };
 
     int getTicks()
     {
-        return ( int )( SDL_GetTicks() );
+        return ( int )( floor( glfwGetTime() * 1000 ) );
     };
 
     bool handleEvents()
     {
-        int running = 1;
-        SDL_Event event;
-        while ( SDL_PollEvent( &event ) )
+        bool running = !Render::windowShouldClose();
+        if ( running )
         {
-            switch ( event.type )
+            GLFWwindow * window = ( GLFWwindow * )( Render::getWindow() );
+            if( glfwGetKey( window, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
             {
-                case ( SDL_QUIT ):
-                {
-                    running = 0;
-                }
-                break;
-
-                case ( SDL_KEYDOWN ):
-                {
-                    if ( event.key.keysym.sym == SDLK_ESCAPE )
-                    {
-                        running = 0;
-                    }
-                    else
-                    {
-                        Input::press( ( int )( event.key.keysym.sym ) );
-                    }
-                }
-                break;
-
-                case ( SDL_KEYUP ):
-                {
-                    Input::release( ( int )( event.key.keysym.sym ) );
-                }
-                break;
+                glfwSetWindowShouldClose( window, true );
             }
+            glfwPollEvents();
         }
         return running;
     };
+
+    static void handleInput( GLFWwindow * window, int key, int scancode, int action, int mods )
+    {
+        switch ( action )
+        {
+            case ( GLFW_PRESS ):
+            {
+                Input::press( key );
+            }
+            break;
+            case ( GLFW_RELEASE ):
+            {
+                Input::release( key );
+            }
+            break;
+        }
+    }
 }

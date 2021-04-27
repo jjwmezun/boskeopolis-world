@@ -1,7 +1,10 @@
 #ifndef TEXT_H
 #define TEXT_H
 
+#include "character.hpp"
+#include "color.hpp"
 #include <string>
+#include <variant>
 #include <vector>
 #include <unordered_map>
 
@@ -15,11 +18,19 @@ class Text
             RIGHT
         };
 
-        Text( const char * text, std::unordered_map<const char *, int> args = {} );
+        enum class VAlign
+        {
+            TOP,
+            MIDDLE,
+            BOTTOM
+        };
+
+        Text( const char * text, std::unordered_map<const char *, std::variant<double, Align, VAlign, Color>> args = {} );
+        ~Text();
         void render() const;
 
     private:
-        std::vector<std::string> lines_;
+        std::vector<Character> characters_;
 };
 
 #endif // TEXT_H

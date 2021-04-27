@@ -6,10 +6,10 @@
 class Color
 {
     public:
-        uint_fast8_t r;
-        uint_fast8_t g;
-        uint_fast8_t b;
-        uint_fast8_t a;
+        float r;
+        float g;
+        float b;
+        float a;
 };
 
 #endif // COLOR_H

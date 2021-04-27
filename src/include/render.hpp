@@ -1,9 +1,9 @@
 #ifndef RENDER_H
 #define RENDER_H
 
+class Character;
 class Color;
-class RectGraphic;
-class SpriteGraphic;
+class Rect;
 
 namespace Render
 {
@@ -11,11 +11,14 @@ namespace Render
     void close();
     void startUpdate();
     void endUpdate();
-    unsigned int getTextureId( const char * filename );
+    unsigned int getTextureId( const char * local, bool indexed = true );
     void clearTextures();
+    bool windowShouldClose();
+    void * getWindow();
 
-    void rect( const RectGraphic & graphic );
-    void sprite( const SpriteGraphic & graphic );
+    void rect( const Rect & rect, const Color & color );
+    void sprite( unsigned int texture_id, unsigned int palette_id, const Rect & src, const Rect & dest, bool flip_x, bool flip_y );
+    void character( const Character & character );
 }
 
 #endif // RENDER_H
