@@ -19,10 +19,17 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image/stb_image.h>
 
+struct Texture
+{
+    int width;
+    int height;
+};
 
 namespace Render
 {
-    static int magnification = 1;
+    static constexpr int MAX_TEXTURES = 200;
+
+    static int magnification = 3;
     static int canvas_width = 0;
     static int canvas_height = 0;
     static GLFWwindow * window;
@@ -42,15 +49,20 @@ namespace Render
 
     static unsigned int VAO;
     static unsigned int sprite_shader, rect_shader;
-    static unsigned int texture;
-    static int texture_width, texture_height;
+    static unsigned int texture_ids[ MAX_TEXTURES ];
+    static Texture textures[ MAX_TEXTURES ];
+    std::unordered_map<const char *, int> texture_map;
 
     static void drawBox( const Rect & rect, const Color & color );
-    static void drawSprite( const Rect & src, const Rect & dest );
+    static void drawSprite( int texture_id, const Rect & src, const Rect & dest );
     static void framebufferSizeCallback( GLFWwindow* window, int width, int height );
     static unsigned int generateShaderProgram( std::vector<const char *> vertex_shaders, std::vector<const char *> fragment_shaders );
     static unsigned int generateShader( GLenum type, const char * file );
     static std::string loadShader( const char * local );
+    static int loadTexture( const char * local );
+    static unsigned int number_of_textures = 0;
+
+    static int autumn_id;
 
     bool init( const char * title, int width, int height, Color background )
     {
@@ -74,21 +86,9 @@ namespace Render
         sprite_shader = generateShaderProgram({ "vertex" }, { "sprite" });
         rect_shader = generateShaderProgram({ "vertex" }, { "rect" });
 
-        int texture_channels;
-        unsigned char * texture_data = stbi_load( "assets/graphics/sprites/autumn.png", &texture_width, &texture_height, &texture_channels, STBI_rgb_alpha );
-        if ( texture_data == nullptr )
-        {
-            printf( "Error loading texture.\n" );
-            return false;
-        }
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture_width, texture_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        stbi_image_free(texture_data);
+        glGenTextures( MAX_TEXTURES, texture_ids );
+
+        autumn_id = loadTexture( "sprites/autumn.png" );
 
         unsigned int VBO;
         glGenBuffers(1, &VBO);
@@ -136,7 +136,7 @@ namespace Render
         glClear( GL_COLOR_BUFFER_BIT );
 
         drawBox({ 0.0, 0.0, 400.0, 224.0 }, { 255, 255, 255, 255 });
-        drawSprite({ 48.0, 30.0, 16.0, 21.0 }, { 200.0, 100.0, 16.0, 21.0 });
+        drawSprite( autumn_id, { 48.0, 30.0, 16.0, 21.0 }, { 200.0, 100.0, 16.0, 21.0 });
     };
 
     void endUpdate()
@@ -207,14 +207,15 @@ namespace Render
         glBindVertexArray(0);
     };
 
-    void drawSprite( const Rect & src, const Rect & dest )
+    void drawSprite( int texture_id, const Rect & src, const Rect & dest )
     {
         glUseProgram(sprite_shader);
+
         // Src Coords
-        vertices[ 14 ] = vertices[ 10 ] = 1.0f / ( float )( texture_width ) * src.x; // Left X
-        vertices[ 2 ] = vertices[ 6 ] = 1.0f / ( float )( texture_width ) * ( src.x + src.w );  // Right X
-        vertices[ 15 ] = vertices[ 3 ] = 1.0f / ( float )( texture_height ) * ( src.y + src.h ); // Top Y
-        vertices[ 11 ] = vertices[ 7 ] = 1.0f / ( float )( texture_height ) * src.y;  // Bottom Y
+        vertices[ 14 ] = vertices[ 10 ] = 1.0f / ( float )( textures[ texture_id ].width ) * src.x; // Left X
+        vertices[ 2 ] = vertices[ 6 ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src.x + src.w );  // Right X
+        vertices[ 15 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src.y + src.h ); // Top Y
+        vertices[ 11 ] = vertices[ 7 ] = 1.0f / ( float )( textures[ texture_id ].height ) * src.y;  // Bottom Y
 
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
@@ -233,7 +234,7 @@ namespace Render
         glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
     
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        glBindTexture(GL_TEXTURE_2D, texture_ids[ texture_id ] );
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
@@ -333,5 +334,31 @@ namespace Render
         };
         ifs.close();
         return content;
+    };
+
+    static int loadTexture( const char * local )
+    {
+        auto seek = texture_map.find( local );
+        if ( seek != texture_map.end() )
+        {
+            return seek->second;
+        }
+
+        int texture_channels;
+        std::string full_filename = Filename::image( local );
+        unsigned char * texture_data = stbi_load( full_filename.c_str(), &textures[ number_of_textures ].width, &textures[ number_of_textures ].height, &texture_channels, STBI_rgb_alpha );
+        if ( texture_data == nullptr )
+        {
+            throw std::runtime_error( "Couldn’t load texture file." );
+        }
+        glBindTexture(GL_TEXTURE_2D, texture_ids[ number_of_textures ] );
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textures[ number_of_textures ].width, textures[ number_of_textures ].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        stbi_image_free(texture_data);
+        texture_map.insert( std::pair<const char *, int> ( local, number_of_textures ) );
+        return number_of_textures++;
     };
 }
