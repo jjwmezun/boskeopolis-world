@@ -5,12 +5,17 @@
 
 namespace GameStateMachine
 {
+    static constexpr int MAX_STATES = 5;
+
     void init();
     void update();
-    void render();
+    void changeState( GameState state );
+    void pushState( GameState state );
     void popState();
-    void changeStateTitle();
-    void changeStateLevel();
+
+    GameState createTitleState();
+    GameState createLevelState();
+    GameState createPauseState();
 };
 
 #endif // GAME_STATE_MACHINE

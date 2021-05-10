@@ -44,9 +44,7 @@ int main()
             accumulator -= DT;
         }
 
-        Render::startUpdate();
-        GameStateMachine::render();
-        Render::endUpdate();
+        Render::update();
     }
 
     Render::close();

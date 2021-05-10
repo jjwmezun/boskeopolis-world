@@ -1,28 +1,22 @@
 #include <cassert>
 #include "color.hpp"
 #include "game_state_machine.hpp"
+#include "graphics.hpp"
 #include "input.hpp"
-#include <memory>
 #include "render.hpp"
-#include <stdexcept>
-#include <vector>
-
 #include "text.hpp"
 
 namespace GameStateMachine
 {
-    static constexpr int MAX_STATES = 5;
     GameState states[ MAX_STATES ];
     int number_of_states = 0;
 
-    static void clearStates();
-    static void closeState( GameState & state );
-    static void initState( GameState & state );
+    static void closeState( int number );
+    static void initState( int number );
 
     void init()
     {
-        printf( "%ld\n", sizeof( GameState ) );
-        changeStateTitle();
+        changeState( createTitleState() );
     };
 
     void update()
@@ -33,75 +27,102 @@ namespace GameStateMachine
             {
                 if ( Input::pressedRight() )
                 {
-                    changeStateLevel();
+                    changeState( createLevelState() );
                 }
             }
             break;
             case ( GameState::Type::LEVEL ):
             {
-                if ( Input::pressedLeft() )
+                if ( Input::pressedRight() )
                 {
-                    changeStateTitle();
+                    pushState( createPauseState() );
+                }
+                else if ( Input::pressedLeft() )
+                {
+                    changeState( createTitleState() );
+                }
+            }
+            break;
+            case ( GameState::Type::PAUSE ):
+            {
+                if ( Input::pressedRight() )
+                {
+                    changeState( createTitleState() );
+                }
+                else if ( Input::pressedLeft() )
+                {
+                    popState();
                 }
             }
             break;
         }
     };
 
-    void render()
+    void changeState( GameState state )
     {
-        for ( int i = 0; i < number_of_states; ++i )
+        while ( number_of_states > 0 )
         {
-            states[ i ].graphics.render();
+            closeState( --number_of_states );
         }
+        number_of_states = 1;
+        Render::setNumberOfStates( number_of_states );
+        Render::clearGraphics();
+        states[ 0 ] = state;
+        initState( 0 );
     };
 
-    void changeStateTitle()
+    void pushState( GameState state )
     {
-        clearStates();
-        states[ 0 ].type = GameState::Type::TITLE;
-        number_of_states = 1;
-        initState( states[ 0 ] );
-    };
-
-    void changeStateLevel()
-    {
-        clearStates();
-        states[ 0 ].type = GameState::Type::LEVEL;
-        number_of_states = 1;
-        initState( states[ 0 ] );
+        states[ number_of_states ] = state;
+        Render::setNumberOfStates( number_of_states );
+        initState( number_of_states );
+        ++number_of_states;
     };
 
     void popState()
     {
+        closeState( --number_of_states );
+        Render::clearStateGraphics( number_of_states );
+        Render::setNumberOfStates( number_of_states );
     };
 
-    static void clearStates()
+    GameState createTitleState()
     {
-        while ( number_of_states > 0 )
-        {
-            closeState( states[ --number_of_states ] );
-        }
+        return { GameState::Type::TITLE };
     };
 
-    static void closeState( GameState & state )
+    GameState createLevelState()
+    {
+        return { GameState::Type::LEVEL };
+    };
+
+    GameState createPauseState()
+    {
+        return { GameState::Type::PAUSE };
+    };
+
+    static void closeState( int number )
     {
     };
 
-    static void initState( GameState & state )
+    static void initState( int number )
     {
-        state.graphics.init();
-        switch ( state.type )
+        switch ( states[ number ].type )
         {
             case ( GameState::Type::TITLE ):
             {
-                state.graphics.addGraphic( Graphics::createFullRect( { 255.0, 255.0, 255.0, 255.0 } ), Unit::Layer::BG_1 );
-                state.graphics.addGraphic( Graphics::createText( Text::create( "Boskeopolis World", {{ "x", 16.0 }, { "y", 16.0 } } ) ), Unit::Layer::FG_1 );
+                Render::addGraphic( Graphics::createFullRect( { 255.0, 255.0, 255.0, 255.0 } ), number, Unit::Layer::BG_1 );
+                Render::addGraphic( Graphics::createText( Text::create( "Boskeopolis World", {{ "x", 16.0 }, { "y", 16.0 } } ) ), number, Unit::Layer::FG_1 );
             }
             break;
             case ( GameState::Type::LEVEL ):
             {
-
+                Render::addGraphic( Graphics::createFullRect( { 0.0, 0.0, 255.0, 255.0 } ), number, Unit::Layer::BG_1 );
+            }
+            break;
+            case ( GameState::Type::PAUSE ):
+            {
+                Render::addGraphic( Graphics::createRect( { 32.0, 32.0, 320.0, 128.0 }, { 255.0, 0.0, 0.0, 255.0 } ), number, Unit::Layer::BG_1 );
             }
             break;
         }

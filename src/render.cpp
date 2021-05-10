@@ -3,8 +3,10 @@
 #include <cstdio>
 #include "filename.hpp"
 #include <fstream>
+#include "game_state_machine.hpp"
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
+#include "graphics.hpp"
 #include "rect.hpp"
 #include "render.hpp"
 #include <stdexcept>
@@ -29,11 +31,11 @@ namespace Render
 {
     static constexpr int MAX_TEXTURES = 200;
     static constexpr int VERTEX_SIZE = 8;
+    static constexpr int MAX_GRAPHICS = 512;
 
     static int magnification = 3;
     static int canvas_width = 0;
     static int canvas_height = 0;
-    static GLFWwindow * window;
     static float vertices[] = {
         // Vertices     // Texture coords   // Color
          0.5f,  0.5f,   1.0f, 1.0f,         1.0f, 1.0f, 1.0f, 1.0f,// top right
@@ -53,6 +55,11 @@ namespace Render
     static unsigned int number_of_textures = 0;
     static unsigned int palette_texture;
     static unsigned int text_texture;
+    static int number_of_graphics = 0;
+    static int graphics_per_layer[ GameStateMachine::MAX_STATES ][ Unit::NUMBER_OF_LAYERS ];
+    static int number_of_states = 0;
+    static Graphics layers[ MAX_GRAPHICS ];
+    static GLFWwindow * window;
 
     static void drawBox( const Rect & rect, const Color & top_left_color, const Color & top_right_color, const Color & bottom_left_color, const Color & bottom_right_color );
     static void framebufferSizeCallback( GLFWwindow* window, int width, int height );
@@ -120,6 +127,8 @@ namespace Render
 
         glfwSetFramebufferSizeCallback( window, framebufferSizeCallback );
 
+        clearGraphics();
+
         return true;
     };
 
@@ -128,14 +137,14 @@ namespace Render
         glDeleteTextures( MAX_TEXTURES, texture_ids );
     };
 
-    void startUpdate()
+    void update()
     {
         glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
         glClear( GL_COLOR_BUFFER_BIT );
-    };
-
-    void endUpdate()
-    {
+        for ( int i = 0; i < number_of_graphics; ++i )
+        {
+            layers[ i ].render();
+        }
         glfwSwapBuffers( window );
     };
 
@@ -170,12 +179,72 @@ namespace Render
         return number_of_textures++;
     };
 
+    void setNumberOfStates( int number )
+    {
+        number_of_states = number;
+    };
+
+    void clearGraphics()
+    {
+        number_of_graphics = 0;
+        for ( int i = 0; i < GameStateMachine::MAX_STATES; ++i )
+        {
+            for ( int j = 0; j < Unit::NUMBER_OF_LAYERS; ++j )
+            {
+                graphics_per_layer[ i ][ j ] = 0;
+            }
+        }
+    };
+
+    void clearStateGraphics( int state )
+    {
+        // Count up filled layers till current state.
+        int i = 0;
+        for ( int si = 0; si < state; ++si )
+        {
+            for ( int li = 0; li < Unit::NUMBER_OF_LAYERS; ++li )
+            {
+                i += graphics_per_layer[ si ][ li ];
+            }
+        }
+
+        // For every layer o’ current state, decrease # o’ graphics per layer & set graphics per layer to 0.
+        for ( int li = 0; li <= Unit::NUMBER_OF_LAYERS; ++li )
+        {
+            number_of_graphics -= graphics_per_layer[ state ][ li ];
+            graphics_per_layer[ state ][ li ] = 0;
+        }
+
+        // TODO: If it’s possible to clear graphics o’ state that isn’t @ the top,
+        // move later states’ graphics down to next blank space.
+    };
+
+    void addGraphic( Graphics gfx, int state, Unit::Layer layer )
+    {
+        // Count up graphics 
+        int i = 0;
+        for ( int si = 0; si < state; ++si )
+        {
+            for ( int li = 0; li < Unit::NUMBER_OF_LAYERS; ++li )
+            {
+                i += graphics_per_layer[ si ][ li ];
+            }
+        }
+        for ( int li = 0; li <= ( int )( layer ); ++li )
+        {
+            i += graphics_per_layer[ state ][ li ];
+        }
+        layers[ i ] = gfx;
+        ++number_of_graphics;
+        ++graphics_per_layer[ state ][ ( int )( layer ) ];
+    };
+
     void rect( const Rect & rect, const Color & color )
     {
         drawBox( rect, color, color, color, color );
     };
 
-    void sprite( unsigned int texture_id, unsigned int palette_id, const Rect & src, const Rect & dest, bool flip_x, bool flip_y )
+    void sprite( unsigned int texture_id, unsigned int palette_id, const Rect & src, const Rect & dest, bool flip_x, bool flip_y, float rotation_x, float rotation_y, float rotation_z )
     {
         glUseProgram(sprite_shader);
 
@@ -211,9 +280,9 @@ namespace Render
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::scale( model, glm::vec3( dest.w, dest.h, 0.0 ) );
-        //model = glm::rotate( model, glm::radians( rotation_z ), glm::vec3( 0.0, 0.0, 1.0 ) );
-        //model = glm::rotate( model, glm::radians( rotation_y ), glm::vec3( 0.0, 1.0, 0.0 ) );
-        //model = glm::rotate( model, glm::radians( rotation_x ), glm::vec3( 1.0, 0.0, 0.0 ) );
+        model = glm::rotate( model, glm::radians( rotation_z ), glm::vec3( 0.0, 0.0, 1.0 ) );
+        model = glm::rotate( model, glm::radians( rotation_y ), glm::vec3( 0.0, 1.0, 0.0 ) );
+        model = glm::rotate( model, glm::radians( rotation_x ), glm::vec3( 1.0, 0.0, 0.0 ) );
         unsigned int model_location = glGetUniformLocation(sprite_shader, "model");
         glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
     
