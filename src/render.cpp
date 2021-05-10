@@ -31,19 +31,22 @@ namespace Render
 {
     static constexpr int MAX_TEXTURES = 200;
     static constexpr int VERTEX_SIZE = 8;
-    static constexpr int MAX_GRAPHICS = 512;
+    static constexpr int NUMBER_OF_VERTICES = 4;
+    static constexpr int VARRAY_SIZE = VERTEX_SIZE * NUMBER_OF_VERTICES;
+    static constexpr int IARRAY_SIZE = 6;
+    static constexpr int MAX_GRAPHICS = 128;
 
     static int magnification = 3;
     static int canvas_width = 0;
     static int canvas_height = 0;
-    static float vertices[] = {
+    static float vertices[ VARRAY_SIZE ] = {
         // Vertices     // Texture coords   // Color
          0.5f,  0.5f,   1.0f, 1.0f,         1.0f, 1.0f, 1.0f, 1.0f,// top right
          0.5f, -0.5f,   1.0f, 0.0f,         1.0f, 1.0f, 1.0f, 1.0f, // bottom right
         -0.5f, -0.5f,   0.0f, 0.0f,         1.0f, 1.0f, 1.0f, 1.0f, // bottom left
         -0.5f,  0.5f,   0.0f, 1.0f,         1.0f, 1.0f, 1.0f, 1.0f,  // top left 
     };
-    static unsigned int indices[] = {  // note that we start from 0!
+    static unsigned int indices[ IARRAY_SIZE ] = {  // note that we start from 0!
         0, 1, 3,   // first triangle
         1, 2, 3    // second triangle
     };
@@ -61,6 +64,12 @@ namespace Render
     static Graphic layers[ MAX_GRAPHICS ];
     static GLFWwindow * window;
 
+    static float graphics_vertices[ MAX_GRAPHICS * VARRAY_SIZE ];
+    static float graphics_indices[ MAX_GRAPHICS * IARRAY_SIZE ];
+    static unsigned int graphics_vaos[ MAX_GRAPHICS ];
+    static unsigned int graphics_vbos[ MAX_GRAPHICS ];
+    static unsigned int graphics_ebos[ MAX_GRAPHICS ];
+
     static void drawBox( const Rect & rect, const Color & top_left_color, const Color & top_right_color, const Color & bottom_left_color, const Color & bottom_right_color );
     static void framebufferSizeCallback( GLFWwindow* window, int width, int height );
     static unsigned int generateShaderProgram( std::vector<const char *> vertex_shaders, std::vector<const char *> fragment_shaders );
@@ -70,6 +79,7 @@ namespace Render
     static void rect( const Rect & rect, const Color & color );
     static void sprite( unsigned int texture_id, unsigned int palette_id, const Rect & src, const Rect & dest, bool flip_x, bool flip_y, float rotation_x, float rotation_y, float rotation_z );
     static void character( const Character & character, const Color & color );
+    static void rect2( int n );
 
     bool init( const char * title, int width, int height, Color background )
     {
@@ -114,7 +124,50 @@ namespace Render
 
         clearGraphics();
 
+        for ( int i = 0; i < MAX_GRAPHICS; ++i )
+        {
+            graphics_vertices[ VARRAY_SIZE * i + 0 ] = 0.5f;
+            graphics_vertices[ VARRAY_SIZE * i + 1 ] = 0.5f;
+            graphics_vertices[ VARRAY_SIZE * i + 2 ] = 1.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 3 ] = 1.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 4 ] = 1.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 5 ] = 0.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 6 ] = 1.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 7 ] = 0.5f;
+            graphics_vertices[ VARRAY_SIZE * i + 8 ] = 0.5f;
+            graphics_vertices[ VARRAY_SIZE * i + 9 ] = -0.5f;
+            graphics_vertices[ VARRAY_SIZE * i + 10 ] = 1.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 11 ] = 0.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 12 ] = 1.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 13 ] = 1.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 14 ] = 1.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 15 ] = 0.5f;
+            graphics_vertices[ VARRAY_SIZE * i + 16 ] = -0.5f;
+            graphics_vertices[ VARRAY_SIZE * i + 17 ] = -0.5f;
+            graphics_vertices[ VARRAY_SIZE * i + 18 ] = 0.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 19 ] = 0.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 20 ] = 1.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 21 ] = 1.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 22 ] = 1.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 23 ] = 0.5f;
+            graphics_vertices[ VARRAY_SIZE * i + 24 ] = -0.5f;
+            graphics_vertices[ VARRAY_SIZE * i + 25 ] = 0.5f;
+            graphics_vertices[ VARRAY_SIZE * i + 26 ] = 0.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 27 ] = 1.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 28 ] = 1.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 29 ] = 1.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 30 ] = 1.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 31 ] = 0.5f;
 
+            graphics_indices[ IARRAY_SIZE * i + 0 ] = 0;
+            graphics_indices[ IARRAY_SIZE * i + 1 ] = 1;
+            graphics_indices[ IARRAY_SIZE * i + 2 ] = 3;
+            graphics_indices[ IARRAY_SIZE * i + 3 ] = 1;
+            graphics_indices[ IARRAY_SIZE * i + 4 ] = 2;
+            graphics_indices[ IARRAY_SIZE * i + 5 ] = 3;
+        }
+
+        // VBO
         unsigned int VBO;
         glGenBuffers(1, &VBO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -124,14 +177,42 @@ namespace Render
         glGenVertexArrays(1, &VAO);
         glBindVertexArray(VAO);
 
-        // EBO
+        // EBO/*
         unsigned int EBO;
         glGenBuffers(1, &EBO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        bufferVertices();
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+        glBufferData(GL_ARRAY_BUFFER, sizeof( float ) * VARRAY_SIZE, vertices, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), 0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(2* sizeof(float)));
+        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(4* sizeof(float)));
+
+
+        glGenBuffers( MAX_GRAPHICS, graphics_vbos );
+        glBindBuffer( GL_ARRAY_BUFFER, graphics_vbos[ 0 ] );
+        glBufferData( GL_ARRAY_BUFFER, sizeof( graphics_vertices ), graphics_vertices, GL_STATIC_DRAW );
+
+        glGenVertexArrays( MAX_GRAPHICS, graphics_vaos );
+        glBindVertexArray( graphics_vaos[ 0 ] );
+
+        glGenBuffers( MAX_GRAPHICS, graphics_ebos );
+        glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, graphics_ebos[ 0 ] );
+        glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( graphics_indices ), graphics_indices, GL_STATIC_DRAW );
+
+        for ( int i = 0; i < MAX_GRAPHICS; ++i )
+        {
+            glEnableVertexAttribArray(0);
+            glEnableVertexAttribArray(1);
+            glEnableVertexAttribArray(2);
+            glBufferData(GL_ARRAY_BUFFER, sizeof( float ) * VARRAY_SIZE, &graphics_vertices[ i * VARRAY_SIZE ], GL_STATIC_DRAW);
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), 0);
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(2* sizeof(float)));
+            glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(4* sizeof(float)));
+        }
 
         return true;
     };
@@ -152,13 +233,14 @@ namespace Render
                 case ( Graphic::Type::RECT ):
                 {
                     rect( layers[ i ].data.rect.rect, layers[ i ].data.rect.color );
+                    rect2( i );
                 }
                 break;
                 case ( Graphic::Type::TEXT ):
                 {
                     for ( int c = 0; c < layers[ i ].data.text.number_of_characters; ++c )
                     {
-                        character( layers[ i ].data.text.characters[ c ], layers[ i ].data.text.color );
+                        //character( layers[ i ].data.text.characters[ c ], layers[ i ].data.text.color );
                     }
                 }
                 break;
@@ -250,8 +332,8 @@ namespace Render
 
     void drawBox( const Rect & rect, const Color & top_left_color, const Color & top_right_color, const Color & bottom_left_color, const Color & bottom_right_color )
     {
-        glUseProgram(rect_shader);
 
+        glBindVertexArray(VAO);
         vertices[ 4 ] = bottom_right_color.r / 255.0f;
         vertices[ 5 ] = bottom_right_color.g / 255.0f;
         vertices[ 6 ] = bottom_right_color.b / 255.0f;
@@ -274,6 +356,7 @@ namespace Render
 
         bufferVertices();
 
+        glUseProgram(rect_shader);
         glm::mat4 view = glm::mat4(1.0f);
         view = glm::translate(view, glm::vec3(rect.x + ( rect.w / 2.0f ), rect.y + ( rect.h / 2.0f ), 0.0f));
         unsigned int view_location = glGetUniformLocation(rect_shader, "view");
@@ -284,31 +367,32 @@ namespace Render
         unsigned int model_location = glGetUniformLocation(rect_shader, "model");
         glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
     
-        glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
+        glBindVertexArray( 0 );
     };
 
-    void framebufferSizeCallback( GLFWwindow* window, int screen_width, int screen_height )
+    static void rect2( int n )
     {
-        double screen_aspect_ratio = ( double )( canvas_width / canvas_height );
-        double monitor_aspect_ratio = ( double )( screen_width ) / ( double )( screen_height );
+        glBindVertexArray( graphics_vaos[ n ] );
 
-        magnification = std::max(
-            ( int )( floor(
-                ( monitor_aspect_ratio > screen_aspect_ratio )
-                    ? ( double )( screen_height ) / ( double )( canvas_height )
-                    : ( double )( screen_width ) / ( double )( canvas_width )
-            )),
-            1
-        );
+        glBufferData(GL_ARRAY_BUFFER, sizeof( float ) * VARRAY_SIZE, &graphics_vertices[ n * VARRAY_SIZE ], GL_STATIC_DRAW);
+        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(4* sizeof(float)));
 
-        GLint magnified_canvas_width = canvas_width * magnification;
-        GLint magnified_canvas_height = canvas_height * magnification;
-        GLint x = ( int )( floor( ( double )( screen_width - magnified_canvas_width ) / 2.0 ) );
-        GLint y = ( int )( floor( ( double )( screen_height - magnified_canvas_height ) / 2.0 ) );
-        glViewport( x, y, magnified_canvas_width, magnified_canvas_height );
-    }
+        glUseProgram(rect_shader);
+
+        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3(layers[ n ].data.rect.rect.x + ( layers[ n ].data.rect.rect.w / 2.0f ), layers[ n ].data.rect.rect.y + ( layers[ n ].data.rect.rect.h / 2.0f ), 0.0f));
+        unsigned int view_location = glGetUniformLocation(rect_shader, "view");
+        glUniformMatrix4fv( view_location, 1, GL_FALSE, glm::value_ptr(view));
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::scale( model, glm::vec3( layers[ n ].data.rect.rect.w, layers[ n ].data.rect.rect.h, 0.0 ) );
+        unsigned int model_location = glGetUniformLocation(rect_shader, "model");
+        glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
+    
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(6*n*sizeof(GLuint)));
+        glBindVertexArray( 0 );
+    };
 
     void addGraphic( Graphic gfx, int state, Unit::Layer layer )
     {
@@ -330,6 +414,22 @@ namespace Render
             layers[ gi + 1 ] = layers[ gi ];
         }
         layers[ i ] = gfx;
+
+        if ( gfx.type == Graphic::Type::RECT )
+        {
+            glBindBuffer( GL_ARRAY_BUFFER, graphics_vbos[ i ] );
+            glBindVertexArray( graphics_vaos[ i ] );
+            /*
+            graphics_vertices[ VARRAY_SIZE * i + 4 ] = graphics_vertices[ VARRAY_SIZE * i + 4 + VERTEX_SIZE ] = graphics_vertices[ VARRAY_SIZE * i + 4 + VERTEX_SIZE * 2 ] = graphics_vertices[ VARRAY_SIZE * i + 4 + VERTEX_SIZE * 3 ] = 255.0 / 255.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 5 ] = graphics_vertices[ VARRAY_SIZE * i + 5 + VERTEX_SIZE ] = graphics_vertices[ VARRAY_SIZE * i + 5 + VERTEX_SIZE * 2 ] = graphics_vertices[ VARRAY_SIZE * i + 5 + VERTEX_SIZE * 3 ] = 0.0 / 255.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 6 ] = graphics_vertices[ VARRAY_SIZE * i + 6 + VERTEX_SIZE ] = graphics_vertices[ VARRAY_SIZE * i + 6 + VERTEX_SIZE * 2 ] = graphics_vertices[ VARRAY_SIZE * i + 6 + VERTEX_SIZE * 3 ] = 255.0 / 255.0f;
+            graphics_vertices[ VARRAY_SIZE * i + 7 ] = graphics_vertices[ VARRAY_SIZE * i + 7 + VERTEX_SIZE ] = graphics_vertices[ VARRAY_SIZE * i + 7 + VERTEX_SIZE * 2 ] = graphics_vertices[ VARRAY_SIZE * i + 7 + VERTEX_SIZE * 3 ] = 255.0 / 255.0;
+            */
+            glBufferData(GL_ARRAY_BUFFER, sizeof( float ) * VARRAY_SIZE, &graphics_vertices[ VARRAY_SIZE * i ], GL_STATIC_DRAW);
+            glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(4* sizeof(float)));
+            glBindVertexArray( 0 );
+        }
+
         ++number_of_graphics;
         ++graphics_per_layer[ state ][ ( int )( layer ) ];
     };
@@ -508,12 +608,30 @@ namespace Render
 
     static void bufferVertices()
     {
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), 0);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(2* sizeof(float)));
-        glEnableVertexAttribArray(1);
+        glBufferData(GL_ARRAY_BUFFER, sizeof( float ) * VARRAY_SIZE, vertices, GL_STATIC_DRAW);
+        //glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), 0);
+        //glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(2* sizeof(float)));
         glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(4* sizeof(float)));
-        glEnableVertexAttribArray(2);
+    }
+
+    void framebufferSizeCallback( GLFWwindow* window, int screen_width, int screen_height )
+    {
+        double screen_aspect_ratio = ( double )( canvas_width / canvas_height );
+        double monitor_aspect_ratio = ( double )( screen_width ) / ( double )( screen_height );
+
+        magnification = std::max(
+            ( int )( floor(
+                ( monitor_aspect_ratio > screen_aspect_ratio )
+                    ? ( double )( screen_height ) / ( double )( canvas_height )
+                    : ( double )( screen_width ) / ( double )( canvas_width )
+            )),
+            1
+        );
+
+        GLint magnified_canvas_width = canvas_width * magnification;
+        GLint magnified_canvas_height = canvas_height * magnification;
+        GLint x = ( int )( floor( ( double )( screen_width - magnified_canvas_width ) / 2.0 ) );
+        GLint y = ( int )( floor( ( double )( screen_height - magnified_canvas_height ) / 2.0 ) );
+        glViewport( x, y, magnified_canvas_width, magnified_canvas_height );
     }
 }
