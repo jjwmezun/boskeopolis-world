@@ -3,17 +3,16 @@
 
 #include "state_graphics.hpp"
 
-class GameState
+struct GameState
 {
-    public:
-        virtual ~GameState();
-        virtual void update( bool top_state ) = 0;
-        virtual void init();
-        virtual void close();
-        void render() const;
+    enum class Type
+    {
+        TITLE,
+        LEVEL
+    };
 
-    protected:
-        StateGraphics graphics;
+    Type type;
+    StateGraphics graphics;
 };
 
 #endif // GAME_STATE_H

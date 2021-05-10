@@ -3,7 +3,6 @@
 #include "engine.hpp"
 #include "filename.hpp"
 #include "game_state_machine.hpp"
-#include "graphic.hpp"
 #include "input.hpp"
 #include "localization.hpp"
 #include "rect.hpp"

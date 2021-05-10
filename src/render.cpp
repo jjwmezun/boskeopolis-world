@@ -28,13 +28,12 @@ struct Texture
 namespace Render
 {
     static constexpr int MAX_TEXTURES = 200;
+    static constexpr int VERTEX_SIZE = 8;
 
     static int magnification = 3;
     static int canvas_width = 0;
     static int canvas_height = 0;
     static GLFWwindow * window;
-
-    static constexpr int VERTEX_SIZE = 8;
     static float vertices[] = {
         // Vertices     // Texture coords   // Color
          0.5f,  0.5f,   1.0f, 1.0f,         1.0f, 1.0f, 1.0f, 1.0f,// top right
@@ -42,17 +41,15 @@ namespace Render
         -0.5f, -0.5f,   0.0f, 0.0f,         1.0f, 1.0f, 1.0f, 1.0f, // bottom left
         -0.5f,  0.5f,   0.0f, 1.0f,         1.0f, 1.0f, 1.0f, 1.0f,  // top left 
     };
-
     static unsigned int indices[] = {  // note that we start from 0!
         0, 1, 3,   // first triangle
         1, 2, 3    // second triangle
     };
-
     static unsigned int VAO;
     static unsigned int sprite_shader, rect_shader, text_shader;
     static unsigned int texture_ids[ MAX_TEXTURES ];
     static Texture textures[ MAX_TEXTURES ];
-    std::unordered_map<const char *, int> texture_map;
+    static std::unordered_map<const char *, int> texture_map;
     static unsigned int number_of_textures = 0;
     static unsigned int palette_texture;
     static unsigned int text_texture;
@@ -236,30 +233,30 @@ namespace Render
         glBindVertexArray(0);
     };
 
-    void character( const Character & character )
+    void character( const Character & character, const Color & color )
     {
         glUseProgram(text_shader);
 
         // Src Coords
-            vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ text_texture ].width ) * character.src.x; // Left X
-            vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ text_texture ].width ) * ( character.src.x + character.src.w );  // Right X
-            vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ text_texture ].height ) * ( character.src.y + character.src.h ); // Top Y
-            vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ text_texture ].height ) * character.src.y;  // Bottom Y
+            vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ text_texture ].width ) * character.src_x; // Left X
+            vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ text_texture ].width ) * ( character.src_x + character.w );  // Right X
+            vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ text_texture ].height ) * ( character.src_y + character.h ); // Top Y
+            vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ text_texture ].height ) * character.src_y;  // Bottom Y
 
         bufferVertices();
 
         glm::mat4 view = glm::mat4(1.0f);
-        view = glm::translate(view, glm::vec3( character.dest.x + ( character.dest.w / 2.0f ), character.dest.y + ( character.dest.h / 2.0f ), 0.0f));
+        view = glm::translate(view, glm::vec3( character.dest_x + ( character.w / 2.0f ), character.dest_y + ( character.h / 2.0f ), 0.0f));
         unsigned int view_location = glGetUniformLocation(text_shader, "view");
         glUniformMatrix4fv( view_location, 1, GL_FALSE, glm::value_ptr(view));
 
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::scale( model, glm::vec3( character.dest.w, character.dest.h, 0.0 ) );
+        model = glm::scale( model, glm::vec3( character.w, character.h, 0.0 ) );
         unsigned int model_location = glGetUniformLocation(text_shader, "model");
         glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
 
         unsigned int color_location = glGetUniformLocation(text_shader, "color");
-        glUniform4f( color_location, character.color.r, character.color.g, character.color.b, character.color.a );
+        glUniform4f( color_location, color.r, color.g, color.b, color.a );
 
         GLint texture_data_location = glGetUniformLocation(text_shader, "texture_data");
         glActiveTexture(GL_TEXTURE0);
@@ -268,6 +265,12 @@ namespace Render
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
+    };
+
+    void colorCanvas( const Color & color )
+    {
+        Rect r { 0, 0, canvas_width, canvas_height };
+        rect( r, color );
     };
 
     bool windowShouldClose()

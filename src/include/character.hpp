@@ -1,22 +1,14 @@
 #ifndef CHARACTER_H
 #define CHARACTER_H
 
-#include "color.hpp"
-#include "rect.hpp"
-
 struct Character
 {
-    enum class Type
-    {
-        NORMAL,
-        WHITESPACE,
-        NEWLINE
-    };
-
-    Type type;
-    Color color;
-    Rect src;
-    Rect dest;
+    float w;
+    float h;
+    float src_x;
+    float src_y;
+    float dest_x;
+    float dest_y;
 };
 
 #endif // CHARACTER_H

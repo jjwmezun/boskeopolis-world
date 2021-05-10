@@ -46,45 +46,45 @@ LocalizationLanguage::LocalizationLanguage( const char * code )
         }
 
         const auto & vobj = cobj[ "value" ].GetObject();
-        Character c;
-        c.src.w = c.dest.w = 8.0;
-        c.src.h = c.dest.h = 8.0;
-        c.type = Character::Type::NORMAL;
+        CharacterTemplate c;
+        c.w = 8.0;
+        c.h = 8.0;
+        c.type = CharacterTemplate::Type::NORMAL;
 
         if ( vobj.HasMember( "x" ) && vobj[ "x" ].IsInt() )
         {
-            c.src.x = ( double )( vobj[ "x" ].GetInt() );
+            c.x = ( double )( vobj[ "x" ].GetInt() );
         }
         if ( vobj.HasMember( "y" ) && vobj[ "y" ].IsInt() )
         {
-            c.src.y = ( double )( vobj[ "y" ].GetInt() );
+            c.y = ( double )( vobj[ "y" ].GetInt() );
         }
         if ( vobj.HasMember( "w" ) && vobj[ "w" ].IsInt() )
         {
-            c.dest.w = c.src.w = ( double )( vobj[ "w" ].GetInt() );
+            c.w = ( double )( vobj[ "w" ].GetInt() );
         }
         if ( vobj.HasMember( "h" ) && vobj[ "h" ].IsInt() )
         {
-            c.dest.h = c.src.h = ( double )( vobj[ "h" ].GetInt() );
+            c.h = ( double )( vobj[ "h" ].GetInt() );
         }
         if ( vobj.HasMember( "type" ) && vobj[ "type" ].IsString() )
         {
             std::string type = vobj[ "type" ].GetString();
             if ( type == "whitespace" )
             {
-                c.type = Character::Type::WHITESPACE;
+                c.type = CharacterTemplate::Type::WHITESPACE;
             }
             else if ( type == "newline" )
             {
-                c.type = Character::Type::NEWLINE;
+                c.type = CharacterTemplate::Type::NEWLINE;
             }
         }
 
-        character_map_.insert( std::pair<std::string, Character> { std::string( cobj[ "key" ].GetString() ), c } );
+        character_map_.insert( std::pair<std::string, CharacterTemplate> { std::string( cobj[ "key" ].GetString() ), c } );
     }
 };
 
-const std::unordered_map<std::string, Character>& LocalizationLanguage::getCharacterMap() const
+const std::unordered_map<std::string, CharacterTemplate>& LocalizationLanguage::getCharacterMap() const
 {
     return character_map_;
 };

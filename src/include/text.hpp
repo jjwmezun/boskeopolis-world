@@ -25,12 +25,15 @@ class Text
             BOTTOM
         };
 
-        Text( const char * text, std::unordered_map<const char *, std::variant<double, Align, VAlign, Color>> args = {} );
-        ~Text();
+        static Text create( const char * text, std::unordered_map<const char *, std::variant<double, Align, VAlign, Color>> args = {} );
         void render() const;
 
     private:
-        std::vector<Character> characters_;
+        static constexpr int MAX_CHARACTERS = 256;
+
+        Character characters_[ MAX_CHARACTERS ];
+        int number_of_characters_;
+        Color color_;
 };
 
 #endif // TEXT_H

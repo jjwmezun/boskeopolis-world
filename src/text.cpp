@@ -7,14 +7,17 @@
 
 #define MAX_CHARACTER_TYPES 1009 // Note: must be prime.
 #define MAX_TEXT_LINES 32
-#define MAX_CHARACTERS_PER_LINE 256
+#define MAX_temp_charactersPER_LINE 256
 
 static int getCharacterSize( const char * s );
 
-Text::~Text() {};
-
-Text::Text( const char * text, std::unordered_map<const char *, std::variant<double, Align, VAlign, Color>> args )
+Text Text::create( const char * text, std::unordered_map<const char *, std::variant<double, Align, VAlign, Color>> args )
 {
+    Text t;
+    //t.characters_ = {};
+    t.number_of_characters_ = 0;
+    t.color_ = { 0.0, 0.0, 0.0, 255.0 };
+
     double x = 0;
     double y = 0;
     double w = Unit::WINDOW_WIDTH_PIXELS;
@@ -23,8 +26,8 @@ Text::Text( const char * text, std::unordered_map<const char *, std::variant<dou
     VAlign valign = VAlign::TOP;
     double padding_x = 0;
     double padding_y = 0;
-    Color color = { 0, 0, 0, 255 };
 
+    // Set variables based on args.
     for ( auto & i : args )
     {
         if ( std::string( i.first ) == "x" )
@@ -61,7 +64,7 @@ Text::Text( const char * text, std::unordered_map<const char *, std::variant<dou
         }
         else if ( std::string( i.first ) == "color" )
         {
-            color = std::get<Color>( i.second );
+            t.color_ = std::get<Color>( i.second );
         }
     }
 
@@ -70,6 +73,8 @@ Text::Text( const char * text, std::unordered_map<const char *, std::variant<dou
     x += padding_x;
     y += padding_y;
     const double line_end = x + w;
+
+    std::vector<CharacterTemplate> temp_characters;
 
     const auto & character_map = Localization::getLanguage().getCharacterMap();
 
@@ -83,16 +88,15 @@ Text::Text( const char * text, std::unordered_map<const char *, std::variant<dou
         const auto iterator = character_map.find( letter.c_str() );
         if ( iterator != character_map.end() )
         {
-            Character character = iterator->second;
-            character.color = color;
-            characters_.push_back( character );
+            CharacterTemplate character = iterator->second;
+            temp_characters.push_back( character );
         }
 
         text += character_size;
     }
 
     // 2nd loop: break characters into lines, broken by newlines or when a line reaches the width limit.
-    Character lines[ MAX_TEXT_LINES ][ MAX_CHARACTERS_PER_LINE ];
+    CharacterTemplate lines[ MAX_TEXT_LINES ][ MAX_temp_charactersPER_LINE ];
     double line_widths[ MAX_TEXT_LINES ];
     line_widths[ 0 ] = 0;
     int line_character_counts[ MAX_TEXT_LINES ];
@@ -100,7 +104,7 @@ Text::Text( const char * text, std::unordered_map<const char *, std::variant<dou
     int line_character = 0;
     int i = 0;
     int lx = ( int )( x );
-    while ( i < characters_.size() )
+    while ( i < temp_characters.size() )
     {
         int ib = i;
         double xb = lx;
@@ -110,17 +114,17 @@ Text::Text( const char * text, std::unordered_map<const char *, std::variant<dou
         // This autobreaks text without cutting midword.
         while ( look_ahead )
         {
-            if ( ib >= characters_.size() )
+            if ( ib >= temp_characters.size() )
             {
                 look_ahead = 0;
                 break;
             }
 
-            if ( characters_[ ib ].type == Character::Type::NEWLINE )
+            if ( temp_characters[ ib ].type == CharacterTemplate::Type::NEWLINE )
             {
                 look_ahead = 0;
             }
-            else if ( characters_[ ib ].type == Character::Type::WHITESPACE )
+            else if ( temp_characters[ ib ].type == CharacterTemplate::Type::WHITESPACE )
             {
                 look_ahead = 0;
             }
@@ -133,18 +137,18 @@ Text::Text( const char * text, std::unordered_map<const char *, std::variant<dou
                 line_character = 0;
                 look_ahead = 0;
             }
-            else if ( ib >= characters_.size() )
+            else if ( ib >= temp_characters.size() )
             {
                 look_ahead = 0;
                 break;
             }
-            xb += characters_[ ib ].src.w;
+            xb += temp_characters[ ib ].w;
             ++ib;
         }
 
         while ( i < ib )
         {
-            if ( characters_[ i ].type == Character::Type::NEWLINE || lx >= line_end )
+            if ( temp_characters[ i ].type == CharacterTemplate::Type::NEWLINE || lx >= line_end )
             {
                 lx = ( int )( x );
                 line_character_counts[ line_count ] = line_character;
@@ -154,12 +158,12 @@ Text::Text( const char * text, std::unordered_map<const char *, std::variant<dou
             }
             else
             {
-                lines[ line_count ][ line_character ] = characters_[ i ];
-                line_widths[ line_count ] += characters_[ i ].src.w;
+                lines[ line_count ][ line_character ] = temp_characters[ i ];
+                line_widths[ line_count ] += temp_characters[ i ].w;
             }
             ++i;
             ++line_character;
-            lx += characters_[ i ].src.w;
+            lx += temp_characters[ i ].w;
         }
     }
     line_character_counts[ line_count ] = line_character;
@@ -170,23 +174,22 @@ Text::Text( const char * text, std::unordered_map<const char *, std::variant<dou
     // Since this messes with x alignment, remove these.
     for ( int l = 0; l < line_count; ++l )
     {
-        if ( lines[ l ][ line_character_counts[ l ] - 1 ].type == Character::Type::WHITESPACE )
+        if ( lines[ l ][ line_character_counts[ l ] - 1 ].type == CharacterTemplate::Type::WHITESPACE )
         {
             --line_character_counts[ l ];
-            line_widths[ l ] -= lines[ l ][ line_character_counts[ l ] - 1 ].src.w;
+            line_widths[ l ] -= lines[ l ][ line_character_counts[ l ] - 1 ].w;
         }
     }
 
     // Final loop: we have all the info we need now to set x & y positions.
-    characters_.clear();
-    double dy = ( valign == VAlign::MIDDLE )
+    float dy = ( valign == VAlign::MIDDLE )
         ? y + ( ( h - ( line_count * 8.0 ) ) / 2.0 )
         : ( valign == VAlign::BOTTOM )
             ? y + h - ( line_count * 8.0 )
             : y;
     for ( int l = 0; l < line_count; ++l )
     {
-        double dx = ( align == Align::CENTER )
+        float dx = ( align == Align::CENTER )
             ? x + ( ( w - line_widths[ l ] ) / 2.0 )
             : ( align == Align::RIGHT )
                 ? line_end - line_widths[ l ]
@@ -194,20 +197,27 @@ Text::Text( const char * text, std::unordered_map<const char *, std::variant<dou
         for ( int c = 0; c < line_character_counts[ l ]; ++c )
         {
             // Just in case o’ character index misalignment, just copy o’er whole characters.
-            lines[ l ][ c ].dest.x = dx;
-            lines[ l ][ c ].dest.y = dy;
-            dx += lines[ l ][ c ].dest.w;
-            characters_.push_back( lines[ l ][ c ] );
+            dx += lines[ l ][ c ].w;
+            t.characters_[ t.number_of_characters_++ ] = 
+            {
+                lines[ l ][ c ].w,
+                lines[ l ][ c ].h,
+                lines[ l ][ c ].x,
+                lines[ l ][ c ].y,
+                dx,
+                dy
+            };
         }
         dy += 8.0;
     }
+    return t;
 };
 
 void Text::render() const
 {
-    for ( const auto & character : characters_ )
+    for ( int i = 0; i < number_of_characters_; ++i )
     {
-        Render::character( character );
+        Render::character( characters_[ i ], color_ );
     }
 };
 

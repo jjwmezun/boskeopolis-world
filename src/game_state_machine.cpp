@@ -1,86 +1,109 @@
 #include <cassert>
-#include "game_state.hpp"
+#include "color.hpp"
 #include "game_state_machine.hpp"
+#include "input.hpp"
 #include <memory>
 #include "render.hpp"
 #include <stdexcept>
-#include "title_state.hpp"
 #include <vector>
+
+#include "text.hpp"
 
 namespace GameStateMachine
 {
-    std::vector<std::unique_ptr<GameState>> states;
-    GameState * change_state = nullptr;
-    std::vector<GameState *> push_states;
-    int pops = 0;
+    static constexpr int MAX_STATES = 5;
+    GameState states[ MAX_STATES ];
+    int number_of_states = 0;
+
+    static void clearStates();
+    static void closeState( GameState & state );
+    static void initState( GameState & state );
 
     void init()
     {
-        states.emplace_back( std::unique_ptr<GameState> ( new TitleState() ) );
-        states[ states.size() - 1 ]->init();
+        printf( "%ld\n", sizeof( GameState ) );
+        changeStateTitle();
     };
 
     void update()
     {
-        assert( states.size() > 0 );
-        int i = 0;
-        while ( i < ( int )( states.size() ) - 1 )
+        switch ( states[ number_of_states - 1 ].type )
         {
-            states[ i ]->update( false );
-            ++i;
-        }
-        states[ i ]->update( true );
-
-        if ( change_state != nullptr )
-        {
-            for ( auto & state : states )
+            case ( GameState::Type::TITLE ):
             {
-                state->close();
+                if ( Input::pressedRight() )
+                {
+                    changeStateLevel();
+                }
             }
-            states.clear();
-            Render::clearTextures();
-            states.emplace_back( std::unique_ptr<GameState> ( change_state ) );
-            states[ states.size() - 1 ]->init();
-            change_state = nullptr;
-        }
-        else
-        {
-            while ( pops > 0 )
+            break;
+            case ( GameState::Type::LEVEL ):
             {
-                states[ states.size() - 1 ]->close();
-                states.pop_back();
-                --pops;
+                if ( Input::pressedLeft() )
+                {
+                    changeStateTitle();
+                }
             }
-
-            for ( auto * state : push_states )
-            {
-                states.emplace_back( state );
-                states[ states.size() - 1 ]->init();
-                push_states.clear();
-            }
+            break;
         }
     };
 
     void render()
     {
-        for ( auto & state : states )
+        for ( int i = 0; i < number_of_states; ++i )
         {
-            state->render();
+            states[ i ].graphics.render();
         }
     };
 
-    void pushState( GameState * state )
+    void changeStateTitle()
     {
-        push_states.emplace_back( state );
+        clearStates();
+        states[ 0 ].type = GameState::Type::TITLE;
+        number_of_states = 1;
+        initState( states[ 0 ] );
     };
 
-    void changeState( GameState * state )
+    void changeStateLevel()
     {
-        change_state = state;
+        clearStates();
+        states[ 0 ].type = GameState::Type::LEVEL;
+        number_of_states = 1;
+        initState( states[ 0 ] );
     };
 
     void popState()
     {
-        ++pops;
+    };
+
+    static void clearStates()
+    {
+        while ( number_of_states > 0 )
+        {
+            closeState( states[ --number_of_states ] );
+        }
+    };
+
+    static void closeState( GameState & state )
+    {
+    };
+
+    static void initState( GameState & state )
+    {
+        state.graphics.init();
+        switch ( state.type )
+        {
+            case ( GameState::Type::TITLE ):
+            {
+                state.graphics.addGraphic( Graphics::createFullRect( { 255.0, 255.0, 255.0, 255.0 } ), Unit::Layer::BG_1 );
+                state.graphics.addGraphic( Graphics::createText( Text::create( "Boskeopolis World", {{ "x", 16.0 }, { "y", 16.0 } } ) ), Unit::Layer::FG_1 );
+            }
+            break;
+            case ( GameState::Type::LEVEL ):
+            {
+
+            }
+            break;
+        }
     };
 };

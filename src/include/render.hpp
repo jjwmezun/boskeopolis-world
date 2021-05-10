@@ -18,7 +18,8 @@ namespace Render
 
     void rect( const Rect & rect, const Color & color );
     void sprite( unsigned int texture_id, unsigned int palette_id, const Rect & src, const Rect & dest, bool flip_x, bool flip_y );
-    void character( const Character & character );
+    void character( const Character & character, const Color & color );
+    void colorCanvas( const Color & color );
 }
 
 #endif // RENDER_H
