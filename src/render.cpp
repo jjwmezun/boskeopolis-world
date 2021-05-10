@@ -58,6 +58,8 @@ namespace Render
     static int number_of_graphics = 0;
     static int graphics_per_layer[ GameStateMachine::MAX_STATES ][ Unit::NUMBER_OF_LAYERS ];
     static int number_of_states = 0;
+    static unsigned int graphics_ids_used = 0;
+    static std::unordered_map<int, int> graphics_map;
     static Graphic layers[ MAX_GRAPHICS ];
     static GLFWwindow * window;
 
@@ -160,6 +162,22 @@ namespace Render
                     {
                         character( layers[ i ].data.text.characters[ c ], layers[ i ].data.text.color );
                     }
+                }
+                break;
+                case ( Graphic::Type::SPRITE ):
+                {
+                    sprite
+                    (
+                        layers[ i ].data.sprite.texture,
+                        layers[ i ].data.sprite.palette,
+                        layers[ i ].data.sprite.src,
+                        layers[ i ].data.sprite.dest,
+                        layers[ i ].data.sprite.flip_x,
+                        layers[ i ].data.sprite.flip_y,
+                        layers[ i ].data.sprite.rotation_x,
+                        layers[ i ].data.sprite.rotation_y,
+                        layers[ i ].data.sprite.rotation_z
+                    );
                 }
                 break;
             }
@@ -310,7 +328,7 @@ namespace Render
         glViewport( x, y, magnified_canvas_width, magnified_canvas_height );
     }
 
-    void addGraphic( Graphic gfx, int state, Unit::Layer layer )
+    unsigned int addGraphic( Graphic gfx, int state, Unit::Layer layer )
     {
         // Count up graphics 
         int i = 0;
@@ -327,11 +345,31 @@ namespace Render
         }
         for ( int gi = number_of_graphics - 1; gi > i; --gi )
         {
+            for ( auto it = graphics_map.begin(); it != graphics_map.end(); ++it )
+            {
+                if ( it->second == gi )
+                {
+                    ++it->second;
+                    break;
+                }
+            }
             layers[ gi + 1 ] = layers[ gi ];
         }
         layers[ i ] = gfx;
+        graphics_map.insert( std::pair<int, int> ( graphics_ids_used, i ) );
         ++number_of_graphics;
         ++graphics_per_layer[ state ][ ( int )( layer ) ];
+        return graphics_ids_used++;
+    };
+
+    Graphic & getGraphic( unsigned int id )
+    {
+        auto seek = graphics_map.find( id );
+        if ( seek == graphics_map.end() )
+        {
+            throw std::runtime_error( "Could not find graphic." );
+        }
+        return layers[ seek->second ];
     };
 
     static void rect( const Rect & rect, const Color & color )

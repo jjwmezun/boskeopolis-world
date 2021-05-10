@@ -21,7 +21,8 @@ namespace Render
     void setNumberOfStates( int number );
     void clearGraphics();
     void clearStateGraphics( int state );
-    void addGraphic( Graphic gfx, int state, Unit::Layer layer );
+    unsigned int addGraphic( Graphic gfx, int state, Unit::Layer layer );
+    Graphic & getGraphic( unsigned int id );
 }
 
 #endif // RENDER_H

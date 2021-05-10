@@ -33,13 +33,42 @@ namespace GameStateMachine
             break;
             case ( GameState::Type::LEVEL ):
             {
-                if ( Input::pressedRight() )
+                auto & hero = states[ number_of_states - 1 ].hero;
+                if ( Input::heldRight() )
                 {
-                    pushState( createPauseState() );
+                    hero.accx = 0.25;
+                    hero.dir = Direction::RIGHT;
                 }
-                else if ( Input::pressedLeft() )
+                else if ( Input::heldLeft() )
                 {
-                    changeState( createTitleState() );
+                    hero.accx = -0.25;
+                    hero.dir = Direction::LEFT;
+                }
+                else
+                {
+                    hero.accx = 0.0;
+                    hero.vx /= 1.15;
+                }
+
+                hero.vx = std::max( -hero.top_speed, std::min( hero.top_speed, hero.vx + hero.accx ) );
+                hero.position.x += hero.vx;
+
+                Graphic & g = Render::getGraphic( hero.gfx );
+                g.data.sprite.dest = hero.position;
+
+                if ( hero.dir == Direction::RIGHT )
+                {
+                    if ( g.data.sprite.rotation_y < 180.0 )
+                    {
+                        g.data.sprite.rotation_y += 5.0;
+                    }
+                }
+                else
+                {
+                    if ( g.data.sprite.rotation_y > 0.0 )
+                    {
+                        g.data.sprite.rotation_y -= 5.0;
+                    }
                 }
             }
             break;
@@ -118,6 +147,20 @@ namespace GameStateMachine
             case ( GameState::Type::LEVEL ):
             {
                 Render::addGraphic( Graphic::createFullRect( { 0.0, 0.0, 255.0, 255.0 } ), number, Unit::Layer::BG_1 );
+                states[ number ].hero = { 0, { 32.0, 32.0, 16.0, 25.0 }, 0.0, 0.0, 0.0, 0.0, 4.0, Direction::LEFT };
+                states[ number ].hero.gfx = Render::addGraphic
+                (
+                    Graphic::createSprite
+                    (
+                        Render::getTextureId( "sprites/autumn.png" ),
+                        0,
+                        states[ number ].hero.position,
+                        0.0,
+                        0.0
+                    ),
+                    number,
+                    Unit::Layer::BEFORE_SPRITES_1
+                );
             }
             break;
             case ( GameState::Type::PAUSE ):
