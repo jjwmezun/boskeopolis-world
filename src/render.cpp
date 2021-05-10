@@ -167,6 +167,7 @@ namespace Render
             graphics_indices[ IARRAY_SIZE * i + 5 ] = 3;
         }
 
+        /*
         // VBO
         unsigned int VBO;
         glGenBuffers(1, &VBO);
@@ -189,30 +190,26 @@ namespace Render
         glBufferData(GL_ARRAY_BUFFER, sizeof( float ) * VARRAY_SIZE, vertices, GL_STATIC_DRAW);
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), 0);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(2* sizeof(float)));
-        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(4* sizeof(float)));
+        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(4* sizeof(float)));*/
 
 
-        glGenBuffers( MAX_GRAPHICS, graphics_vbos );
+        glGenBuffers( 1, graphics_vbos );
         glBindBuffer( GL_ARRAY_BUFFER, graphics_vbos[ 0 ] );
         glBufferData( GL_ARRAY_BUFFER, sizeof( graphics_vertices ), graphics_vertices, GL_STATIC_DRAW );
 
-        glGenVertexArrays( MAX_GRAPHICS, graphics_vaos );
+        glGenVertexArrays( 1, graphics_vaos );
         glBindVertexArray( graphics_vaos[ 0 ] );
 
-        glGenBuffers( MAX_GRAPHICS, graphics_ebos );
+        glGenBuffers( 1, graphics_ebos );
         glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, graphics_ebos[ 0 ] );
         glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( graphics_indices ), graphics_indices, GL_STATIC_DRAW );
-
-        for ( int i = 0; i < MAX_GRAPHICS; ++i )
-        {
-            glEnableVertexAttribArray(0);
-            glEnableVertexAttribArray(1);
-            glEnableVertexAttribArray(2);
-            glBufferData(GL_ARRAY_BUFFER, sizeof( float ) * VARRAY_SIZE, &graphics_vertices[ i * VARRAY_SIZE ], GL_STATIC_DRAW);
-            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), 0);
-            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(2* sizeof(float)));
-            glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(4* sizeof(float)));
-        }
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+        glBufferData(GL_ARRAY_BUFFER, sizeof( graphics_vertices ), &graphics_vertices[ 0 ], GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), 0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(2* sizeof(float)));
+        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(4* sizeof(float)));
 
         return true;
     };
@@ -232,7 +229,7 @@ namespace Render
             {
                 case ( Graphic::Type::RECT ):
                 {
-                    rect( layers[ i ].data.rect.rect, layers[ i ].data.rect.color );
+                    //rect( layers[ i ].data.rect.rect, layers[ i ].data.rect.color );
                     rect2( i );
                 }
                 break;
@@ -373,10 +370,10 @@ namespace Render
 
     static void rect2( int n )
     {
-        glBindVertexArray( graphics_vaos[ n ] );
+        glBindVertexArray( graphics_vaos[ 0 ] );
 
-        glBufferData(GL_ARRAY_BUFFER, sizeof( float ) * VARRAY_SIZE, &graphics_vertices[ n * VARRAY_SIZE ], GL_STATIC_DRAW);
-        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(4* sizeof(float)));
+        //glBufferData(GL_ARRAY_BUFFER, sizeof( float ) * VARRAY_SIZE, &graphics_vertices[ n * VARRAY_SIZE ], GL_STATIC_DRAW);
+        //glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(4* sizeof(float)));
 
         glUseProgram(rect_shader);
 
@@ -417,17 +414,16 @@ namespace Render
 
         if ( gfx.type == Graphic::Type::RECT )
         {
-            glBindBuffer( GL_ARRAY_BUFFER, graphics_vbos[ i ] );
-            glBindVertexArray( graphics_vaos[ i ] );
+            //glBindVertexArray( graphics_vaos[ 0 ] );
             /*
             graphics_vertices[ VARRAY_SIZE * i + 4 ] = graphics_vertices[ VARRAY_SIZE * i + 4 + VERTEX_SIZE ] = graphics_vertices[ VARRAY_SIZE * i + 4 + VERTEX_SIZE * 2 ] = graphics_vertices[ VARRAY_SIZE * i + 4 + VERTEX_SIZE * 3 ] = 255.0 / 255.0f;
             graphics_vertices[ VARRAY_SIZE * i + 5 ] = graphics_vertices[ VARRAY_SIZE * i + 5 + VERTEX_SIZE ] = graphics_vertices[ VARRAY_SIZE * i + 5 + VERTEX_SIZE * 2 ] = graphics_vertices[ VARRAY_SIZE * i + 5 + VERTEX_SIZE * 3 ] = 0.0 / 255.0f;
             graphics_vertices[ VARRAY_SIZE * i + 6 ] = graphics_vertices[ VARRAY_SIZE * i + 6 + VERTEX_SIZE ] = graphics_vertices[ VARRAY_SIZE * i + 6 + VERTEX_SIZE * 2 ] = graphics_vertices[ VARRAY_SIZE * i + 6 + VERTEX_SIZE * 3 ] = 255.0 / 255.0f;
             graphics_vertices[ VARRAY_SIZE * i + 7 ] = graphics_vertices[ VARRAY_SIZE * i + 7 + VERTEX_SIZE ] = graphics_vertices[ VARRAY_SIZE * i + 7 + VERTEX_SIZE * 2 ] = graphics_vertices[ VARRAY_SIZE * i + 7 + VERTEX_SIZE * 3 ] = 255.0 / 255.0;
             */
-            glBufferData(GL_ARRAY_BUFFER, sizeof( float ) * VARRAY_SIZE, &graphics_vertices[ VARRAY_SIZE * i ], GL_STATIC_DRAW);
-            glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(4* sizeof(float)));
-            glBindVertexArray( 0 );
+            //glBufferData(GL_ARRAY_BUFFER, sizeof( float ) * VARRAY_SIZE, &graphics_vertices[ VARRAY_SIZE * i ], GL_STATIC_DRAW);
+            //glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(4* sizeof(float)));
+            //glBindVertexArray( 0 );
         }
 
         ++number_of_graphics;
@@ -608,10 +604,10 @@ namespace Render
 
     static void bufferVertices()
     {
-        glBufferData(GL_ARRAY_BUFFER, sizeof( float ) * VARRAY_SIZE, vertices, GL_STATIC_DRAW);
+        //glBufferData(GL_ARRAY_BUFFER, sizeof( float ) * VARRAY_SIZE, vertices, GL_STATIC_DRAW);
         //glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), 0);
         //glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(2* sizeof(float)));
-        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(4* sizeof(float)));
+        //glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_SIZE * sizeof(float), (void*)(4* sizeof(float)));
     }
 
     void framebufferSizeCallback( GLFWwindow* window, int screen_width, int screen_height )
