@@ -6,7 +6,7 @@
 #include "game_state_machine.hpp"
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
-#include "graphics.hpp"
+#include "graphic.hpp"
 #include "rect.hpp"
 #include "render.hpp"
 #include <stdexcept>
@@ -58,7 +58,7 @@ namespace Render
     static int number_of_graphics = 0;
     static int graphics_per_layer[ GameStateMachine::MAX_STATES ][ Unit::NUMBER_OF_LAYERS ];
     static int number_of_states = 0;
-    static Graphics layers[ MAX_GRAPHICS ];
+    static Graphic layers[ MAX_GRAPHICS ];
     static GLFWwindow * window;
 
     static void drawBox( const Rect & rect, const Color & top_left_color, const Color & top_right_color, const Color & bottom_left_color, const Color & bottom_right_color );
@@ -67,6 +67,9 @@ namespace Render
     static unsigned int generateShader( GLenum type, const char * file );
     static std::string loadShader( const char * local );
     static void bufferVertices();
+    static void rect( const Rect & rect, const Color & color );
+    static void sprite( unsigned int texture_id, unsigned int palette_id, const Rect & src, const Rect & dest, bool flip_x, bool flip_y, float rotation_x, float rotation_y, float rotation_z );
+    static void character( const Character & character, const Color & color );
 
     bool init( const char * title, int width, int height, Color background )
     {
@@ -99,6 +102,19 @@ namespace Render
         palette_texture = getTextureId( "sprites/palette.png", false );
         text_texture = getTextureId( "text/latin.png", false );
 
+        for ( unsigned int shader : { sprite_shader, rect_shader, text_shader } )
+        {
+            glUseProgram(shader);
+            glm::mat4 ortho = glm::ortho( 0.0f, 400.0f, 224.0f, 0.0f, -1.0f, 1.0f );
+            unsigned int ortho_location = glGetUniformLocation(shader, "ortho");
+            glUniformMatrix4fv( ortho_location, 1, GL_FALSE, glm::value_ptr(ortho));
+        }
+
+        glfwSetFramebufferSizeCallback( window, framebufferSizeCallback );
+
+        clearGraphics();
+
+
         unsigned int VBO;
         glGenBuffers(1, &VBO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -117,18 +133,6 @@ namespace Render
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         bufferVertices();
 
-        for ( unsigned int shader : { sprite_shader, rect_shader, text_shader } )
-        {
-            glUseProgram(shader);
-            glm::mat4 ortho = glm::ortho( 0.0f, 400.0f, 224.0f, 0.0f, -1.0f, 1.0f );
-            unsigned int ortho_location = glGetUniformLocation(shader, "ortho");
-            glUniformMatrix4fv( ortho_location, 1, GL_FALSE, glm::value_ptr(ortho));
-        }
-
-        glfwSetFramebufferSizeCallback( window, framebufferSizeCallback );
-
-        clearGraphics();
-
         return true;
     };
 
@@ -143,7 +147,22 @@ namespace Render
         glClear( GL_COLOR_BUFFER_BIT );
         for ( int i = 0; i < number_of_graphics; ++i )
         {
-            layers[ i ].render();
+            switch ( layers[ i ].type )
+            {
+                case ( Graphic::Type::RECT ):
+                {
+                    rect( layers[ i ].data.rect.rect, layers[ i ].data.rect.color );
+                }
+                break;
+                case ( Graphic::Type::TEXT ):
+                {
+                    for ( int c = 0; c < layers[ i ].data.text.number_of_characters; ++c )
+                    {
+                        character( layers[ i ].data.text.characters[ c ], layers[ i ].data.text.color );
+                    }
+                }
+                break;
+            }
         }
         glfwSwapBuffers( window );
     };
@@ -219,129 +238,6 @@ namespace Render
         // move later states’ graphics down to next blank space.
     };
 
-    void addGraphic( Graphics gfx, int state, Unit::Layer layer )
-    {
-        // Count up graphics 
-        int i = 0;
-        for ( int si = 0; si < state; ++si )
-        {
-            for ( int li = 0; li < Unit::NUMBER_OF_LAYERS; ++li )
-            {
-                i += graphics_per_layer[ si ][ li ];
-            }
-        }
-        for ( int li = 0; li <= ( int )( layer ); ++li )
-        {
-            i += graphics_per_layer[ state ][ li ];
-        }
-        layers[ i ] = gfx;
-        ++number_of_graphics;
-        ++graphics_per_layer[ state ][ ( int )( layer ) ];
-    };
-
-    void rect( const Rect & rect, const Color & color )
-    {
-        drawBox( rect, color, color, color, color );
-    };
-
-    void sprite( unsigned int texture_id, unsigned int palette_id, const Rect & src, const Rect & dest, bool flip_x, bool flip_y, float rotation_x, float rotation_y, float rotation_z )
-    {
-        glUseProgram(sprite_shader);
-
-        // Src Coords
-        if ( flip_x )
-        {
-            vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].width ) * src.x; // Left X
-            vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src.x + src.w );  // Right X
-        }
-        else
-        {
-            vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ texture_id ].width ) * src.x; // Left X
-            vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src.x + src.w );  // Right X
-        }
-
-        if ( flip_y )
-        {
-            vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src.y + src.h ); // Top Y
-            vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * src.y;  // Bottom Y
-        }
-        else
-        {
-            vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src.y + src.h ); // Top Y
-            vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].height ) * src.y;  // Bottom Y
-        }
-
-        bufferVertices();
-
-        glm::mat4 view = glm::mat4(1.0f);
-        view = glm::translate(view, glm::vec3( dest.x + ( dest.w / 2.0f ), dest.y + ( dest.h / 2.0f ), 0.0f));
-        unsigned int view_location = glGetUniformLocation(sprite_shader, "view");
-        glUniformMatrix4fv( view_location, 1, GL_FALSE, glm::value_ptr(view));
-
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::scale( model, glm::vec3( dest.w, dest.h, 0.0 ) );
-        model = glm::rotate( model, glm::radians( rotation_z ), glm::vec3( 0.0, 0.0, 1.0 ) );
-        model = glm::rotate( model, glm::radians( rotation_y ), glm::vec3( 0.0, 1.0, 0.0 ) );
-        model = glm::rotate( model, glm::radians( rotation_x ), glm::vec3( 1.0, 0.0, 0.0 ) );
-        unsigned int model_location = glGetUniformLocation(sprite_shader, "model");
-        glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
-    
-        GLint palette_id_location = glGetUniformLocation(sprite_shader, "palette_id");
-        glUniform1f( palette_id_location, ( float )( palette_id ) );
-
-        GLint texture_data_location = glGetUniformLocation(sprite_shader, "texture_data");
-        GLint palette_data_location = glGetUniformLocation(sprite_shader, "palette_data");
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture_ids[ texture_id ] );
-        glUniform1i(texture_data_location, 0);
-        glActiveTexture(GL_TEXTURE1 );
-        glBindTexture(GL_TEXTURE_2D, texture_ids[ palette_texture ] );
-        glUniform1i(palette_data_location, 1);
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
-    };
-
-    void character( const Character & character, const Color & color )
-    {
-        glUseProgram(text_shader);
-
-        // Src Coords
-            vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ text_texture ].width ) * character.src_x; // Left X
-            vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ text_texture ].width ) * ( character.src_x + character.w );  // Right X
-            vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ text_texture ].height ) * ( character.src_y + character.h ); // Top Y
-            vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ text_texture ].height ) * character.src_y;  // Bottom Y
-
-        bufferVertices();
-
-        glm::mat4 view = glm::mat4(1.0f);
-        view = glm::translate(view, glm::vec3( character.dest_x + ( character.w / 2.0f ), character.dest_y + ( character.h / 2.0f ), 0.0f));
-        unsigned int view_location = glGetUniformLocation(text_shader, "view");
-        glUniformMatrix4fv( view_location, 1, GL_FALSE, glm::value_ptr(view));
-
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::scale( model, glm::vec3( character.w, character.h, 0.0 ) );
-        unsigned int model_location = glGetUniformLocation(text_shader, "model");
-        glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
-
-        unsigned int color_location = glGetUniformLocation(text_shader, "color");
-        glUniform4f( color_location, color.r, color.g, color.b, color.a );
-
-        GLint texture_data_location = glGetUniformLocation(text_shader, "texture_data");
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture_ids[ text_texture ] );
-        glUniform1i(texture_data_location, 0);
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
-    };
-
-    void colorCanvas( const Color & color )
-    {
-        Rect r { 0, 0, canvas_width, canvas_height };
-        rect( r, color );
-    };
-
     bool windowShouldClose()
     {
         return glfwWindowShouldClose( window );
@@ -413,6 +309,127 @@ namespace Render
         GLint y = ( int )( floor( ( double )( screen_height - magnified_canvas_height ) / 2.0 ) );
         glViewport( x, y, magnified_canvas_width, magnified_canvas_height );
     }
+
+    void addGraphic( Graphic gfx, int state, Unit::Layer layer )
+    {
+        // Count up graphics 
+        int i = 0;
+        for ( int si = 0; si < state; ++si )
+        {
+            for ( int li = 0; li < Unit::NUMBER_OF_LAYERS; ++li )
+            {
+                i += graphics_per_layer[ si ][ li ];
+            }
+        }
+        for ( int li = 0; li <= ( int )( layer ); ++li )
+        {
+            i += graphics_per_layer[ state ][ li ];
+        }
+        for ( int gi = number_of_graphics - 1; gi > i; --gi )
+        {
+            layers[ gi + 1 ] = layers[ gi ];
+        }
+        layers[ i ] = gfx;
+        ++number_of_graphics;
+        ++graphics_per_layer[ state ][ ( int )( layer ) ];
+    };
+
+    static void rect( const Rect & rect, const Color & color )
+    {
+        drawBox( rect, color, color, color, color );
+    };
+
+    static void sprite( unsigned int texture_id, unsigned int palette_id, const Rect & src, const Rect & dest, bool flip_x, bool flip_y, float rotation_x, float rotation_y, float rotation_z )
+    {
+        glUseProgram(sprite_shader);
+
+        // Src Coords
+        if ( flip_x )
+        {
+            vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].width ) * src.x; // Left X
+            vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src.x + src.w );  // Right X
+        }
+        else
+        {
+            vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ texture_id ].width ) * src.x; // Left X
+            vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src.x + src.w );  // Right X
+        }
+
+        if ( flip_y )
+        {
+            vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src.y + src.h ); // Top Y
+            vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * src.y;  // Bottom Y
+        }
+        else
+        {
+            vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src.y + src.h ); // Top Y
+            vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].height ) * src.y;  // Bottom Y
+        }
+
+        bufferVertices();
+
+        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3( dest.x + ( dest.w / 2.0f ), dest.y + ( dest.h / 2.0f ), 0.0f));
+        unsigned int view_location = glGetUniformLocation(sprite_shader, "view");
+        glUniformMatrix4fv( view_location, 1, GL_FALSE, glm::value_ptr(view));
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::scale( model, glm::vec3( dest.w, dest.h, 0.0 ) );
+        model = glm::rotate( model, glm::radians( rotation_z ), glm::vec3( 0.0, 0.0, 1.0 ) );
+        model = glm::rotate( model, glm::radians( rotation_y ), glm::vec3( 0.0, 1.0, 0.0 ) );
+        model = glm::rotate( model, glm::radians( rotation_x ), glm::vec3( 1.0, 0.0, 0.0 ) );
+        unsigned int model_location = glGetUniformLocation(sprite_shader, "model");
+        glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
+    
+        GLint palette_id_location = glGetUniformLocation(sprite_shader, "palette_id");
+        glUniform1f( palette_id_location, ( float )( palette_id ) );
+
+        GLint texture_data_location = glGetUniformLocation(sprite_shader, "texture_data");
+        GLint palette_data_location = glGetUniformLocation(sprite_shader, "palette_data");
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture_ids[ texture_id ] );
+        glUniform1i(texture_data_location, 0);
+        glActiveTexture(GL_TEXTURE1 );
+        glBindTexture(GL_TEXTURE_2D, texture_ids[ palette_texture ] );
+        glUniform1i(palette_data_location, 1);
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+    };
+
+    static void character( const Character & character, const Color & color )
+    {
+        glUseProgram(text_shader);
+
+        // Src Coords
+            vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ text_texture ].width ) * character.src_x; // Left X
+            vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ text_texture ].width ) * ( character.src_x + character.w );  // Right X
+            vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ text_texture ].height ) * ( character.src_y + character.h ); // Top Y
+            vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ text_texture ].height ) * character.src_y;  // Bottom Y
+
+        bufferVertices();
+
+        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3( character.dest_x + ( character.w / 2.0f ), character.dest_y + ( character.h / 2.0f ), 0.0f));
+        unsigned int view_location = glGetUniformLocation(text_shader, "view");
+        glUniformMatrix4fv( view_location, 1, GL_FALSE, glm::value_ptr(view));
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::scale( model, glm::vec3( character.w, character.h, 0.0 ) );
+        unsigned int model_location = glGetUniformLocation(text_shader, "model");
+        glUniformMatrix4fv( model_location, 1, GL_FALSE, glm::value_ptr(model));
+
+        unsigned int color_location = glGetUniformLocation(text_shader, "color");
+        glUniform4f( color_location, color.r, color.g, color.b, color.a );
+
+        GLint texture_data_location = glGetUniformLocation(text_shader, "texture_data");
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture_ids[ text_texture ] );
+        glUniform1i(texture_data_location, 0);
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+    };
 
     static unsigned int generateShaderProgram( std::vector<const char *> vertex_shaders, std::vector<const char *> fragment_shaders )
     {

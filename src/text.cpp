@@ -14,9 +14,9 @@ static int getCharacterSize( const char * s );
 Text Text::create( const char * text, std::unordered_map<const char *, std::variant<double, Align, VAlign, Color>> args )
 {
     Text t;
-    //t.characters_ = {};
-    t.number_of_characters_ = 0;
-    t.color_ = { 0.0, 0.0, 0.0, 255.0 };
+    //t.characters = {};
+    t.number_of_characters = 0;
+    t.color = { 0.0, 0.0, 0.0, 255.0 };
 
     double x = 0;
     double y = 0;
@@ -64,7 +64,7 @@ Text Text::create( const char * text, std::unordered_map<const char *, std::vari
         }
         else if ( std::string( i.first ) == "color" )
         {
-            t.color_ = std::get<Color>( i.second );
+            t.color = std::get<Color>( i.second );
         }
     }
 
@@ -198,7 +198,7 @@ Text Text::create( const char * text, std::unordered_map<const char *, std::vari
         {
             // Just in case o’ character index misalignment, just copy o’er whole characters.
             dx += lines[ l ][ c ].w;
-            t.characters_[ t.number_of_characters_++ ] = 
+            t.characters[ t.number_of_characters++ ] = 
             {
                 lines[ l ][ c ].w,
                 lines[ l ][ c ].h,
@@ -211,14 +211,6 @@ Text Text::create( const char * text, std::unordered_map<const char *, std::vari
         dy += 8.0;
     }
     return t;
-};
-
-void Text::render() const
-{
-    for ( int i = 0; i < number_of_characters_; ++i )
-    {
-        Render::character( characters_[ i ], color_ );
-    }
 };
 
 static int getCharacterSize( const char * s )

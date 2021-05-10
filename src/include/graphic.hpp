@@ -1,5 +1,5 @@
-#ifndef GRAPHICS_H
-#define GRAPHICS_H
+#ifndef GRAPHIC_H
+#define GRAPHIC_H
 
 #include "color.hpp"
 #include "rect.hpp"
@@ -11,7 +11,7 @@ struct RectGraphics
     Color color;
 };
 
-struct Graphics
+struct Graphic
 {
     enum class Type
     {
@@ -19,10 +19,9 @@ struct Graphics
         TEXT
     };
 
-    void render();
-    static Graphics createRect( Rect rect, Color color );
-    static Graphics createFullRect( Color color );
-    static Graphics createText( Text text );
+    static Graphic createRect( Rect rect, Color color );
+    static Graphic createFullRect( Color color );
+    static Graphic createText( Text text );
 
     Type type;
     union
@@ -32,4 +31,4 @@ struct Graphics
     } data;
 };
 
-#endif // GRAPHICS_H
+#endif // GRAPHIC_H

@@ -1,7 +1,7 @@
 #include <cassert>
 #include "color.hpp"
 #include "game_state_machine.hpp"
-#include "graphics.hpp"
+#include "graphic.hpp"
 #include "input.hpp"
 #include "render.hpp"
 #include "text.hpp"
@@ -111,18 +111,18 @@ namespace GameStateMachine
         {
             case ( GameState::Type::TITLE ):
             {
-                Render::addGraphic( Graphics::createFullRect( { 255.0, 255.0, 255.0, 255.0 } ), number, Unit::Layer::BG_1 );
-                Render::addGraphic( Graphics::createText( Text::create( "Boskeopolis World", {{ "x", 16.0 }, { "y", 16.0 } } ) ), number, Unit::Layer::FG_1 );
+                Render::addGraphic( Graphic::createFullRect( { 255.0, 255.0, 255.0, 255.0 } ), number, Unit::Layer::BG_1 );
+                Render::addGraphic( Graphic::createText( Text::create( "Boskeopolis World", {{ "x", 16.0 }, { "y", 16.0 } } ) ), number, Unit::Layer::FG_1 );
             }
             break;
             case ( GameState::Type::LEVEL ):
             {
-                Render::addGraphic( Graphics::createFullRect( { 0.0, 0.0, 255.0, 255.0 } ), number, Unit::Layer::BG_1 );
+                Render::addGraphic( Graphic::createFullRect( { 0.0, 0.0, 255.0, 255.0 } ), number, Unit::Layer::BG_1 );
             }
             break;
             case ( GameState::Type::PAUSE ):
             {
-                Render::addGraphic( Graphics::createRect( { 32.0, 32.0, 320.0, 128.0 }, { 255.0, 0.0, 0.0, 255.0 } ), number, Unit::Layer::BG_1 );
+                Render::addGraphic( Graphic::createRect( { 32.0, 32.0, 320.0, 128.0 }, { 255.0, 0.0, 0.0, 255.0 } ), number, Unit::Layer::BG_1 );
             }
             break;
         }

@@ -5,8 +5,9 @@
 
 class Character;
 class Color;
-class Graphics;
+class Graphic;
 class Rect;
+class Text;
 
 namespace Render
 {
@@ -20,12 +21,7 @@ namespace Render
     void setNumberOfStates( int number );
     void clearGraphics();
     void clearStateGraphics( int state );
-
-    void addGraphic( Graphics gfx, int state, Unit::Layer layer );
-    void rect( const Rect & rect, const Color & color );
-    void sprite( unsigned int texture_id, unsigned int palette_id, const Rect & src, const Rect & dest, bool flip_x, bool flip_y, float rotation_x, float rotation_y, float rotation_z );
-    void character( const Character & character, const Color & color );
-    void colorCanvas( const Color & color );
+    void addGraphic( Graphic gfx, int state, Unit::Layer layer );
 }
 
 #endif // RENDER_H

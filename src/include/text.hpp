@@ -26,14 +26,12 @@ class Text
         };
 
         static Text create( const char * text, std::unordered_map<const char *, std::variant<double, Align, VAlign, Color>> args = {} );
-        void render() const;
 
-    private:
         static constexpr int MAX_CHARACTERS = 256;
 
-        Character characters_[ MAX_CHARACTERS ];
-        int number_of_characters_;
-        Color color_;
+        Character characters[ MAX_CHARACTERS ];
+        int number_of_characters;
+        Color color;
 };
 
 #endif // TEXT_H
