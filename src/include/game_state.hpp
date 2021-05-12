@@ -2,6 +2,9 @@
 #define GAME_STATE_H
 
 #include "rect.hpp"
+#include <string>
+#include <unordered_map>
+#include <variant>
 
 enum class Direction
 {
@@ -18,7 +21,12 @@ struct Sprite
     float vx;
     float vy;
     float top_speed;
-    Direction dir;
+    std::unordered_map<std::string, int_fast16_t> * props;
+};
+
+struct LevelState
+{
+    Sprite hero;
 };
 
 struct GameState
@@ -31,7 +39,10 @@ struct GameState
     };
 
     Type type;
-    Sprite hero;
+    union
+    {
+        LevelState level;
+    } data;
 };
 
 #endif // GAME_STATE_H
