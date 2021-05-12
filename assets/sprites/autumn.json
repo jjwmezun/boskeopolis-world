@@ -1,0 +1,73 @@
+{
+    "w": 16,
+    "h": 25,
+    "top_speed": 4,
+    "graphics": {
+        "texture": "sprites/autumn.png"
+    },
+    "props": {
+        "dir": {
+            "type": "direction",
+            "value": "right"
+        }
+    },
+    "update":
+    [
+        [
+            "if",
+            [ "input-held", "right" ],
+            [
+                "progn",
+                [ "incf", "accx", 0.25 ],
+                [ "set", [ "prop", "dir" ], [ "direction", "right" ] ]
+            ],
+            [
+                "if",
+                [ "input-held", "left" ],
+                [
+                    "progn",
+                    [ "decf", "accx", 0.25 ],
+                    [ "set", [ "prop", "dir" ], [ "direction", "left" ] ]
+                ],
+                [
+                    "progn",
+                    [ "set", "accx", 0 ],
+                    [ "divf", "vx", 1.15 ]
+                ]
+            ]
+        ],
+        [
+            "set",
+            "vx",
+            [
+                "max",
+                [ "-", "top-speed" ],
+                [
+                    "min",
+                    "top-speed",
+                    [
+                        "+",
+                        "vx",
+                        "accx"
+                    ]
+                ]
+            ]
+        ],
+        [ "incf", "x", "vx" ],
+        [
+            "if",
+            [ "=", [ "prop", "dir" ], [ "direction", "right" ] ],
+            [ 
+                "if",
+                [ "<", "gfx-rotation-y", 180.0 ],
+                [ "set", "gfx-rotation-y", [ "+", "gfx-rotation-y", 5.0 ] ]
+            ],
+            [ 
+                "if",
+                [ ">", "gfx-rotation-y", 0.0 ],
+                [ "set", "gfx-rotation-y", [ "-", "gfx-rotation-y", 5.0 ] ]
+            ]
+        ],
+        [ "update-gfx-position" ]
+    ]
+}
