@@ -3,13 +3,19 @@
 
 #include <cstdint>
 #include <cstring>
+#include <string>
 #include <vector>
 
 class LevelState;
 
 namespace BytecodeMachine
 {
-    void run( const std::vector<int_fast16_t> & bytecode, LevelState & level_state );
+    struct Bytecode
+    {
+        std::vector<std::string> constants;
+        std::vector<int_fast16_t> instructions;
+    };
+    void run( const Bytecode & bytecode, LevelState & level_state );
 }
 
 #endif // BYTECODE_MACHINE_H

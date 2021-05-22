@@ -50,118 +50,117 @@ namespace GameStateMachine
     };
     GameState states[ MAX_STATES ];
     int number_of_states = 0;
-    std::vector<int_fast16_t> bytecode
+    BytecodeMachine::Bytecode bytecode
     {
-        4,
-        ( int_fast16_t )( 'd' ),
-        ( int_fast16_t )( 'i' ),
-        ( int_fast16_t )( 'r' ),
-        ( int_fast16_t )( '\0' ),
+        {
+            "dir"
+        },
+        {
+            // If right not held, skip to TEST_MOVE_LEFT
+            LITERAL, 16,
+            GET_RIGHT_HELD,
+            CNJMP,
 
-        // If right not held, skip to TEST_MOVE_LEFT
-        LITERAL, 20,
-        GET_RIGHT_HELD,
-        CNJMP,
+            // accx += 0.25
+            LITERAL, 94193976344576,
+            SET_PLAYER_ACCX,
 
-        // accx += 0.25
-        LITERAL, 94193976344576,
-        SET_PLAYER_ACCX,
+            // dir = 01
+            LITERAL, 0x01,
+            LITERAL, 0x00,
+            SET_PLAYER_PROP,
 
-        // dir = 01
-        LITERAL, 0x01,
-        LITERAL, 0x01,
-        SET_PLAYER_PROP,
+            // Skip to SET_VX ( treat next condition as else if )
+            LITERAL, 40,
+            JMP,
 
-        // Skip to SET_VX ( treat next condition as else if )
-        LITERAL, 44,
-        JMP,
+            // TEST_MOVE_LEFT:
+            // If left not held, skip to TEST_NO_MOVE
+            LITERAL, 32,
+            GET_LEFT_HELD,
+            CNJMP,
 
-        // TEST_MOVE_LEFT:
-        // If left not held, skip to TEST_NO_MOVE
-        LITERAL, 36,
-        GET_LEFT_HELD,
-        CNJMP,
+            // accx -= 0.25
+            LITERAL, 94193976344576,
+            NEG,
+            SET_PLAYER_ACCX,
 
-        // accx -= 0.25
-        LITERAL, 94193976344576,
-        NEG,
-        SET_PLAYER_ACCX,
+            // dir = 00
+            LITERAL, 0x00,
+            LITERAL, 0x00,
+            SET_PLAYER_PROP,
 
-        // dir = 00
-        LITERAL, 0x00,
-        LITERAL, 0x01,
-        SET_PLAYER_PROP,
+            // Skip to SET_VX
+            LITERAL, 40,
+            JMP,
 
-        // Skip to SET_VX
-        LITERAL, 44,
-        JMP,
+            // TEST_NO_MOVE
+            LITERAL, 0x00,
+            SET_PLAYER_ACCX,
+            LITERAL, 94503232025395,
+            GET_PLAYER_VX,
+            DIV,
+            SET_PLAYER_VX,
 
-        // TEST_NO_MOVE
-        LITERAL, 0x00,
-        SET_PLAYER_ACCX,
-        LITERAL, 94503232025395,
-        GET_PLAYER_VX,
-        DIV,
-        SET_PLAYER_VX,
+            // SET_VX:
+            // hero.vx = std::max( -hero.top_speed, std::min( hero.top_speed, hero.vx + hero.accx ) )
+            GET_PLAYER_VX,
+            GET_PLAYER_ACCX,
+            ADD,
+            GET_PLAYER_TOP_SPEED,
+            MIN,
+            GET_PLAYER_TOP_SPEED,
+            NEG,
+            MAX,
+            SET_PLAYER_VX,
 
-        // SET_VX:
-        // hero.vx = std::max( -hero.top_speed, std::min( hero.top_speed, hero.vx + hero.accx ) )
-        GET_PLAYER_VX,
-        GET_PLAYER_ACCX,
-        ADD,
-        GET_PLAYER_TOP_SPEED,
-        MIN,
-        GET_PLAYER_TOP_SPEED,
-        NEG,
-        MAX,
-        SET_PLAYER_VX,
+            // x += vx
+            GET_PLAYER_X,
+            GET_PLAYER_VX,
+            ADD,
+            SET_PLAYER_X,
 
-        // x += vx
-        GET_PLAYER_X,
-        GET_PLAYER_VX,
-        ADD,
-        SET_PLAYER_X,
+            // 57. if ( hero.dir == Direction::RIGHT )
+            LITERAL, 77,
+            LITERAL, 0x01,
+            LITERAL, 0x00,
+            GET_PLAYER_PROP,
+            EQUAL,
+            CNJMP,
 
-        // 57. if ( hero.dir == Direction::RIGHT )
-        LITERAL, 81,
-        LITERAL, 0x01,
-        LITERAL, 0x01,
-        GET_PLAYER_PROP,
-        EQUAL,
-        CNJMP,
+            // if ( g.data.sprite.rotation_y < 180.0 )
+            LITERAL, 89,
+            LITERAL, 94297134465024,
+            GET_PLAYER_GRAPHICS_ROTATION_Y,
+            LESS_THAN,
+            CNJMP,
 
-        // if ( g.data.sprite.rotation_y < 180.0 )
-        LITERAL, 93,
-        LITERAL, 94297134465024,
-        GET_PLAYER_GRAPHICS_ROTATION_Y,
-        LESS_THAN,
-        CNJMP,
+            // g.data.sprite.rotation_y += 5.0;
+            LITERAL, 94340040884224,
+            GET_PLAYER_GRAPHICS_ROTATION_Y,
+            ADD,
+            SET_PLAYER_GRAPHICS_ROTATION_Y,
 
-        // g.data.sprite.rotation_y += 5.0;
-        LITERAL, 94340040884224,
-        GET_PLAYER_GRAPHICS_ROTATION_Y,
-        ADD,
-        SET_PLAYER_GRAPHICS_ROTATION_Y,
+            // Skip to UPDATE_GFX
+            LITERAL, 89,
+            JMP,
 
-        // Skip to UPDATE_GFX
-        LITERAL, 93,
-        JMP,
+            // else if ( g.data.sprite.rotation_y > 0.0 )
+            LITERAL, 89,
+            LITERAL, 0x00,
+            GET_PLAYER_GRAPHICS_ROTATION_Y,
+            GREATER_THAN,
+            CNJMP,
 
-        // else if ( g.data.sprite.rotation_y > 0.0 )
-        LITERAL, 93,
-        LITERAL, 0x00,
-        GET_PLAYER_GRAPHICS_ROTATION_Y,
-        GREATER_THAN,
-        CNJMP,
+            // g.data.sprite.rotation_y -= 5.0;
+            LITERAL, 94340040884224,
+            GET_PLAYER_GRAPHICS_ROTATION_Y,
+            SUB,
+            SET_PLAYER_GRAPHICS_ROTATION_Y,
 
-        // g.data.sprite.rotation_y -= 5.0;
-        LITERAL, 94340040884224,
-        GET_PLAYER_GRAPHICS_ROTATION_Y,
-        SUB,
-        SET_PLAYER_GRAPHICS_ROTATION_Y,
-
-        // UPDATE_GFX:
-        UPDATE_PLAYER_GRAPHICS_POSITION
+            // UPDATE_GFX:
+            UPDATE_PLAYER_GRAPHICS_POSITION
+        }
     };
 
     static void closeState( int number );

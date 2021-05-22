@@ -56,16 +56,17 @@ namespace BytecodeMachine
     static void floatToStack( std::stack<int_fast16_t> & stack, float value );
     static float floatFromStack( std::stack<int_fast16_t> & stack );
 
-    void run( const std::vector<int_fast16_t> & bytecode, LevelState & level_state )
+    void run( const Bytecode & bytecode, LevelState & level_state )
     {
         std::stack<int_fast16_t> stack;
-        for ( int i = ( int )( bytecode[ 0 ] + 1 ); i < bytecode.size(); ++i )
+        const int_fast16_t * ip = &bytecode.instructions[ 0 ];
+        while ( ip != &bytecode.instructions[ bytecode.instructions.size() ] )
         {
-            switch ( ( Instruction )( bytecode[ i ] ) )
+            switch ( ( Instruction )( *ip++ ) )
             {
                 case ( Instruction::LITERAL ):
                 {
-                    stack.push( bytecode[ ++i ] );
+                    stack.push( *ip++ );
                 }
                 break;
                 case ( Instruction::BRK ):
@@ -77,7 +78,7 @@ namespace BytecodeMachine
                 {
                     int_fast16_t jump = stack.top();
                     stack.pop();
-                    i = ( int )( jump ) - 1;
+                    ip = &bytecode.instructions[ ( int )( jump ) - 1 ];
                 }
                 break;
                 case ( Instruction::CJMP ):
@@ -88,7 +89,7 @@ namespace BytecodeMachine
                     stack.pop();
                     if ( condition )
                     {
-                        i = ( int )( jump ) - 1;
+                        ip = &bytecode.instructions[ ( int )( jump ) - 1 ];
                     }
                 }
                 break;
@@ -100,7 +101,7 @@ namespace BytecodeMachine
                     stack.pop();
                     if ( !condition )
                     {
-                        i = ( int )( jump ) - 1;
+                        ip = &bytecode.instructions[ ( int )( jump ) - 1 ];
                     }
                 }
                 break;
@@ -190,11 +191,7 @@ namespace BytecodeMachine
                 {
                     int index = ( int )( stack.top() );
                     stack.pop();
-                    std::string text;
-                    while ( bytecode[ index ] != '\0' )
-                    {
-                        text += bytecode[ index++ ];
-                    }
+                    std::string text = bytecode.constants[ index ];
                     printf( "%s\n", text.c_str() );
                 }
                 break;
@@ -243,11 +240,7 @@ namespace BytecodeMachine
                 {
                     int key_index = ( int )( stack.top() );
                     stack.pop();
-                    std::string key;
-                    while ( bytecode[ key_index ] != '\0' )
-                    {
-                        key += ( char )( bytecode[ key_index++ ] );
-                    }
+                    std::string key = bytecode.constants[ key_index ];
                     auto seek = level_state.hero.props->find( key );
                     if ( seek == level_state.hero.props->end() )
                     {
@@ -260,11 +253,7 @@ namespace BytecodeMachine
                 {
                     int key_index = ( int )( stack.top() );
                     stack.pop();
-                    std::string key;
-                    while ( bytecode[ key_index ] != '\0' )
-                    {
-                        key += ( char )( bytecode[ key_index++ ] );
-                    }
+                    std::string key = bytecode.constants[ key_index ];
                     auto seek = level_state.hero.props->find( key );
                     if ( seek == level_state.hero.props->end() )
                     {
