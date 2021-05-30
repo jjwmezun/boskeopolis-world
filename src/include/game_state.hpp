@@ -1,19 +1,13 @@
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
 
-#include "bytecode_machine.hpp"
 #include "rect.hpp"
 #include <string>
 #include <unordered_map>
 #include <variant>
+#include "vm.hpp"
 
 #define MAX_SPRITE_PROPS 32
-
-enum class Direction
-{
-    LEFT,
-    RIGHT
-};
 
 struct Sprite
 {

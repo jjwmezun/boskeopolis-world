@@ -1,4 +1,3 @@
-#include "bytecode_machine.hpp"
 #include <cassert>
 #include "color.hpp"
 #include "game_state_machine.hpp"
@@ -7,132 +6,27 @@
 #include "render.hpp"
 #include "text.hpp"
 #include <stdexcept>
+#include "vm.hpp"
 
 namespace GameStateMachine
 {
     GameState states[ MAX_STATES ];
     int number_of_states = 0;
-    Bytecode bytecode;
+    VM vm;
 
     static void closeState( int number );
     static void initState( int number );
 
     void init()
     {
-        bytecode = bytecode_create
-        (
-            {
-                vm_create_float( 0.25 ),
-                vm_create_float( 1.15 ),
-                vm_create_float( 180.0 ),
-                vm_create_float( 5.0 ),
-                vm_create_float( 0.0 )
-            },
-            {
-                // If right not held, skip to TEST_MOVE_LEFT
-                VM_LITERAL, 14,
-                VM_GET_RIGHT_HELD,
-                VM_CNJMP,
-
-                // accx = 0.25
-                VM_CONST, 0x00,
-                VM_SET_PLAYER_ACCX,
-
-                // dir = 01
-                VM_LITERAL, 0x01,
-                VM_SET_PLAYER_PROP, 0x00,
-
-                // Skip to SET_VX ( treat next condition as else if )
-                VM_LITERAL, 37,
-                VM_JMP,
-
-                // TEST_MOVE_LEFT:
-                // If left not held, skip to TEST_NO_MOVE
-                VM_LITERAL, 29,
-                VM_GET_LEFT_HELD,
-                VM_CNJMP,
-
-                // accx = -0.25
-                VM_CONST, 0x00,
-                VM_NEG,
-                VM_SET_PLAYER_ACCX,
-
-                // dir = 00
-                VM_LITERAL, 0x00,
-                VM_SET_PLAYER_PROP, 0x00,
-
-                // Skip to SET_VX
-                VM_LITERAL, 37,
-                VM_JMP,
-
-                // TEST_NO_MOVE
-                VM_CONST, 0x04,
-                VM_SET_PLAYER_ACCX,
-                VM_CONST, 0x01,
-                VM_GET_PLAYER_VX,
-                VM_DIV,
-                VM_SET_PLAYER_VX,
-
-                // SET_VX:
-                // hero.vx = std::max( -hero.top_speed, std::min( hero.top_speed, hero.vx + hero.accx ) )
-                VM_GET_PLAYER_VX,
-                VM_GET_PLAYER_ACCX,
-                VM_ADD,
-                VM_GET_PLAYER_TOP_SPEED,
-                VM_MIN,
-                VM_GET_PLAYER_TOP_SPEED,
-                VM_NEG,
-                VM_MAX,
-                VM_SET_PLAYER_VX,
-
-                // x += vx
-                VM_GET_PLAYER_X,
-                VM_GET_PLAYER_VX,
-                VM_ADD,
-                VM_SET_PLAYER_X,
-
-                // 50. if ( hero.dir == Direction::RIGHT )
-                VM_LITERAL, 73,
-                VM_LITERAL, 0x01,
-                VM_GET_PLAYER_PROP, 0x00,
-                VM_EQUAL,
-                VM_CNJMP,
-
-                // if ( g.data.sprite.rotation_y < 180.0 )
-                VM_LITERAL, 85,
-                VM_CONST, 0x02,
-                VM_GET_PLAYER_GRAPHICS_ROTATION_Y,
-                VM_LESS_THAN,
-                VM_CNJMP,
-
-                // g.data.sprite.rotation_y += 5.0;
-                VM_CONST, 0x03,
-                VM_GET_PLAYER_GRAPHICS_ROTATION_Y,
-                VM_ADD,
-                VM_SET_PLAYER_GRAPHICS_ROTATION_Y,
-
-                // Skip to UPDATE_GFX
-                VM_LITERAL, 85,
-                VM_JMP,
-
-                // 74. else if ( g.data.sprite.rotation_y > 0.0 )
-                VM_LITERAL, 85,
-                VM_CONST, 0x04,
-                VM_GET_PLAYER_GRAPHICS_ROTATION_Y,
-                VM_GREATER_THAN,
-                VM_CNJMP,
-
-                // g.data.sprite.rotation_y -= 5.0;
-                VM_CONST, 0x03,
-                VM_GET_PLAYER_GRAPHICS_ROTATION_Y,
-                VM_SUB,
-                VM_SET_PLAYER_GRAPHICS_ROTATION_Y,
-
-                // UPDATE_GFX:
-                VM_UPDATE_PLAYER_GRAPHICS_POSITION
-            }
-        );
         changeState( createTitleState() );
+        vm_init( &vm );
+        VMInstruction constant = vm_code_push_constant( &vm.code, vm_create_float( 1.2 ) );
+        vm_code_push_instruction( &vm.code, OP_CONST, 123 );
+        vm_code_push_instruction( &vm.code, constant, 123 );
+        vm_code_push_instruction( &vm.code, OP_RETURN, 123 );
+        vm_code_interpret( &vm );
+        vm_close( &vm );
     };
 
     void update()
@@ -150,7 +44,6 @@ namespace GameStateMachine
             case ( GameState::Type::LEVEL ):
             {
                 auto & hero = states[ number_of_states - 1 ].data.level.hero;
-                BytecodeMachine::run( bytecode, states[ number_of_states - 1 ].data.level );
             }
             break;
             case ( GameState::Type::PAUSE ):
