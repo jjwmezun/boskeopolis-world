@@ -10,327 +10,322 @@
 
 namespace BytecodeMachine
 {
-    static constexpr int COPY_SIZE = std::min( sizeof( float ), sizeof( int_fast16_t ) );
+    static constexpr int COPY_SIZE = std::min( sizeof( float ), sizeof( VMInstruction ) );
 
-    enum class Instruction
-    {
-        LITERAL,
-        BRK,
-        JMP,
-        CJMP,
-        CNJMP,
-        EQUAL,
-        NOTEQUAL,
-        LESS_THAN,
-        GREATER_THAN,
-        LESS_THAN_EQUAL,
-        GREATER_THAN_EQUAL,
-        ADD,
-        SUB,
-        MUL,
-        DIV,
-        MAX,
-        MIN,
-        NEG,
-        PRINT_STACK,
-        PRINT_STATIC,
-        GET_RIGHT_HELD,
-        GET_LEFT_HELD,
-        GET_PLAYER_X,
-        SET_PLAYER_X,
-        GET_PLAYER_ACCX,
-        SET_PLAYER_ACCX,
-        GET_PLAYER_VX,
-        SET_PLAYER_VX,
-        GET_PLAYER_PROP,
-        SET_PLAYER_PROP,
-        GET_PLAYER_TOP_SPEED,
-        SET_PLAYER_TOP_SPEED,
-        UPDATE_PLAYER_GRAPHICS_POSITION,
-        GET_PLAYER_GRAPHICS_ROTATION_Y,
-        SET_PLAYER_GRAPHICS_ROTATION_Y
-    };
-
-    static void copyData( void * to, void * from );
-    static void floatMath( std::stack<int_fast16_t> & stack, std::function<float(float, float)> action );
-    static void floatToStack( std::stack<int_fast16_t> & stack, float value );
-    static float floatFromStack( std::stack<int_fast16_t> & stack );
+    static VMValue stack_pop( std::stack<VMValue> & stack );
+    static void floatMath( std::stack<VMValue> & stack, const VMInstruction * ip, const Bytecode & bytecode, std::function<float(float, float)> action );
 
     void run( const Bytecode & bytecode, LevelState & level_state )
     {
-        std::stack<int_fast16_t> stack;
-        const int_fast16_t * ip = &bytecode.instructions[ 0 ];
-        while ( ip != &bytecode.instructions[ bytecode.instructions.size() ] )
+        std::stack<VMValue> stack;
+        const VMInstruction * ip = &bytecode.instructions.list[ 0 ];
+        printf( "%ld\n", bytecode.instructions.size );
+        while ( ip != &vector_last( bytecode.instructions ) )
         {
-            switch ( ( Instruction )( *ip++ ) )
+            switch ( *ip++ )
             {
-                case ( Instruction::LITERAL ):
+                case ( VM_LITERAL ):
                 {
-                    stack.push( *ip++ );
+                    stack.push( vm_create_instruction( *ip++ ) );
                 }
                 break;
-                case ( Instruction::BRK ):
+                case ( VM_CONST ):
+                {
+                    stack.push( bytecode.constants.list[ *ip++ ] );
+                }
+                break;
+                case ( VM_BRK ):
                 {
                     return;
                 }
                 break;
-                case ( Instruction::JMP ):
+                case ( VM_JMP ):
                 {
-                    int_fast16_t jump = stack.top();
-                    stack.pop();
-                    ip = &bytecode.instructions[ ( int )( jump ) - 1 ];
+                    VMInstruction jump = stack_pop( stack ).value.instruction_;
+                    ip = &bytecode.instructions.list[ jump - 1 ];
                 }
                 break;
-                case ( Instruction::CJMP ):
+                case ( VM_CJMP ):
                 {
-                    int_fast16_t condition = stack.top();
-                    stack.pop();
-                    int_fast16_t jump = stack.top();
-                    stack.pop();
+                    bool condition = stack_pop( stack ).value.bool_;
+                    VMInstruction jump = stack_pop( stack ).value.instruction_;
                     if ( condition )
                     {
-                        ip = &bytecode.instructions[ ( int )( jump ) - 1 ];
+                        ip = &bytecode.instructions.list[ jump - 1 ];
+                        printf( "JUMP TO #%ld\n", bytecode.instructions.list[ jump - 1 ] );
                     }
                 }
                 break;
-                case ( Instruction::CNJMP ):
+                case ( VM_CNJMP ):
                 {
-                    int_fast16_t condition = stack.top();
-                    stack.pop();
-                    int_fast16_t jump = stack.top();
-                    stack.pop();
+                    bool condition = stack_pop( stack ).value.bool_;
+                    VMInstruction jump = stack_pop( stack ).value.instruction_;
                     if ( !condition )
                     {
-                        ip = &bytecode.instructions[ ( int )( jump ) - 1 ];
+                        ip = &bytecode.instructions.list[ jump - 1 ];
+                        printf( "JUMP TO #%ld\n", bytecode.instructions.list[ jump - 1 ] );
                     }
                 }
                 break;
-                case ( Instruction::EQUAL ):
+                case ( VM_EQUAL ):
                 {
-                    floatMath( stack, []( float x, float y ) { return x == y; } );
+                    floatMath( stack, ip, bytecode, []( float x, float y ) { return x == y; } );
                 }
                 break;
-                case ( Instruction::NOTEQUAL ):
+                case ( VM_NOTEQUAL ):
                 {
-                    floatMath( stack, []( float x, float y ) { return x != y; } );
+                    floatMath( stack, ip, bytecode, []( float x, float y ) { return x != y; } );
                 }
                 break;
-                case ( Instruction::LESS_THAN ):
+                case ( VM_LESS_THAN ):
                 {
-                    floatMath( stack, []( float x, float y ) { return x < y; } );
+                    floatMath( stack, ip, bytecode, []( float x, float y ) { return x < y; } );
                 }
                 break;
-                case ( Instruction::GREATER_THAN ):
+                case ( VM_GREATER_THAN ):
                 {
-                    floatMath( stack, []( float x, float y ) { return x > y; } );
+                    floatMath( stack, ip, bytecode, []( float x, float y ) { return x > y; } );
                 }
                 break;
-                case ( Instruction::LESS_THAN_EQUAL ):
+                case ( VM_LESS_THAN_EQUAL ):
                 {
-                    floatMath( stack, []( float x, float y ) { return x <= y; } );
+                    floatMath( stack, ip, bytecode, []( float x, float y ) { return x <= y; } );
                 }
                 break;
-                case ( Instruction::GREATER_THAN_EQUAL ):
+                case ( VM_GREATER_THAN_EQUAL ):
                 {
-                    floatMath( stack, []( float x, float y ) { return x >= y; } );
+                    floatMath( stack, ip, bytecode, []( float x, float y ) { return x >= y; } );
                 }
                 break;
-                case ( Instruction::ADD ):
+                case ( VM_ADD ):
                 {
-                    floatMath( stack, []( float x, float y ) { return x + y; } );
+                    floatMath( stack, ip, bytecode, []( float x, float y ) { return x + y; } );
                 }
                 break;
-                case ( Instruction::SUB ):
+                case ( VM_SUB ):
                 {
-                    floatMath( stack, []( float x, float y ) { return x - y; } );
+                    floatMath( stack, ip, bytecode, []( float x, float y ) { return x - y; } );
                 }
                 break;
-                case ( Instruction::MUL ):
+                case ( VM_MUL ):
                 {
-                    floatMath( stack, []( float x, float y ) { return x * y; } );
+                    floatMath( stack, ip, bytecode, []( float x, float y ) { return x * y; } );
                 }
                 break;
-                case ( Instruction::DIV ):
+                case ( VM_DIV ):
                 {
-                    floatMath( stack, []( float x, float y ) { return x / y; } );
+                    floatMath( stack, ip, bytecode, []( float x, float y ) { return x / y; } );
                 }
                 break;
-                case ( Instruction::MAX ):
+                case ( VM_MAX ):
                 {
-                    floatMath( stack, []( float x, float y ) { return std::max( x, y ); } );
+                    floatMath( stack, ip, bytecode, []( float x, float y ) { return std::max( x, y ); } );
                 }
                 break;
-                case ( Instruction::MIN ):
+                case ( VM_MIN ):
                 {
-                    floatMath( stack, []( float x, float y ) { return std::min( x, y ); } );
+                    floatMath( stack, ip, bytecode, []( float x, float y ) { return std::min( x, y ); } );
                 }
                 break;
-                case ( Instruction::NEG ):
+                case ( VM_NEG ):
                 {
-                    float x;
-                    copyData( &x, &stack.top() );
-                    stack.pop();
-                    float z = -x;
-                    int_fast16_t zint;
-                    copyData( &zint, &z );
-                    stack.push( zint );
-                }
-                break;
-                case ( Instruction::PRINT_STACK ):
-                {
-                    std::string text;
-                    while ( stack.top() != '\0' )
+                    const VMValue v = stack_pop( stack );
+                    switch ( v.type )
                     {
-                        text += ( char )( stack.top() );
-                        stack.pop();
+                        case ( VT_INT ):
+                        {
+                            stack.push( vm_create_int( -v.value.int_ ) );
+                        }
+                        break;
+                        case ( VT_FLOAT ):
+                        {
+                            stack.push( vm_create_float( -v.value.float_ ) );
+                        }
+                        break;
+                        default:
+                        {
+                            throw std::runtime_error( "Invalid value for NEG" );
+                        }
                     }
-                    printf( "%s\n", text.c_str() );
                 }
                 break;
-                case ( Instruction::PRINT_STATIC ):
+                case ( VM_GET_RIGHT_HELD ):
                 {
-                    int index = ( int )( stack.top() );
-                    stack.pop();
-                    std::string text = bytecode.constants[ index ];
-                    printf( "%s\n", text.c_str() );
+                    stack.push( vm_create_bool( Input::heldRight() ) );
                 }
                 break;
-                case ( Instruction::GET_RIGHT_HELD ):
+                case ( VM_GET_LEFT_HELD ):
                 {
-                    stack.push( ( int_fast16_t )( Input::heldRight() ) );
+                    stack.push( vm_create_bool( Input::heldLeft() ) );
                 }
                 break;
-                case ( Instruction::GET_LEFT_HELD ):
+                case ( VM_GET_PLAYER_X ):
                 {
-                    stack.push( ( int_fast16_t )( Input::heldLeft() ) );
+                    stack.push( vm_create_float( level_state.hero.position.x ) );
                 }
                 break;
-                case ( Instruction::GET_PLAYER_X ):
+                case ( VM_SET_PLAYER_X ):
                 {
-                    floatToStack( stack, level_state.hero.position.x );
+                    level_state.hero.position.x = stack_pop( stack ).value.float_;
                 }
                 break;
-                case ( Instruction::SET_PLAYER_X ):
+                case ( VM_GET_PLAYER_ACCX ):
                 {
-                    level_state.hero.position.x = floatFromStack( stack );
+                    stack.push( vm_create_float( level_state.hero.accx ) );
                 }
                 break;
-                case ( Instruction::GET_PLAYER_ACCX ):
+                case ( VM_SET_PLAYER_ACCX ):
                 {
-                    floatToStack( stack, level_state.hero.accx );
+                    level_state.hero.accx = stack_pop( stack ).value.float_;
                 }
                 break;
-                case ( Instruction::SET_PLAYER_ACCX ):
+                case ( VM_GET_PLAYER_VX ):
                 {
-                    level_state.hero.accx = floatFromStack( stack );
-                }
-                break;
-                case ( Instruction::GET_PLAYER_VX ):
-                {
-                    floatToStack( stack, level_state.hero.vx );
+                    stack.push( vm_create_float( level_state.hero.vx ) );
 
                 }
                 break;
-                case ( Instruction::SET_PLAYER_VX ):
+                case ( VM_SET_PLAYER_VX ):
                 {
-                    level_state.hero.vx = floatFromStack( stack );
+                    level_state.hero.vx = stack_pop( stack ).value.float_;
                 }
                 break;
-                case ( Instruction::GET_PLAYER_PROP ):
+                case ( VM_GET_PLAYER_PROP ):
                 {
-                    int key_index = ( int )( stack.top() );
-                    stack.pop();
-                    std::string key = bytecode.constants[ key_index ];
-                    auto seek = level_state.hero.props->find( key );
-                    if ( seek == level_state.hero.props->end() )
-                    {
-                        throw std::runtime_error( "Could not find property “" + key + "” in player’s properties." );
-                    }
-                    stack.push( seek->second );
+                    stack.push( level_state.hero.props[ *ip++ ] );
                 }
                 break;
-                case ( Instruction::SET_PLAYER_PROP ):
+                case ( VM_SET_PLAYER_PROP ):
                 {
-                    int key_index = ( int )( stack.top() );
-                    stack.pop();
-                    std::string key = bytecode.constants[ key_index ];
-                    auto seek = level_state.hero.props->find( key );
-                    if ( seek == level_state.hero.props->end() )
-                    {
-                        throw std::runtime_error( "Could not find property “" + key + "” in player’s properties." );
-                    }
-                    seek->second = stack.top();
-                    stack.pop();
+                    level_state.hero.props[ *ip++ ] = stack_pop( stack );
                 }
                 break;
-                case ( Instruction::GET_PLAYER_TOP_SPEED ):
+                case ( VM_GET_PLAYER_TOP_SPEED ):
                 {
-                    floatToStack( stack, level_state.hero.top_speed );
-
+                    stack.push( vm_create_float( level_state.hero.top_speed ) );
                 }
                 break;
-                case ( Instruction::SET_PLAYER_TOP_SPEED ):
+                case ( VM_SET_PLAYER_TOP_SPEED ):
                 {
-                    level_state.hero.top_speed = floatFromStack( stack );
+                    level_state.hero.top_speed = stack_pop( stack ).value.float_;
                 }
                 break;
-                case ( Instruction::UPDATE_PLAYER_GRAPHICS_POSITION ):
+                case ( VM_UPDATE_PLAYER_GRAPHICS_POSITION ):
                 {
                     Graphic & g = Render::getGraphic( level_state.hero.gfx );
                     g.data.sprite.dest = level_state.hero.position;
                 }
                 break;
-                case ( Instruction::GET_PLAYER_GRAPHICS_ROTATION_Y ):
+                case ( VM_GET_PLAYER_GRAPHICS_ROTATION_Y ):
                 {
                     Graphic & g = Render::getGraphic( level_state.hero.gfx );
-                    floatToStack( stack, g.data.sprite.rotation_y );
+                    stack.push( vm_create_float( g.data.sprite.rotation_y ) );
                 }
                 break;
-                case ( Instruction::SET_PLAYER_GRAPHICS_ROTATION_Y ):
+                case ( VM_SET_PLAYER_GRAPHICS_ROTATION_Y ):
                 {
                     Graphic & g = Render::getGraphic( level_state.hero.gfx );
-                    g.data.sprite.rotation_y = floatFromStack( stack );
+                    g.data.sprite.rotation_y = stack_pop( stack ).value.float_;
                 }
                 break;
                 default:
                 {
-                    throw std::runtime_error( "INVALID INSTRUCTION!" );
+                    printf( "INVALID INSTRUCTION #%ld @ %ld\n", *( ip - 1 ), ( int )( ip - bytecode.instructions.list ) );
                 }
             }
         }
     };
 
-    static void copyData( void * to, void * from )
+    static VMValue stack_pop( std::stack<VMValue> & stack )
     {
-        memcpy( to, from, COPY_SIZE );
-    }
-
-    static void floatMath( std::stack<int_fast16_t> & stack, std::function<float(float, float)> action )
-    {
-        float x;
-        float y;
-        copyData( &x, &stack.top() );
+        VMValue value = stack.top();
         stack.pop();
-        copyData( &y, &stack.top() );
-        stack.pop();
-        float z = action( x, y );
-        int_fast16_t zint;
-        copyData( &zint, &z );
-        stack.push( zint );
+        return value;
     };
 
-    static void floatToStack( std::stack<int_fast16_t> & stack, float value )
+    static void floatMath( std::stack<VMValue> & stack, const VMInstruction * ip, const Bytecode & bytecode, std::function<float(float, float)> action )
     {
-        int_fast16_t n;
-        copyData( &n, &value );
-        stack.push( n );
-    };
-
-    static float floatFromStack( std::stack<int_fast16_t> & stack )
-    {
-        float n;
-        copyData( &n, &stack.top() );
-        stack.pop();
-        return n;
+        VMValue x = stack_pop( stack );
+        VMValue y = stack_pop( stack );
+        float vx = vm_convert_to_float( x );
+        float vy = vm_convert_to_float( y );
+        stack.push( vm_create_float( action( vx, vy ) ) );
     };
 }
+
+VMValue vm_create_float( float value )
+{
+    VMValue v;
+    v.type = VT_FLOAT;
+    v.value.float_ = value;
+    return v;
+};
+
+VMValue vm_create_int( int value )
+{
+    VMValue v;
+    v.type = VT_INT;
+    v.value.int_ = value;
+    return v;
+};
+
+VMValue vm_create_instruction( VMInstruction value )
+{
+    VMValue v;
+    v.type = VT_INSTRUCTION;
+    v.value.instruction_ = value;
+    return v;
+};
+
+VMValue vm_create_bool( bool value )
+{
+    VMValue v;
+    v.type = VT_BOOL;
+    v.value.bool_ = value;
+    return v;
+};
+
+float vm_convert_to_float( VMValue value )
+{
+    switch ( value.type )
+    {
+        case ( VT_INSTRUCTION ):
+        {
+            return ( float )( value.value.instruction_ );
+        }
+        break;
+        case ( VT_INT ):
+        {
+            return ( float )( value.value.int_ );
+        }
+        break;
+        case ( VT_FLOAT ):
+        {
+            return value.value.float_;
+        }
+        break;
+        case ( VT_BOOL ):
+        {
+            return ( float )( value.value.bool_ );
+        }
+        break;
+    }
+};
+
+Bytecode bytecode_create( std::vector<VMValue> constants, std::vector<VMInstruction> instructions )
+{
+    Bytecode bytecode;
+    vector_init( bytecode.constants, VMValue, constants.size() );
+    vector_init( bytecode.instructions, VMInstruction, instructions.size() );
+    bytecode.constants.size = bytecode.constants.capacity;
+    bytecode.instructions.size = bytecode.instructions.capacity;
+    for ( int i = 0; i < constants.size(); ++i )
+    {
+        bytecode.constants.list[ i ] = constants[ i ];
+    }
+    for ( int i = 0; i < instructions.size(); ++i )
+    {
+        bytecode.instructions.list[ i ] = instructions[ i ];
+    }
+    return bytecode;
+};

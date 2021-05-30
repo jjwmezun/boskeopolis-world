@@ -1,10 +1,13 @@
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
 
+#include "bytecode_machine.hpp"
 #include "rect.hpp"
 #include <string>
 #include <unordered_map>
 #include <variant>
+
+#define MAX_SPRITE_PROPS 32
 
 enum class Direction
 {
@@ -21,7 +24,7 @@ struct Sprite
     float vx;
     float vy;
     float top_speed;
-    std::unordered_map<std::string, int_fast16_t> * props;
+    VMValue props[ MAX_SPRITE_PROPS ];
 };
 
 struct LevelState

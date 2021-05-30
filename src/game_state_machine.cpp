@@ -10,164 +10,128 @@
 
 namespace GameStateMachine
 {
-    enum Instruction
-    {
-        LITERAL,
-        BRK,
-        JMP,
-        CJMP,
-        CNJMP,
-        EQUAL,
-        NOTEQUAL,
-        LESS_THAN,
-        GREATER_THAN,
-        LESS_THAN_EQUAL,
-        GREATER_THAN_EQUAL,
-        ADD,
-        SUB,
-        MUL,
-        DIV,
-        MAX,
-        MIN,
-        NEG,
-        PRINT_STACK,
-        PRINT_STATIC,
-        GET_RIGHT_HELD,
-        GET_LEFT_HELD,
-        GET_PLAYER_X,
-        SET_PLAYER_X,
-        GET_PLAYER_ACCX,
-        SET_PLAYER_ACCX,
-        GET_PLAYER_VX,
-        SET_PLAYER_VX,
-        GET_PLAYER_PROP,
-        SET_PLAYER_PROP,
-        GET_PLAYER_TOP_SPEED,
-        SET_PLAYER_TOP_SPEED,
-        UPDATE_PLAYER_GRAPHICS_POSITION,
-        GET_PLAYER_GRAPHICS_ROTATION_Y,
-        SET_PLAYER_GRAPHICS_ROTATION_Y
-    };
     GameState states[ MAX_STATES ];
     int number_of_states = 0;
-    BytecodeMachine::Bytecode bytecode
-    {
-        {
-            "dir"
-        },
-        {
-            // If right not held, skip to TEST_MOVE_LEFT
-            LITERAL, 16,
-            GET_RIGHT_HELD,
-            CNJMP,
-
-            // accx += 0.25
-            LITERAL, 94193976344576,
-            SET_PLAYER_ACCX,
-
-            // dir = 01
-            LITERAL, 0x01,
-            LITERAL, 0x00,
-            SET_PLAYER_PROP,
-
-            // Skip to SET_VX ( treat next condition as else if )
-            LITERAL, 40,
-            JMP,
-
-            // TEST_MOVE_LEFT:
-            // If left not held, skip to TEST_NO_MOVE
-            LITERAL, 32,
-            GET_LEFT_HELD,
-            CNJMP,
-
-            // accx -= 0.25
-            LITERAL, 94193976344576,
-            NEG,
-            SET_PLAYER_ACCX,
-
-            // dir = 00
-            LITERAL, 0x00,
-            LITERAL, 0x00,
-            SET_PLAYER_PROP,
-
-            // Skip to SET_VX
-            LITERAL, 40,
-            JMP,
-
-            // TEST_NO_MOVE
-            LITERAL, 0x00,
-            SET_PLAYER_ACCX,
-            LITERAL, 94503232025395,
-            GET_PLAYER_VX,
-            DIV,
-            SET_PLAYER_VX,
-
-            // SET_VX:
-            // hero.vx = std::max( -hero.top_speed, std::min( hero.top_speed, hero.vx + hero.accx ) )
-            GET_PLAYER_VX,
-            GET_PLAYER_ACCX,
-            ADD,
-            GET_PLAYER_TOP_SPEED,
-            MIN,
-            GET_PLAYER_TOP_SPEED,
-            NEG,
-            MAX,
-            SET_PLAYER_VX,
-
-            // x += vx
-            GET_PLAYER_X,
-            GET_PLAYER_VX,
-            ADD,
-            SET_PLAYER_X,
-
-            // 57. if ( hero.dir == Direction::RIGHT )
-            LITERAL, 77,
-            LITERAL, 0x01,
-            LITERAL, 0x00,
-            GET_PLAYER_PROP,
-            EQUAL,
-            CNJMP,
-
-            // if ( g.data.sprite.rotation_y < 180.0 )
-            LITERAL, 89,
-            LITERAL, 94297134465024,
-            GET_PLAYER_GRAPHICS_ROTATION_Y,
-            LESS_THAN,
-            CNJMP,
-
-            // g.data.sprite.rotation_y += 5.0;
-            LITERAL, 94340040884224,
-            GET_PLAYER_GRAPHICS_ROTATION_Y,
-            ADD,
-            SET_PLAYER_GRAPHICS_ROTATION_Y,
-
-            // Skip to UPDATE_GFX
-            LITERAL, 89,
-            JMP,
-
-            // else if ( g.data.sprite.rotation_y > 0.0 )
-            LITERAL, 89,
-            LITERAL, 0x00,
-            GET_PLAYER_GRAPHICS_ROTATION_Y,
-            GREATER_THAN,
-            CNJMP,
-
-            // g.data.sprite.rotation_y -= 5.0;
-            LITERAL, 94340040884224,
-            GET_PLAYER_GRAPHICS_ROTATION_Y,
-            SUB,
-            SET_PLAYER_GRAPHICS_ROTATION_Y,
-
-            // UPDATE_GFX:
-            UPDATE_PLAYER_GRAPHICS_POSITION
-        }
-    };
+    Bytecode bytecode;
 
     static void closeState( int number );
     static void initState( int number );
 
     void init()
     {
+        bytecode = bytecode_create
+        (
+            {
+                vm_create_float( 0.25 ),
+                vm_create_float( 1.15 ),
+                vm_create_float( 180.0 ),
+                vm_create_float( 5.0 ),
+                vm_create_float( 0.0 )
+            },
+            {
+                // If right not held, skip to TEST_MOVE_LEFT
+                VM_LITERAL, 14,
+                VM_GET_RIGHT_HELD,
+                VM_CNJMP,
+
+                // accx = 0.25
+                VM_CONST, 0x00,
+                VM_SET_PLAYER_ACCX,
+
+                // dir = 01
+                VM_LITERAL, 0x01,
+                VM_SET_PLAYER_PROP, 0x00,
+
+                // Skip to SET_VX ( treat next condition as else if )
+                VM_LITERAL, 37,
+                VM_JMP,
+
+                // TEST_MOVE_LEFT:
+                // If left not held, skip to TEST_NO_MOVE
+                VM_LITERAL, 29,
+                VM_GET_LEFT_HELD,
+                VM_CNJMP,
+
+                // accx = -0.25
+                VM_CONST, 0x00,
+                VM_NEG,
+                VM_SET_PLAYER_ACCX,
+
+                // dir = 00
+                VM_LITERAL, 0x00,
+                VM_SET_PLAYER_PROP, 0x00,
+
+                // Skip to SET_VX
+                VM_LITERAL, 37,
+                VM_JMP,
+
+                // TEST_NO_MOVE
+                VM_CONST, 0x04,
+                VM_SET_PLAYER_ACCX,
+                VM_CONST, 0x01,
+                VM_GET_PLAYER_VX,
+                VM_DIV,
+                VM_SET_PLAYER_VX,
+
+                // SET_VX:
+                // hero.vx = std::max( -hero.top_speed, std::min( hero.top_speed, hero.vx + hero.accx ) )
+                VM_GET_PLAYER_VX,
+                VM_GET_PLAYER_ACCX,
+                VM_ADD,
+                VM_GET_PLAYER_TOP_SPEED,
+                VM_MIN,
+                VM_GET_PLAYER_TOP_SPEED,
+                VM_NEG,
+                VM_MAX,
+                VM_SET_PLAYER_VX,
+
+                // x += vx
+                VM_GET_PLAYER_X,
+                VM_GET_PLAYER_VX,
+                VM_ADD,
+                VM_SET_PLAYER_X,
+
+                // 50. if ( hero.dir == Direction::RIGHT )
+                VM_LITERAL, 73,
+                VM_LITERAL, 0x01,
+                VM_GET_PLAYER_PROP, 0x00,
+                VM_EQUAL,
+                VM_CNJMP,
+
+                // if ( g.data.sprite.rotation_y < 180.0 )
+                VM_LITERAL, 85,
+                VM_CONST, 0x02,
+                VM_GET_PLAYER_GRAPHICS_ROTATION_Y,
+                VM_LESS_THAN,
+                VM_CNJMP,
+
+                // g.data.sprite.rotation_y += 5.0;
+                VM_CONST, 0x03,
+                VM_GET_PLAYER_GRAPHICS_ROTATION_Y,
+                VM_ADD,
+                VM_SET_PLAYER_GRAPHICS_ROTATION_Y,
+
+                // Skip to UPDATE_GFX
+                VM_LITERAL, 85,
+                VM_JMP,
+
+                // 74. else if ( g.data.sprite.rotation_y > 0.0 )
+                VM_LITERAL, 85,
+                VM_CONST, 0x04,
+                VM_GET_PLAYER_GRAPHICS_ROTATION_Y,
+                VM_GREATER_THAN,
+                VM_CNJMP,
+
+                // g.data.sprite.rotation_y -= 5.0;
+                VM_CONST, 0x03,
+                VM_GET_PLAYER_GRAPHICS_ROTATION_Y,
+                VM_SUB,
+                VM_SET_PLAYER_GRAPHICS_ROTATION_Y,
+
+                // UPDATE_GFX:
+                VM_UPDATE_PLAYER_GRAPHICS_POSITION
+            }
+        );
         changeState( createTitleState() );
     };
 
@@ -257,7 +221,6 @@ namespace GameStateMachine
             break;
             case ( GameState::Type::LEVEL ):
             {
-                delete states[ number ].data.level.hero.props;
             }
             break;
             case ( GameState::Type::PAUSE ):
@@ -280,8 +243,11 @@ namespace GameStateMachine
             case ( GameState::Type::LEVEL ):
             {
                 Render::addGraphic( Graphic::createFullRect( { 0.0, 0.0, 255.0, 255.0 } ), number, Unit::Layer::BG_1 );
-
-                states[ number ].data.level.hero = { 0, { 32.0, 32.0, 16.0, 25.0 }, 0.0, 0.0, 0.0, 0.0, 4.0, nullptr };
+                states[ number ].data.level.hero.position.x = 32.0;
+                states[ number ].data.level.hero.position.y = 32.0;
+                states[ number ].data.level.hero.position.w = 16.0;
+                states[ number ].data.level.hero.position.h = 25.0;
+                states[ number ].data.level.hero.top_speed = 4.0;
                 states[ number ].data.level.hero.gfx = Render::addGraphic
                 (
                     Graphic::createSprite
@@ -295,9 +261,6 @@ namespace GameStateMachine
                     number,
                     Unit::Layer::BEFORE_SPRITES_1
                 );
-
-                states[ number ].data.level.hero.props = new std::unordered_map<std::string, int_fast16_t>();
-                states[ number ].data.level.hero.props->insert( { "dir", ( int_fast16_t )( Direction::LEFT ) } );
             }
             break;
             case ( GameState::Type::PAUSE ):
