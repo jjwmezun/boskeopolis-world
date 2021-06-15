@@ -1,0 +1,18 @@
+{
+    "w": 16,
+    "h": 25,
+    "top_speed": 4,
+    "graphics": {
+        "texture": "sprites/autumn.png"
+    },
+    "props": {
+        "dir": {
+            "type": "direction",
+            "value": "right"
+        }
+    },
+    "update":
+    [
+        [ "-", [ "*", 4.4, [ "-", [ "/", [ "+", 1.2, 2.4 ], 2.2 ], 0.036364 ] ] ]
+    ]
+}
