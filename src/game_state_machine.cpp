@@ -3,8 +3,6 @@
 #include "game_state_machine.hpp"
 #include "graphic.hpp"
 #include "input.hpp"
-#include "io.hpp"
-#include "jsmn/jsmn.h"
 #include "render.hpp"
 #include "text.hpp"
 #include <stdexcept>
@@ -23,16 +21,8 @@ namespace GameStateMachine
     {
         changeState( createTitleState() );
 
-        char * sprite_data = io_read( "assets/sprites/demo.json" );
-
-        jsmn_parser parser;
-        jsmn_init( &parser );
-        size_t num_o_tokens = jsmn_parse( &parser, sprite_data, strlen( sprite_data ), NULL, 0 );
-        jsmntok_t tokens[ num_o_tokens ];
-        jsmn_parse( &parser, sprite_data, strlen( sprite_data ), tokens, num_o_tokens );
-
         vm_init( &vm );
-        vm_code_push_instruction( &vm.code, OP_RETURN, 123 );
+        vm_scan( &vm, "assets/sprites/demo.json" );
         vm_code_interpret( &vm );
         vm_close( &vm );
     };

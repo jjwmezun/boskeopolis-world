@@ -1,5 +1,7 @@
 #include "config.hpp"
 #include <cstdio>
+#include "io.hpp"
+#include "json/json.hpp"
 #include "vm.hpp"
 
 #define VM_CONSTANTS_INIT_CAPACITY 64
@@ -38,6 +40,9 @@
         vm_stack_push( &vm->stack, a );\
     } while ( false )
 
+static void vm_code_push_instruction( VMCode * vm_code, VMInstruction value, int line_num );
+static VMInstruction vm_code_push_constant( VMCode * vm_code, VMValue value );
+static VMValue vm_create_float( float value );
 static int vm_code_disassemble_instruction( VMCode * vm_code, VMValueList * stack, int offset );
 static int vm_code_disassemble_instruction_simple( const char* name, int offset );
 static int vm_code_disassemble_instruction_const( const char * name, VMCode * vm_code, int offset );
@@ -65,6 +70,61 @@ void vm_close( VM * vm )
     free( vm->stack.list );
     free( vm->code.line_nums );
 };
+
+void vm_scan( VM * vm, const char * source )
+{
+    char * text = io_read( source );
+    if ( !text )
+    {
+        printf( "Couldn’t read English localization file.\n" );
+        exit( -76 );
+    }
+    json_char * json = ( json_char * )( text );
+    char error[ 8000 ];
+    json_settings settings = { 0 };
+    json_value * root = json_parse_ex( &settings, json, strlen( text ), error );
+    free( text );
+    if ( !root )
+    {
+        printf( "Error parsing whole English localization json file.\n" );
+        printf( "%s\n", error );
+        exit( -76 );
+    }
+    if ( root->type != json_object )
+    {
+        json_value_free( root );
+        printf( "Error parsing English localization json file.\n" );
+        exit( -76 );
+    }
+
+    for ( int i = 0; i < root->u.object.length; ++i )
+    {
+        const json_char * name = root->u.object.values[ i ].name;
+        if ( strcmp( name, "update" ) == 0 )
+        {
+            json_value * value = root->u.object.values[ i ].value;
+            if ( value->type != json_array )
+            {
+                printf( "English localization json file is not formatted correctly.\n" );
+                exit( -76 );
+            }
+            for ( int j = 0; j < value->u.array.length; ++j )
+            {
+                json_value * entry = value->u.array.values[ j ];
+                if ( entry->type != json_array )
+                {
+                    printf( "English localization json file is not formatted correctly.\n" );
+                    exit( -76 );
+                }
+
+            }
+        }
+    }
+
+    json_value_free( root );
+
+    vm_code_push_instruction( &vm->code, OP_RETURN, 123 );
+}
 
 InterpretResult vm_code_interpret( VM * vm )
 {
@@ -146,7 +206,7 @@ InterpretResult vm_code_interpret( VM * vm )
     }
 };
 
-void vm_code_push_instruction( VMCode * vm_code, VMInstruction value, int line_num )
+static void vm_code_push_instruction( VMCode * vm_code, VMInstruction value, int line_num )
 {
     if ( vm_code->instructions.capacity < vm_code->instructions.size + 1 )
     {
@@ -167,7 +227,7 @@ void vm_code_push_instruction( VMCode * vm_code, VMInstruction value, int line_n
     ++vm_code->instructions.size;
 };
 
-VMInstruction vm_code_push_constant( VMCode * vm_code, VMValue value )
+static VMInstruction vm_code_push_constant( VMCode * vm_code, VMValue value )
 {
     if ( vm_code->constants.capacity < vm_code->constants.size + 1 )
     {
@@ -182,7 +242,7 @@ VMInstruction vm_code_push_constant( VMCode * vm_code, VMValue value )
     return ( VMInstruction )( vm_code->constants.size++ );
 };
 
-VMValue vm_create_float( float value )
+static VMValue vm_create_float( float value )
 {
     VMValue v;
     v.type = VMT_FLOAT;

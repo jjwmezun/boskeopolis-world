@@ -58,12 +58,7 @@ typedef enum
 
 void vm_init( VM * vm );
 void vm_close( VM * vm );
-
+void vm_scan( VM * vm, const char * source );
 InterpretResult vm_code_interpret( VM * vm );
-
-void vm_code_push_instruction( VMCode * vm_code, VMInstruction value, int line_num );
-VMInstruction vm_code_push_constant( VMCode * vm_code, VMValue value );
-
-VMValue vm_create_float( float value );
 
 #endif // VM_H
