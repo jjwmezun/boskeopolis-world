@@ -24,7 +24,35 @@ namespace GameStateMachine
         VMInstruction constant = vm_code_push_constant( &vm.code, vm_create_float( 1.2 ) );
         vm_code_push_instruction( &vm.code, OP_CONST, 123 );
         vm_code_push_instruction( &vm.code, constant, 123 );
+
+        constant = vm_code_push_constant( &vm.code, vm_create_float( 2.4 ) );
+        vm_code_push_instruction( &vm.code, OP_CONST, 123 );
+        vm_code_push_instruction( &vm.code, constant, 123 );
+
+        vm_code_push_instruction( &vm.code, OP_ADD, 123 );
+
+        constant = vm_code_push_constant( &vm.code, vm_create_float( 2.2 ) );
+        vm_code_push_instruction( &vm.code, OP_CONST, 123 );
+        vm_code_push_instruction( &vm.code, constant, 123 );
+
+        vm_code_push_instruction( &vm.code, OP_DIV, 123 );
+
+        constant = vm_code_push_constant( &vm.code, vm_create_float( 0.036364 ) );
+        vm_code_push_instruction( &vm.code, OP_CONST, 123 );
+        vm_code_push_instruction( &vm.code, constant, 123 );
+
+        vm_code_push_instruction( &vm.code, OP_SUB, 123 );
+
+        constant = vm_code_push_constant( &vm.code, vm_create_float( 4.4 ) );
+        vm_code_push_instruction( &vm.code, OP_CONST, 123 );
+        vm_code_push_instruction( &vm.code, constant, 123 );
+
+        vm_code_push_instruction( &vm.code, OP_MUL, 123 );
+
+        vm_code_push_instruction( &vm.code, OP_NEG, 123 );
+
         vm_code_push_instruction( &vm.code, OP_RETURN, 123 );
+
         vm_code_interpret( &vm );
         vm_close( &vm );
     };

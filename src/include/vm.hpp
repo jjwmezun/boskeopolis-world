@@ -10,7 +10,12 @@ typedef int_fast16_t VMInstruction;
 typedef enum
 {
     OP_CONST,
-    OP_RETURN
+    OP_RETURN,
+    OP_NEG,
+    OP_ADD,
+    OP_SUB,
+    OP_MUL,
+    OP_DIV
 } VMOpCode;
 
 typedef enum
@@ -58,7 +63,6 @@ InterpretResult vm_code_interpret( VM * vm );
 
 void vm_code_push_instruction( VMCode * vm_code, VMInstruction value, int line_num );
 VMInstruction vm_code_push_constant( VMCode * vm_code, VMValue value );
-void vm_code_disassemble( VMCode * vm_code );
 
 VMValue vm_create_float( float value );
 
