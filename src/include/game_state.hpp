@@ -5,7 +5,6 @@
 #include <string>
 #include <unordered_map>
 #include <variant>
-#include "vm.hpp"
 
 #define MAX_SPRITE_PROPS 32
 
@@ -18,7 +17,6 @@ struct Sprite
     float vx;
     float vy;
     float top_speed;
-    VMValue props[ MAX_SPRITE_PROPS ];
 };
 
 struct LevelState

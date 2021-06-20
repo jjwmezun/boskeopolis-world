@@ -6,13 +6,11 @@
 #include "render.hpp"
 #include "text.hpp"
 #include <stdexcept>
-#include "vm.hpp"
 
 namespace GameStateMachine
 {
     GameState states[ MAX_STATES ];
     int number_of_states = 0;
-    VM vm;
 
     static void closeState( int number );
     static void initState( int number );
@@ -20,11 +18,6 @@ namespace GameStateMachine
     void init()
     {
         changeState( createTitleState() );
-
-        vm_init( &vm );
-        vm_scan( &vm, "assets/sprites/demo.json" );
-        vm_code_interpret( &vm );
-        vm_close( &vm );
     };
 
     void update()
