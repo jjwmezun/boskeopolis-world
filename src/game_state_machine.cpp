@@ -1,4 +1,5 @@
-#include <cassert>
+#include <assert.h>
+#include "assoc_array.hpp"
 #include "color.hpp"
 #include "game_state_machine.hpp"
 #include "graphic.hpp"
@@ -127,7 +128,11 @@ namespace GameStateMachine
             case ( GameState::Type::TITLE ):
             {
                 render_add_graphic( Graphic::createFullRect( { 255.0, 255.0, 255.0, 255.0 } ), number, Unit::Layer::BG_1 );
-                render_add_graphic( Graphic::createText( Text::create( "Boskeopolis World", {{ "x", 16.0 }, { "y", 16.0 } } ) ), number, Unit::Layer::FG_1 );
+                AssocArray args = assoc_array_create();
+                assoc_array_add( &args, "y", value_create_float( 16.0 ) );
+                assoc_array_add( &args, "align", value_create_int( ALIGN_CENTER ) );
+                render_add_graphic( Graphic::createText( text_create( "Boskeopolis World", &args ) ), number, Unit::Layer::FG_1 );
+                assoc_array_destroy( &args );
             }
             break;
             case ( GameState::Type::LEVEL ):

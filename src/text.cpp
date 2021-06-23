@@ -1,20 +1,20 @@
 #include "localization.hpp"
 #include "localization_language.hpp"
 #include "render.hpp"
+#include <string.h>
 #include "text.hpp"
 #include "unit.hpp"
-
+#include "vector.hpp"
 
 #define MAX_CHARACTER_TYPES 1009 // Note: must be prime.
 #define MAX_TEXT_LINES 32
-#define MAX_temp_charactersPER_LINE 256
+#define MAX_CHARS_PER_LINE 256
 
-static int getCharacterSize( const char * s );
+static int text_get_character_size( const char * s );
 
-Text Text::create( const char * text, std::unordered_map<const char *, std::variant<double, Align, VAlign, Color>> args )
+Text text_create( const char * text, AssocArray * args )
 {
     Text t;
-    //t.characters = {};
     t.number_of_characters = 0;
     t.color = { 0.0, 0.0, 0.0, 255.0 };
 
@@ -22,50 +22,28 @@ Text Text::create( const char * text, std::unordered_map<const char *, std::vari
     double y = 0;
     double w = Unit::WINDOW_WIDTH_PIXELS;
     double h = Unit::WINDOW_HEIGHT_PIXELS;
-    Align align = Align::LEFT;
-    VAlign valign = VAlign::TOP;
+    TextAlign align = ALIGN_LEFT;
+    TextVAlign valign = VALIGN_TOP;
     double padding_x = 0;
     double padding_y = 0;
 
     // Set variables based on args.
-    for ( auto & i : args )
+    Value xentry = assoc_array_get( args, "x" );
+    if ( xentry.type == VALUE_FLOAT )
     {
-        if ( std::string( i.first ) == "x" )
-        {
-            x = std::get<double>( i.second );
-        }
-        if ( std::string( i.first ) == "y" )
-        {
-            y = std::get<double>( i.second );
-        }
-        if ( std::string( i.first ) == "w" )
-        {
-            w = std::get<double>( i.second );
-        }
-        if ( std::string( i.first ) == "h" )
-        {
-            h = std::get<double>( i.second );
-        }
-        else if ( std::string( i.first ) == "align" )
-        {
-            align = std::get<Align>( i.second );
-        }
-        else if ( std::string( i.first ) == "valign" )
-        {
-            valign = std::get<VAlign>( i.second );
-        }
-        else if ( std::string( i.first ) == "x_padding" || std::string( i.first ) == "padding_x" )
-        {
-            padding_x = std::get<double>( i.second );
-        }
-        else if ( std::string( i.first ) == "y_padding" || std::string( i.first ) == "padding_y" )
-        {
-            padding_y = std::get<double>( i.second );
-        }
-        else if ( std::string( i.first ) == "color" )
-        {
-            t.color = std::get<Color>( i.second );
-        }
+        x = xentry.value.float_;
+    }
+
+    Value yentry = assoc_array_get( args, "y" );
+    if ( yentry.type == VALUE_FLOAT )
+    {
+        y = yentry.value.float_;
+    }
+
+    Value alignentry = assoc_array_get( args, "align" );
+    if ( alignentry.type == VALUE_INT )
+    {
+        align = ( TextAlign )( alignentry.value.int_ );
     }
 
     w -= ( padding_x * 2.0 );
@@ -74,7 +52,7 @@ Text Text::create( const char * text, std::unordered_map<const char *, std::vari
     y += padding_y;
     const double line_end = x + w;
 
-    std::vector<CharacterTemplate> temp_characters;
+    Vector tempchars = vector_create( MAX_CHARACTERS );
 
     const auto & character_map = Localization::getLanguage().getCharacterMap();
 
@@ -82,21 +60,22 @@ Text Text::create( const char * text, std::unordered_map<const char *, std::vari
     while ( *text )
     {
         std::string string = text;
-        int character_size = getCharacterSize( text );
+        int character_size = text_get_character_size( text );
         std::string letter = string.substr( 0, character_size );
 
         const auto iterator = character_map.find( letter.c_str() );
         if ( iterator != character_map.end() )
         {
-            CharacterTemplate character = iterator->second;
-            temp_characters.push_back( character );
+            void * c = malloc( sizeof( CharacterTemplate ) );
+            memcpy( c, ( void * )( &iterator->second ), sizeof( CharacterTemplate ) );
+            vector_push( &tempchars, value_create_unique_ptr( c ) );
         }
 
         text += character_size;
     }
 
     // 2nd loop: break characters into lines, broken by newlines or when a line reaches the width limit.
-    CharacterTemplate lines[ MAX_TEXT_LINES ][ MAX_temp_charactersPER_LINE ];
+    CharacterTemplate lines[ MAX_TEXT_LINES ][ MAX_CHARS_PER_LINE ];
     double line_widths[ MAX_TEXT_LINES ];
     line_widths[ 0 ] = 0;
     int line_character_counts[ MAX_TEXT_LINES ];
@@ -104,7 +83,7 @@ Text Text::create( const char * text, std::unordered_map<const char *, std::vari
     int line_character = 0;
     int i = 0;
     int lx = ( int )( x );
-    while ( i < temp_characters.size() )
+    while ( i < tempchars.count )
     {
         int ib = i;
         double xb = lx;
@@ -114,17 +93,18 @@ Text Text::create( const char * text, std::unordered_map<const char *, std::vari
         // This autobreaks text without cutting midword.
         while ( look_ahead )
         {
-            if ( ib >= temp_characters.size() )
+            if ( ib >= tempchars.count )
             {
                 look_ahead = 0;
                 break;
             }
 
-            if ( temp_characters[ ib ].type == CharacterTemplate::Type::NEWLINE )
+            CharacterTemplate * ibv = ( ( CharacterTemplate * )( tempchars.list[ ib ].value.ptr_ ) );
+            if ( ibv->type == CHAR_NEWLINE )
             {
                 look_ahead = 0;
             }
-            else if ( temp_characters[ ib ].type == CharacterTemplate::Type::WHITESPACE )
+            else if ( ibv->type == CHAR_WHITESPACE )
             {
                 look_ahead = 0;
             }
@@ -137,18 +117,18 @@ Text Text::create( const char * text, std::unordered_map<const char *, std::vari
                 line_character = 0;
                 look_ahead = 0;
             }
-            else if ( ib >= temp_characters.size() )
+            else if ( ib >= tempchars.count )
             {
                 look_ahead = 0;
                 break;
             }
-            xb += temp_characters[ ib ].w;
+            xb += ibv->w;
             ++ib;
         }
 
         while ( i < ib )
         {
-            if ( temp_characters[ i ].type == CharacterTemplate::Type::NEWLINE || lx >= line_end )
+            if ( ( ( CharacterTemplate * )( tempchars.list[ i ].value.ptr_ ) )->type == CHAR_NEWLINE || lx >= line_end )
             {
                 lx = ( int )( x );
                 line_character_counts[ line_count ] = line_character;
@@ -158,23 +138,27 @@ Text Text::create( const char * text, std::unordered_map<const char *, std::vari
             }
             else
             {
-                lines[ line_count ][ line_character ] = temp_characters[ i ];
-                line_widths[ line_count ] += temp_characters[ i ].w;
+                memcpy( &lines[ line_count ][ line_character ], tempchars.list[ i ].value.ptr_, sizeof( CharacterTemplate ) );
+                line_widths[ line_count ] += ( ( CharacterTemplate * )( tempchars.list[ i ].value.ptr_ ) )->w;
             }
             ++i;
             ++line_character;
-            lx += temp_characters[ i ].w;
+            if ( i < tempchars.count )
+            {
+                lx += ( ( CharacterTemplate * )( tempchars.list[ i ].value.ptr_ ) )->w;
+            }
         }
     }
     line_character_counts[ line_count ] = line_character;
     ++line_count;
 
+    vector_destroy( &tempchars );
 
     // Sometimes the previous loop keeps whitespace @ the end o’ lines.
     // Since this messes with x alignment, remove these.
     for ( int l = 0; l < line_count; ++l )
     {
-        if ( lines[ l ][ line_character_counts[ l ] - 1 ].type == CharacterTemplate::Type::WHITESPACE )
+        if ( lines[ l ][ line_character_counts[ l ] - 1 ].type == CHAR_WHITESPACE )
         {
             --line_character_counts[ l ];
             line_widths[ l ] -= lines[ l ][ line_character_counts[ l ] - 1 ].w;
@@ -182,16 +166,16 @@ Text Text::create( const char * text, std::unordered_map<const char *, std::vari
     }
 
     // Final loop: we have all the info we need now to set x & y positions.
-    float dy = ( valign == VAlign::MIDDLE )
+    float dy = ( valign == VALIGN_MIDDLE )
         ? y + ( ( h - ( line_count * 8.0 ) ) / 2.0 )
-        : ( valign == VAlign::BOTTOM )
+        : ( valign == VALIGN_BOTTOM )
             ? y + h - ( line_count * 8.0 )
             : y;
     for ( int l = 0; l < line_count; ++l )
     {
-        float dx = ( align == Align::CENTER )
+        float dx = ( align == ALIGN_CENTER )
             ? x + ( ( w - line_widths[ l ] ) / 2.0 )
-            : ( align == Align::RIGHT )
+            : ( align == ALIGN_RIGHT )
                 ? line_end - line_widths[ l ]
                 : x;
         for ( int c = 0; c < line_character_counts[ l ]; ++c )
@@ -213,7 +197,7 @@ Text Text::create( const char * text, std::unordered_map<const char *, std::vari
     return t;
 };
 
-static int getCharacterSize( const char * s )
+static int text_get_character_size( const char * s )
 {
     const int code = ( int )( *s );
     return ( code & ( 1 << 7 ) )

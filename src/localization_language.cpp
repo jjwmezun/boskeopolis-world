@@ -49,7 +49,7 @@ LocalizationLanguage::LocalizationLanguage( const char * code )
         CharacterTemplate c;
         c.w = 8.0;
         c.h = 8.0;
-        c.type = CharacterTemplate::Type::NORMAL;
+        c.type = CHAR_NORMAL;
 
         if ( vobj.HasMember( "x" ) && vobj[ "x" ].IsInt() )
         {
@@ -72,11 +72,11 @@ LocalizationLanguage::LocalizationLanguage( const char * code )
             std::string type = vobj[ "type" ].GetString();
             if ( type == "whitespace" )
             {
-                c.type = CharacterTemplate::Type::WHITESPACE;
+                c.type = CHAR_WHITESPACE;
             }
             else if ( type == "newline" )
             {
-                c.type = CharacterTemplate::Type::NEWLINE;
+                c.type = CHAR_NEWLINE;
             }
         }
 

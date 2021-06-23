@@ -1,15 +1,13 @@
 #ifndef COLOR_H
 #define COLOR_H
 
-#include <cstdint>
-
-class Color
+typedef struct
 {
-    public:
-        float r;
-        float g;
-        float b;
-        float a;
-};
+    float r;
+    float g;
+    float b;
+    float a;
+}
+Color;
 
 #endif // COLOR_H

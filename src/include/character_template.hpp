@@ -1,16 +1,16 @@
 #ifndef CHARACTER_TEMPLATE_H
 #define CHARACTER_TEMPLATE_H
 
+enum CharacterTemplateType
+{
+    CHAR_NORMAL,
+    CHAR_WHITESPACE,
+    CHAR_NEWLINE
+};
+
 struct CharacterTemplate
 {
-    enum class Type
-    {
-        NORMAL,
-        WHITESPACE,
-        NEWLINE
-    };
-
-    Type type;
+    CharacterTemplateType type;
     float w;
     float h;
     float x;

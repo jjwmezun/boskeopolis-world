@@ -1,5 +1,4 @@
 #include "character.hpp"
-#include "color.hpp"
 #include <stdio.h>
 #include "filename.hpp"
 #include "game_state_machine.hpp"
@@ -10,6 +9,7 @@
 #include "log.hpp"
 #include "rect.hpp"
 #include "render.hpp"
+#include <stdint.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -29,8 +29,8 @@ static constexpr int VERTEX_SIZE = 8;
 static constexpr int MAX_GRAPHICS = 512;
 static constexpr int TEXTURE_MAP_CAPACITY = MAX_TEXTURES * 1.25;
 
-typedef uint32_t hash_t;
-typedef struct { char * string; hash_t hash; } TextureMapKey;
+typedef uint32_t render_hash_t;
+typedef struct { char * string; render_hash_t hash; } TextureMapKey;
 typedef struct { TextureMapKey key; unsigned int value; } TextureMapEntry;
 
 static int magnification = 3;
@@ -72,7 +72,7 @@ static void rect( const Rect & rect, const Color & color );
 static void sprite( unsigned int texture_id, unsigned int palette_id, const Rect & src, const Rect & dest, bool flip_x, bool flip_y, float rotation_x, float rotation_y, float rotation_z );
 static void character( const Character & character, const Color & color );
 
-static TextureMapEntry * hash_find_entry( const char * needle_string, hash_t needle_hash );
+static TextureMapEntry * hash_find_entry( const char * needle_string, render_hash_t needle_hash );
 static uint32_t hash_string( const char * key );
 
 bool render_init( const char * title, int width, int height, Color background )
@@ -151,6 +151,13 @@ bool render_init( const char * title, int width, int height, Color background )
 
 void render_close()
 {
+    for ( int i = 0; i < TEXTURE_MAP_CAPACITY; ++i )
+    {
+        if ( texture_map[ i ].key.string != NULL )
+        {
+            free( texture_map[ i ].key.string );
+        }
+    }
     glDeleteTextures( MAX_TEXTURES, texture_ids );
 };
 
@@ -198,12 +205,25 @@ void render_update()
 
 void render_clear_textures()
 {
+    for ( int i = 0; i < TEXTURE_MAP_CAPACITY; ++i )
+    {
+        if
+        (
+            texture_map[ i ].key.string != NULL &&
+            strcmp( texture_map[ i ].key.string, "sprites/palette.png" ) != 0 &&
+            strcmp( texture_map[ i ].key.string, "text/latin.png" ) != 0
+        )
+        {
+            free( texture_map[ i ].key.string );
+            texture_map[ i ].key.hash = 0;
+        }
+    }
     number_of_textures = 2;
 };
 
 unsigned int render_get_texture_id( const char * local, bool indexed )
 {
-    const hash_t needle_hash = hash_string( local );
+    const render_hash_t needle_hash = hash_string( local );
     TextureMapEntry * entry = hash_find_entry( local, needle_hash );
     if ( entry->key.string != NULL )
     {
@@ -573,7 +593,7 @@ static void buffer_vertices()
     glEnableVertexAttribArray(2);
 }
 
-static TextureMapEntry * hash_find_entry( const char * needle_string, hash_t needle_hash )
+static TextureMapEntry * hash_find_entry( const char * needle_string, render_hash_t needle_hash )
 {
     while ( true )
     {

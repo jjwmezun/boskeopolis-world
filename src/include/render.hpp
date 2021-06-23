@@ -1,10 +1,10 @@
 #ifndef RENDER_H
 #define RENDER_H
 
+#include "color.hpp"
 #include "unit.hpp"
 
 class Character;
-class Color;
 class Graphic;
 class Rect;
 class Text;
