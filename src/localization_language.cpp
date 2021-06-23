@@ -6,7 +6,7 @@
 
 LocalizationLanguage::LocalizationLanguage( const char * code )
 {
-    const std::string full_filename = Filename::localization( code );
+    const std::string full_filename = std::string( filename_localization( code ) );
     std::ifstream ifs( full_filename );
     if( !ifs.is_open() )
     {

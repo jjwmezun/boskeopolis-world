@@ -18,7 +18,7 @@ static int accumulator = 0;
 
 int main()
 {
-    Filename::init();
+    filename_init();
     if ( !Engine::init() )
     {
         printf( "¡Error! Failed to initialize game!\n" );
@@ -44,10 +44,10 @@ int main()
             accumulator -= DT;
         }
 
-        Render::update();
+        render_update();
     }
 
-    Render::close();
+    render_close();
     Engine::close();
     return 0;
 }

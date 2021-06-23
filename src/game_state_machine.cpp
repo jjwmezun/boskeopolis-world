@@ -35,6 +35,12 @@ namespace GameStateMachine
             case ( GameState::Type::LEVEL ):
             {
                 auto & hero = states[ number_of_states - 1 ].data.level.hero;
+                Graphic & gfx = render_get_graphic( hero.gfx );
+                ++gfx.data.sprite.dest.x;
+                if ( Input::pressedLeft() )
+                {
+                    pushState( createPauseState() );
+                }
             }
             break;
             case ( GameState::Type::PAUSE ):
@@ -59,8 +65,8 @@ namespace GameStateMachine
             closeState( --number_of_states );
         }
         number_of_states = 1;
-        Render::setNumberOfStates( number_of_states );
-        Render::clearGraphics();
+        render_set_states_number( number_of_states );
+        render_clear_graphics();
         states[ 0 ] = state;
         initState( 0 );
     };
@@ -68,7 +74,7 @@ namespace GameStateMachine
     void pushState( GameState state )
     {
         states[ number_of_states ] = state;
-        Render::setNumberOfStates( number_of_states );
+        render_set_states_number( number_of_states );
         initState( number_of_states );
         ++number_of_states;
     };
@@ -76,8 +82,8 @@ namespace GameStateMachine
     void popState()
     {
         closeState( --number_of_states );
-        Render::clearStateGraphics( number_of_states );
-        Render::setNumberOfStates( number_of_states );
+        render_clear_state_graphics( number_of_states );
+        render_set_states_number( number_of_states );
     };
 
     GameState createTitleState()
@@ -120,23 +126,24 @@ namespace GameStateMachine
         {
             case ( GameState::Type::TITLE ):
             {
-                Render::addGraphic( Graphic::createFullRect( { 255.0, 255.0, 255.0, 255.0 } ), number, Unit::Layer::BG_1 );
-                Render::addGraphic( Graphic::createText( Text::create( "Boskeopolis World", {{ "x", 16.0 }, { "y", 16.0 } } ) ), number, Unit::Layer::FG_1 );
+                render_add_graphic( Graphic::createFullRect( { 255.0, 255.0, 255.0, 255.0 } ), number, Unit::Layer::BG_1 );
+                render_add_graphic( Graphic::createText( Text::create( "Boskeopolis World", {{ "x", 16.0 }, { "y", 16.0 } } ) ), number, Unit::Layer::FG_1 );
             }
             break;
             case ( GameState::Type::LEVEL ):
             {
-                Render::addGraphic( Graphic::createFullRect( { 0.0, 0.0, 255.0, 255.0 } ), number, Unit::Layer::BG_1 );
+                render_add_graphic( Graphic::createFullRect( { 0.0, 0.0, 255.0, 255.0 } ), number, Unit::Layer::BG_1 );
                 states[ number ].data.level.hero.position.x = 32.0;
                 states[ number ].data.level.hero.position.y = 32.0;
                 states[ number ].data.level.hero.position.w = 16.0;
                 states[ number ].data.level.hero.position.h = 25.0;
                 states[ number ].data.level.hero.top_speed = 4.0;
-                states[ number ].data.level.hero.gfx = Render::addGraphic
+
+                states[ number ].data.level.hero.gfx = render_add_graphic
                 (
                     Graphic::createSprite
                     (
-                        Render::getTextureId( "sprites/autumn.png" ),
+                        render_get_texture_id( "sprites/autumn.png" ),
                         0,
                         states[ number ].data.level.hero.position,
                         0.0,
@@ -149,7 +156,7 @@ namespace GameStateMachine
             break;
             case ( GameState::Type::PAUSE ):
             {
-                Render::addGraphic( Graphic::createRect( { 32.0, 32.0, 320.0, 128.0 }, { 255.0, 0.0, 0.0, 255.0 } ), number, Unit::Layer::BG_1 );
+                render_add_graphic( Graphic::createRect( { 32.0, 32.0, 320.0, 128.0 }, { 255.0, 0.0, 0.0, 255.0 } ), number, Unit::Layer::BG_1 );
             }
             break;
         }

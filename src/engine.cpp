@@ -23,12 +23,12 @@ namespace Engine
             { Input::Key::RIGHT, { ( int )( GLFW_KEY_RIGHT ) } },
             { Input::Key::LEFT, { ( int )( GLFW_KEY_LEFT ) } }
         });
-        if ( !Render::init( "Boskeopolis World", Unit::WINDOW_WIDTH_PIXELS, Unit::WINDOW_HEIGHT_PIXELS, { 0, 0, 0, 255 } ) )
+        if ( !render_init( "Boskeopolis World", Unit::WINDOW_WIDTH_PIXELS, Unit::WINDOW_HEIGHT_PIXELS, { 0, 0, 0, 255 } ) )
         {
             printf( "¡Error! ¡Failed to initialize game renderer!\n" );
             return -1;
         }
-        glfwSetKeyCallback( ( GLFWwindow * )( Render::getWindow() ), &handleInput );
+        glfwSetKeyCallback( ( GLFWwindow * )( render_get_window() ), &handleInput );
         return true;
     };
 
@@ -44,10 +44,10 @@ namespace Engine
 
     bool handleEvents()
     {
-        bool running = !Render::windowShouldClose();
+        int running = !render_window_should_close();
         if ( running )
         {
-            GLFWwindow * window = ( GLFWwindow * )( Render::getWindow() );
+            GLFWwindow * window = ( GLFWwindow * )( render_get_window() );
             if( glfwGetKey( window, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
             {
                 glfwSetWindowShouldClose( window, true );
