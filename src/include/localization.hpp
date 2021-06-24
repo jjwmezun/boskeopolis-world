@@ -1,12 +1,16 @@
 #ifndef LOCALIZATION_H
 #define LOCALIZATION_H
 
-#include "localization_language.hpp"
+#include "assoc_array.hpp"
 
-namespace Localization
+typedef struct
 {
-    void init();
-    const LocalizationLanguage& getLanguage();
-};
+    AssocArray charmap;
+}
+Localization;
+
+void localization_init();
+void localization_close();
+Localization * localization_get_current();
 
 #endif // LOCALIZATION_H

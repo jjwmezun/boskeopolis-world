@@ -25,7 +25,7 @@ int main()
         return -1;
     }
 
-    Localization::init();
+    localization_init();
     Input::init();
     GameStateMachine::init();
 
@@ -47,7 +47,9 @@ int main()
         render_update();
     }
 
+    localization_close();
     render_close();
     Engine::close();
+    filename_close();
     return 0;
 }

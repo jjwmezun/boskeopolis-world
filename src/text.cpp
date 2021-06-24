@@ -1,10 +1,13 @@
+#include "assoc_array.hpp"
+#include "character_template.hpp"
 #include "localization.hpp"
-#include "localization_language.hpp"
 #include "render.hpp"
 #include <string.h>
 #include "text.hpp"
 #include "unit.hpp"
 #include "vector.hpp"
+
+#include <string>
 
 #define MAX_CHARACTER_TYPES 1009 // Note: must be prime.
 #define MAX_TEXT_LINES 32
@@ -54,7 +57,7 @@ Text text_create( const char * text, AssocArray * args )
 
     Vector tempchars = vector_create( MAX_CHARACTERS );
 
-    const auto & character_map = Localization::getLanguage().getCharacterMap();
+    const AssocArray * charmap = &localization_get_current()->charmap;
 
     // 1st loop gets list o’ characters with sizes.
     while ( *text )
@@ -63,11 +66,11 @@ Text text_create( const char * text, AssocArray * args )
         int character_size = text_get_character_size( text );
         std::string letter = string.substr( 0, character_size );
 
-        const auto iterator = character_map.find( letter.c_str() );
-        if ( iterator != character_map.end() )
+        Value v = assoc_array_get( charmap, letter.c_str() );
+        if ( v.type == VALUE_UNIQUE_PTR )
         {
             void * c = malloc( sizeof( CharacterTemplate ) );
-            memcpy( c, ( void * )( &iterator->second ), sizeof( CharacterTemplate ) );
+            memcpy( c, ( void * )( v.value.ptr_ ), sizeof( CharacterTemplate ) );
             vector_push( &tempchars, value_create_unique_ptr( c ) );
         }
 

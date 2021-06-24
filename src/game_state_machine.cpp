@@ -128,7 +128,7 @@ namespace GameStateMachine
             case ( GameState::Type::TITLE ):
             {
                 render_add_graphic( Graphic::createFullRect( { 255.0, 255.0, 255.0, 255.0 } ), number, Unit::Layer::BG_1 );
-                AssocArray args = assoc_array_create();
+                AssocArray args = assoc_array_create( -1 );
                 assoc_array_add( &args, "y", value_create_float( 16.0 ) );
                 assoc_array_add( &args, "align", value_create_int( ALIGN_CENTER ) );
                 render_add_graphic( Graphic::createText( text_create( "Boskeopolis World", &args ) ), number, Unit::Layer::FG_1 );

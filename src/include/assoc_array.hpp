@@ -18,9 +18,10 @@ typedef struct
 }
 AssocArray;
 
-AssocArray assoc_array_create();
+AssocArray assoc_array_create( int init_capacity );
 void assoc_array_destroy( AssocArray * array );
-Value assoc_array_get( AssocArray * array, const char * key );
+Value assoc_array_get( const AssocArray * array, const char * key );
 void assoc_array_add( AssocArray * array, const char * key, Value value );
+void assoc_array_debug( const AssocArray * array );
 
 #endif // ASSOC_ARRAY_H
