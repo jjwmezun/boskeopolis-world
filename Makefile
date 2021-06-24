@@ -3,13 +3,13 @@
 ########################################################################
 
 # Compiler settings - Can be customized.
-CC = g++
-CXXFLAGS = -std=c++2a -Wall
-LDFLAGS = -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lstdc++fs -lpthread
+CC = gcc
+CXXFLAGS = -std=c11 -Wall
+LDFLAGS = -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lm
 
 # Makefile settings - Can be customized.
 APPNAME = BoskeopolisWorld
-EXT = .cpp
+EXT = .c
 SRCDIR = src
 OBJDIR = obj
 LOCALINC = -Isrc/include
