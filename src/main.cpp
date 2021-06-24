@@ -26,7 +26,6 @@ int main()
     }
 
     localization_init();
-    Input::init();
     GameStateMachine::init();
 
     ticks = Engine::getTicks();
@@ -40,13 +39,14 @@ int main()
         while ( accumulator >= DT )
         {
             GameStateMachine::update();
-            Input::update();
+            input_update();
             accumulator -= DT;
         }
 
         render_update();
     }
 
+    input_close();
     localization_close();
     render_close();
     Engine::close();

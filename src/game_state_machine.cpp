@@ -27,7 +27,7 @@ namespace GameStateMachine
         {
             case ( GameState::Type::TITLE ):
             {
-                if ( Input::pressedRight() )
+                if ( input_pressed_right() )
                 {
                     changeState( createLevelState() );
                 }
@@ -38,7 +38,7 @@ namespace GameStateMachine
                 auto & hero = states[ number_of_states - 1 ].data.level.hero;
                 Graphic & gfx = render_get_graphic( hero.gfx );
                 ++gfx.data.sprite.dest.x;
-                if ( Input::pressedLeft() )
+                if ( input_pressed_left() )
                 {
                     pushState( createPauseState() );
                 }
@@ -46,11 +46,11 @@ namespace GameStateMachine
             break;
             case ( GameState::Type::PAUSE ):
             {
-                if ( Input::pressedRight() )
+                if ( input_pressed_right() )
                 {
                     changeState( createTitleState() );
                 }
-                else if ( Input::pressedLeft() )
+                else if ( input_pressed_left() )
                 {
                     popState();
                 }

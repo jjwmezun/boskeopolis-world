@@ -1,26 +1,25 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include <unordered_map>
-#include <vector>
+#include "vector.hpp"
 
-namespace Input
+enum InputKey
 {
-    enum class Key
-    {
-        RIGHT,
-        LEFT
-    };
-    static constexpr int NUMBER_OF_KEYS = 2;
-    void init();
-    void initKeys( std::unordered_map<Key, std::vector<int>> new_keys );
-    void press( int raw_key );
-    void release( int raw_key );
-    void update();
-    bool heldRight();
-    bool heldLeft();
-    bool pressedRight();
-    bool pressedLeft();
+    INPUT_RIGHT,
+    INPUT_LEFT,
+    INPUT_NULL
 };
+
+#define INPUT_MAX INPUT_NULL
+
+void input_init( Vector * new_keys );
+void input_close();
+void input_press( int raw_key );
+void input_release( int raw_key );
+void input_update();
+bool input_held_right();
+bool input_held_left();
+bool input_pressed_right();
+bool input_pressed_left();
 
 #endif // INPUT_H

@@ -1,4 +1,3 @@
-#include <assert.h>
 #include "assoc_array.hpp"
 #include "log.hpp"
 #include <stdio.h>
@@ -21,13 +20,6 @@ AssocArray assoc_array_create( int init_capacity )
     {
         log_error( "Failed to create associative array." );
     }
-
-    /*
-    for ( int i = 0; i < a.capacity; ++i )
-    {
-        a.entries[ i ].key.string = NULL;
-        a.entries[ i ].key.hash = 0;
-    }*/
 
     return a;
 };
@@ -70,13 +62,6 @@ void assoc_array_add( AssocArray * array, const char * key, Value value )
             {
                 log_error( "Failed to grow associative array." );
             }
-
-            /*
-            for ( int i = 0; i < new_capacity; ++i )
-            {
-                new_list[ i ].key.string = NULL;
-                new_list[ i ].key.hash = NULL;
-            }*/
 
             for ( int i = 0; i < array->capacity; ++i )
             {

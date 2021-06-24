@@ -1,121 +1,111 @@
 #include "input.hpp"
+#include "int_map.hpp"
+#include <stdlib.h>
 
-namespace Input
+IntMap key_map;
+bool held[ INPUT_MAX ];
+bool pressed[ INPUT_MAX ];
+bool press_locks[ INPUT_MAX ];
+
+void input_init( Vector * new_keys )
 {
-    std::unordered_map<Key, std::vector<int>> keys;
-    std::unordered_map<int, std::vector<Key>> raw_keys;
-    //std::unordered_map<int, std::vector<std::function<void ()>>> actions;
-    bool held[ NUMBER_OF_KEYS ];
-    bool pressed[ NUMBER_OF_KEYS ];
-    bool press_locks[ NUMBER_OF_KEYS ];
-
-    void init()
+    key_map = int_map_create( -1 );
+    for ( int i = 0; i < INPUT_MAX; ++i )
     {
-        for ( int i = 0; i < NUMBER_OF_KEYS; ++i )
-        {
-            held[ i ] = false;
-            pressed[ i ] = false;
-            press_locks[ i ] = false;
-        }
-    };
+        held[ i ] = false;
+        pressed[ i ] = false;
+        press_locks[ i ] = false;
+    }
 
-    void initKeys( std::unordered_map<Key, std::vector<int>> new_keys )
+    for ( int i = 0; i < INPUT_MAX; ++i )
     {
-        keys = new_keys;
-        for ( auto key : keys )
+        for ( int j = 0; j < new_keys[ i ].count; ++j )
         {
-            auto & raw_key_list = key.second;
-            for ( int raw_key : raw_key_list )
+            int raw_key = new_keys[ i ].list[ j ].value.int_;
+            Value v = int_map_get( &key_map, raw_key );
+            Vector * l;
+            if ( v.type == VALUE_NULL )
             {
-                auto iterator = raw_keys.find( raw_key );
-                if ( iterator == raw_keys.end() )
-                {
-                    raw_keys.insert( std::pair<int, std::vector<Key>>{ raw_key, { key.first } } );
-                }
-                else
-                {
-                    iterator->second.emplace_back( key.first );
-                }
+                l = ( Vector * )( calloc( 1, sizeof( Vector ) ) );
+                int_map_add( &key_map, raw_key, value_create_unique_ptr( ( void * )( l ) ) );
+            }
+            else
+            {
+                l = ( Vector * )( v.value.ptr_ );
+            }
+            vector_push( l, value_create_int( i ) );
+        }
+    }
+};
+
+void input_close()
+{
+    for ( int i = 0; i < key_map.capacity; ++i )
+    {
+        if ( key_map.entries[ i ].key.number != -1 )
+        {
+            vector_destroy( ( Vector * )( key_map.entries[ i ].value.value.ptr_ ) );
+        }
+    }
+    int_map_destroy( &key_map );
+}
+
+void input_press( int raw_key )
+{
+    Value v = int_map_get( &key_map, raw_key );
+    if ( v.type != VALUE_NULL )
+    {
+        Vector * l = ( Vector * )( v.value.ptr_ );
+        for ( int i = 0; i < l->count; ++i )
+        {
+            int key_num = l->list[ i ].value.int_;
+            held[ key_num ] = true;
+            if ( !press_locks[ key_num ] )
+            {
+                pressed[ key_num ] = press_locks[ key_num ] = true;
             }
         }
-    };
+    }
+};
 
-    void press( int raw_key )
+void input_release( int raw_key )
+{
+    Value v = int_map_get( &key_map, raw_key );
+    if ( v.type != VALUE_NULL )
     {
-        auto iterator = raw_keys.find( raw_key );
-        if ( iterator != raw_keys.end() )
+        Vector * l = ( Vector * )( v.value.ptr_ );
+        for ( int i = 0; i < l->count; ++i )
         {
-            for ( Key key : iterator->second )
-            {
-                int key_num = ( int )( key );
-                held[ key_num ] = true;
-                if ( !press_locks[ key_num ] )
-                {
-                    pressed[ key_num ] = press_locks[ key_num ] = true;
-                }
-            }
+            int key_num = l->list[ i ].value.int_;
+            held[ key_num ] = press_locks[ key_num ] = false;
         }
-    };
+    }
+};
 
-    void release( int raw_key )
+void input_update()
+{
+    for ( int i = 0; i < INPUT_MAX; ++i )
     {
-        auto iterator = raw_keys.find( raw_key );
-        if ( iterator != raw_keys.end() )
-        {
-            for ( Key key : iterator->second )
-            {
-                int key_num = ( int )( key );
-                held[ key_num ] = press_locks[ key_num ] = false;
-            }
-        }
-    };
+        pressed[ i ] = false;
+    }
+};
 
-    void update()
-    {
-        for ( int i = 0; i < NUMBER_OF_KEYS; ++i )
-        {
-            pressed[ i ] = false;
-        }
-    };
+bool input_held_right()
+{
+    return held[ ( int )( INPUT_RIGHT ) ];
+};
 
-    /*
-    void registerPressAction( Key key, std::function<void ()> action )
-    {
-        auto iterator = keys.find( key );
-        if ( iterator != keys.end() )
-        {
-            for ( int raw_key : iterator->second )
-            {
-                auto action_list_iterator = actions.find( raw_key );
-                if ( action_list_iterator == actions.end() )
-                {
-                    actions.insert( std::pair<int, std::vector<std::function<void ()>>> { raw_key, { action } } );
-                }
-                else
-                {
-                    action_list_iterator->second.emplace_back( action );
-                }
-            }
-        }
-    };*/
+bool input_held_left()
+{
+    return held[ ( int )( INPUT_LEFT ) ];
+};
 
-    bool heldRight()
-    {
-        return held[ ( int )( Key::RIGHT ) ];
-    };
+bool input_pressed_right()
+{
+    return pressed[ ( int )( INPUT_RIGHT ) ];
+};
 
-    bool heldLeft()
-    {
-        return held[ ( int )( Key::LEFT ) ];
-    };
-
-    bool pressedRight()
-    {
-        return pressed[ ( int )( Key::RIGHT ) ];
-    };
-
-    bool pressedLeft()
-    {
-        return pressed[ ( int )( Key::LEFT ) ];
-    };
+bool input_pressed_left()
+{
+    return pressed[ ( int )( INPUT_LEFT ) ];
 };
