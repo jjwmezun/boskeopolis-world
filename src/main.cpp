@@ -5,34 +5,35 @@
 #include "game_state_machine.hpp"
 #include "input.hpp"
 #include "localization.hpp"
+#include "log.hpp"
 #include "rect.hpp"
 #include "render.hpp"
 #include "unit.hpp"
 #include <vector>
 
-static bool running = true;
+#define DT 17
+
+static int running = 1;
 static int ticks = 0;
 static int accumulator = 0;
-
-#define DT 17
 
 int main()
 {
     filename_init();
-    if ( !Engine::init() )
+    if ( !engine_init() )
     {
-        printf( "¡Error! Failed to initialize game!\n" );
+        log_error( "¡Error! Failed to initialize game!\n" );
         return -1;
     }
 
     localization_init();
     GameStateMachine::init();
 
-    ticks = Engine::getTicks();
+    ticks = engine_get_ticks();
     while ( running )
     {
-        running = Engine::handleEvents();
-        int new_time = Engine::getTicks();
+        running = engine_handle_events();
+        int new_time = engine_get_ticks();
         int frame_time = new_time - ticks;
         ticks = new_time;
         accumulator += frame_time;
@@ -49,7 +50,7 @@ int main()
     input_close();
     localization_close();
     render_close();
-    Engine::close();
+    engine_close();
     filename_close();
     return 0;
 }
