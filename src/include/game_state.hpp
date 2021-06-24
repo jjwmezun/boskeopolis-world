@@ -2,13 +2,10 @@
 #define GAME_STATE_H
 
 #include "rect.hpp"
-#include <string>
-#include <unordered_map>
-#include <variant>
 
 #define MAX_SPRITE_PROPS 32
 
-struct Sprite
+typedef struct
 {
     unsigned int gfx;
     Rect position;
@@ -17,14 +14,16 @@ struct Sprite
     float vx;
     float vy;
     float top_speed;
-};
+}
+Sprite;
 
-struct LevelState
+typedef struct
 {
     Sprite hero;
-};
+}
+LevelState;
 
-struct GameState
+typedef struct
 {
     enum class Type
     {
@@ -38,6 +37,7 @@ struct GameState
     {
         LevelState level;
     } data;
-};
+}
+GameState;
 
 #endif // GAME_STATE_H

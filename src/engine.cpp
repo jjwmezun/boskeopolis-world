@@ -11,7 +11,7 @@
 
 static void engine_handle_input( GLFWwindow * window, int key, int scancode, int action, int mods );
 
-bool engine_init()
+int engine_init()
 {
     glfwInit();
     glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
@@ -34,13 +34,13 @@ bool engine_init()
         vector_destroy( &keys[ i ] );
     }
 
-    if ( !render_init( "Boskeopolis World", Unit::WINDOW_WIDTH_PIXELS, Unit::WINDOW_HEIGHT_PIXELS, { 0, 0, 0, 255 } ) )
+    if ( !render_init() )
     {
         log_error( "¡Error! ¡Failed to initialize game renderer!\n" );
-        return -1;
+        return 0;
     }
     glfwSetKeyCallback( ( GLFWwindow * )( render_get_window() ), &engine_handle_input );
-    return true;
+    return 1;
 };
 
 void engine_close()

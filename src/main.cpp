@@ -1,5 +1,4 @@
 #include "color.hpp"
-#include <cstdio>
 #include "engine.hpp"
 #include "filename.hpp"
 #include "game_state_machine.hpp"
@@ -8,8 +7,6 @@
 #include "log.hpp"
 #include "rect.hpp"
 #include "render.hpp"
-#include "unit.hpp"
-#include <vector>
 
 #define DT 17
 
@@ -27,7 +24,7 @@ int main()
     }
 
     localization_init();
-    GameStateMachine::init();
+    state_init();
 
     ticks = engine_get_ticks();
     while ( running )
@@ -39,7 +36,7 @@ int main()
         accumulator += frame_time;
         while ( accumulator >= DT )
         {
-            GameStateMachine::update();
+            state_update();
             input_update();
             accumulator -= DT;
         }

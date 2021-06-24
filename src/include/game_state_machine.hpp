@@ -3,19 +3,16 @@
 
 #include "game_state.hpp"
 
-namespace GameStateMachine
-{
-    static constexpr int MAX_STATES = 5;
+#define MAX_STATES 5
 
-    void init();
-    void update();
-    void changeState( GameState state );
-    void pushState( GameState state );
-    void popState();
+void state_init();
+void state_update();
+void state_change( GameState state );
+void state_push( GameState state );
+void state_pop();
 
-    GameState createTitleState();
-    GameState createLevelState();
-    GameState createPauseState();
-};
+GameState state_create_title();
+GameState state_create_level();
+GameState state_create_pause();
 
 #endif // GAME_STATE_MACHINE

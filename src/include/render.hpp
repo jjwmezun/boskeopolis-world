@@ -2,24 +2,20 @@
 #define RENDER_H
 
 #include "color.hpp"
+#include "graphic.hpp"
 #include "unit.hpp"
 
-class Character;
-class Graphic;
-class Rect;
-class Text;
-
-bool render_init( const char * title, int width, int height, Color background );
+int render_init();
 void render_close();
 void render_update();
-unsigned int render_get_texture_id( const char * local, bool indexed = true );
+unsigned int render_get_texture_id( const char * local, int indexed = true );
 void render_clear_textures();
-bool render_window_should_close();
+int render_window_should_close();
 void * render_get_window();
 void render_set_states_number( int number );
 void render_clear_graphics();
 void render_clear_state_graphics( int state );
-unsigned int render_add_graphic( Graphic gfx, int state, Unit::Layer layer );
-Graphic & render_get_graphic( unsigned int id );
+unsigned int render_add_graphic( Graphic gfx, int state, Layer layer );
+Graphic * render_get_graphic( unsigned int id );
 
 #endif // RENDER_H

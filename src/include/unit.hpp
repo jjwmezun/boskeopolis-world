@@ -1,55 +1,38 @@
 #ifndef UNIT_H
 #define UNIT_H
 
-#include <algorithm>
-#include <cmath>
+#include <math.h>
 
-namespace Unit
+#define PIXELS_PER_BLOCK 16
+#define BLOCKS_TO_PIXELS( n ) ( ( n ) * PIXELS_PER_BLOCK )
+#define PIXELS_TO_BLOCKS( n ) ( floor( ( n ) / PIXELS_PER_BLOCK ) )
+
+#define WINDOW_WIDTH_BLOCKS 25
+#define WINDOW_HEIGHT_BLOCKS 14
+#define WINDOW_WIDTH_PIXELS BLOCKS_TO_PIXELS( WINDOW_WIDTH_BLOCKS )
+#define WINDOW_HEIGHT_PIXELS BLOCKS_TO_PIXELS( WINDOW_HEIGHT_BLOCKS )
+
+enum Layer
 {
-    static constexpr int PIXELS_PER_BLOCK = 16;
-
-    static constexpr int blocksToPixels( int n )
-    {
-        return n * PIXELS_PER_BLOCK;
-    };
-
-    static constexpr int pixelsToBlocks( int n )
-    {
-        return floor( n / PIXELS_PER_BLOCK );
-    };
-
-    static constexpr int WINDOW_WIDTH_BLOCKS = 25;
-    static constexpr int WINDOW_HEIGHT_BLOCKS = 14;
-    static constexpr int WINDOW_WIDTH_PIXELS = blocksToPixels( WINDOW_WIDTH_BLOCKS );
-    static constexpr int WINDOW_HEIGHT_PIXELS = blocksToPixels( WINDOW_HEIGHT_BLOCKS );
-
-    enum class Layer
-	{
-		BEFORE_BG_1 = 0,
-		BG_1,
-		BEFORE_BG_2,
-		BG_2,
-		BEFORE_BLOCKS_1,
-		BLOCKS_1,
-		BEFORE_SPRITES_1,
-		SPRITES_1,
-		BEFORE_BLOCKS_2,
-		BLOCKS_2,
-		BEFORE_SPRITES_2,
-		SPRITES_2,
-		BEFORE_FG_1,
-		FG_1,
-		BEFORE_FG_2,
-		FG_2,
-		AFTER_FG_2,
-		SUPER
-	};
-	static constexpr int NUMBER_OF_LAYERS = ( int )( Layer::SUPER ) + 1;
-
-	inline constexpr Layer intToLayer( int value )
-	{
-		return ( Layer )( std::max( 0, std::min( NUMBER_OF_LAYERS, value ) ) );
-	};
-}
+	LAYER_BEFORE_BG_1 = 0,
+	LAYER_BG_1,
+	LAYER_BEFORE_BG_2,
+	LAYER_BG_2,
+	LAYER_BEFORE_BLOCKS_1,
+	LAYER_BLOCKS_1,
+	LAYER_BEFORE_SPRITES_1,
+	LAYER_SPRITES_1,
+	LAYER_BEFORE_BLOCKS_2,
+	LAYER_BLOCKS_2,
+	LAYER_BEFORE_SPRITES_2,
+	LAYER_SPRITES_2,
+	LAYER_BEFORE_FG_1,
+	LAYER_FG_1,
+	LAYER_BEFORE_FG_2,
+	LAYER_FG_2,
+	LAYER_AFTER_FG_2,
+	LAYER_SUPER
+};
+#define NUMBER_OF_LAYERS LAYER_SUPER + 1
 
 #endif // UNIT_H

@@ -2,39 +2,39 @@
 #include "render.hpp"
 #include "unit.hpp"
 
-Graphic Graphic::createRect( Rect rect, Color color )
+Graphic graphic_create_rect( Rect rect, Color color )
 {
     Graphic g;
-    g.type = Type::RECT;
+    g.type = GFX_RECT;
     g.data.rect = { rect, color };
     return g;
 };
 
-Graphic Graphic::createFullRect( Color color )
+Graphic graphic_create_full_rect( Color color )
 {
-    return createRect( { 0.0, 0.0, ( float )( Unit::WINDOW_WIDTH_PIXELS ), ( float )( Unit::WINDOW_HEIGHT_PIXELS ) }, color );
+    return graphic_create_rect( { 0.0, 0.0, ( float )( WINDOW_WIDTH_PIXELS ), ( float )( WINDOW_HEIGHT_PIXELS ) }, color );
 };
 
-Graphic Graphic::createText( Text text )
+Graphic graphic_create_text( Text text )
 {
     Graphic g;
-    g.type = Type::TEXT;
+    g.type = GFX_TEXT;
     g.data.text = text;
     return g;
 };
 
-Graphic Graphic::createSprite
+Graphic graphic_create_sprite
 (
     unsigned int texture,
     unsigned int palette,
     Rect dest,
     float src_x,
     float src_y,
-    std::unordered_map<std::string, std::variant<bool, float>> args
+    AssocArray * args
 )
 {
     Graphic g;
-    g.type = Type::SPRITE;
+    g.type = GFX_SPRITE;
     g.data.sprite.texture = texture;
     g.data.sprite.palette = palette;
     g.data.sprite.dest = dest;

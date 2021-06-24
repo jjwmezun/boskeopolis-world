@@ -21,12 +21,13 @@ enum TextVAlign
 
 #define MAX_CHARACTERS 256
 
-struct Text
+typedef struct
 {
     Character characters[ MAX_CHARACTERS ];
     int number_of_characters;
     Color color;
-};
+}
+Text;
 
 Text text_create( const char * text, AssocArray * args );
 

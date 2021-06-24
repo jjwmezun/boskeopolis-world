@@ -8,13 +8,14 @@ enum CharacterTemplateType
     CHAR_NEWLINE
 };
 
-struct CharacterTemplate
+typedef struct
 {
     CharacterTemplateType type;
     float w;
     float h;
     float x;
     float y;
-};
+}
+CharacterTemplate;
 
 #endif // CHARACTER_TEMPLATE_H

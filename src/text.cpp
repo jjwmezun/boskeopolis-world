@@ -23,8 +23,8 @@ Text text_create( const char * text, AssocArray * args )
 
     double x = 0;
     double y = 0;
-    double w = Unit::WINDOW_WIDTH_PIXELS;
-    double h = Unit::WINDOW_HEIGHT_PIXELS;
+    double w = WINDOW_WIDTH_PIXELS;
+    double h = WINDOW_HEIGHT_PIXELS;
     TextAlign align = ALIGN_LEFT;
     TextVAlign valign = VALIGN_TOP;
     double padding_x = 0;

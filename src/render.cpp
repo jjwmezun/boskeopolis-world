@@ -1,10 +1,8 @@
 #include "character.hpp"
-#include <stdio.h>
 #include "filename.hpp"
 #include "game_state_machine.hpp"
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
-#include "graphic.hpp"
 #include "io.hpp"
 #include "log.hpp"
 #include "rect.hpp"
@@ -56,7 +54,7 @@ static unsigned int number_of_textures = 0;
 static unsigned int palette_texture;
 static unsigned int text_texture;
 static unsigned int number_of_graphics = 0;
-static int graphics_per_layer[ GameStateMachine::MAX_STATES ][ Unit::NUMBER_OF_LAYERS ];
+static int graphics_per_layer[ MAX_STATES ][ NUMBER_OF_LAYERS ];
 static int number_of_states = 0;
 static int graphics_map[ MAX_GRAPHICS ];
 static Graphic layers[ MAX_GRAPHICS ];
@@ -69,30 +67,30 @@ static unsigned int generate_shader( GLenum type, const char * file );
 static char * load_shader( const char * local );
 static void buffer_vertices();
 static void rect( const Rect & rect, const Color & color );
-static void sprite( unsigned int texture_id, unsigned int palette_id, const Rect & src, const Rect & dest, bool flip_x, bool flip_y, float rotation_x, float rotation_y, float rotation_z );
+static void sprite( unsigned int texture_id, unsigned int palette_id, const Rect & src, const Rect & dest, int flip_x, int flip_y, float rotation_x, float rotation_y, float rotation_z );
 static void character( const Character & character, const Color & color );
 
 static TextureMapEntry * hash_find_entry( const char * needle_string, render_hash_t needle_hash );
 static uint32_t hash_string( const char * key );
 
-bool render_init( const char * title, int width, int height, Color background )
+int render_init()
 {
-    canvas_width = width;
-    canvas_height = height;
-    window = glfwCreateWindow( width * magnification, height * magnification, title, nullptr, nullptr );
+    canvas_width = WINDOW_WIDTH_PIXELS;
+    canvas_height = WINDOW_HEIGHT_PIXELS;
+    window = glfwCreateWindow( canvas_width * magnification, canvas_height * magnification, "Boskeopolis World", nullptr, nullptr );
     if ( window == nullptr )
     {
-        printf( "Failed to create GLFW window\n" );
+        log_error( "Failed to create GLFW window\n" );
         glfwTerminate();
-        return false;
+        return 0;
     }
     glfwMakeContextCurrent( window );
     if ( !gladLoadGLLoader( ( GLADloadproc )( glfwGetProcAddress ) ) )
     {
-        printf( "Failed to initialize GLAD\n" );
+        log_error( "Failed to initialize GLAD\n" );
         return -1;
     }
-    glViewport( 0, 0, width * magnification, height * magnification );
+    glViewport( 0, 0, canvas_width * magnification, canvas_height * magnification );
 
     sprite_shader = generate_shader_program( "vertex", "sprite" );
     rect_shader = generate_shader_program( "vertex", "rect" );
@@ -103,11 +101,13 @@ bool render_init( const char * title, int width, int height, Color background )
 
     glGenTextures( MAX_TEXTURES, texture_ids );
 
-    palette_texture = render_get_texture_id( "sprites/palette.png", false );
-    text_texture = render_get_texture_id( "text/latin.png", false );
+    palette_texture = render_get_texture_id( "sprites/palette.png", 0 );
+    text_texture = render_get_texture_id( "text/latin.png", 0 );
 
-    for ( unsigned int shader : { sprite_shader, rect_shader, text_shader } )
+    unsigned int shaders[ 3 ] = { sprite_shader, rect_shader, text_shader };
+    for ( int i = 0; i < 3; ++i )
     {
+        unsigned int shader = shaders[ i ];
         glUseProgram(shader);
         glm::mat4 ortho = glm::ortho( 0.0f, 400.0f, 224.0f, 0.0f, -1.0f, 1.0f );
         unsigned int ortho_location = glGetUniformLocation(shader, "ortho");
@@ -146,7 +146,7 @@ bool render_init( const char * title, int width, int height, Color background )
         graphics_map[ i ] = -1;
     }
 
-    return true;
+    return 1;
 };
 
 void render_close()
@@ -169,12 +169,12 @@ void render_update()
     {
         switch ( layers[ i ].type )
         {
-            case ( Graphic::Type::RECT ):
+            case ( GFX_RECT ):
             {
                 rect( layers[ i ].data.rect.rect, layers[ i ].data.rect.color );
             }
             break;
-            case ( Graphic::Type::TEXT ):
+            case ( GFX_TEXT ):
             {
                 for ( int c = 0; c < layers[ i ].data.text.number_of_characters; ++c )
                 {
@@ -182,7 +182,7 @@ void render_update()
                 }
             }
             break;
-            case ( Graphic::Type::SPRITE ):
+            case ( GFX_SPRITE ):
             {
                 sprite
                 (
@@ -221,7 +221,7 @@ void render_clear_textures()
     number_of_textures = 2;
 };
 
-unsigned int render_get_texture_id( const char * local, bool indexed )
+unsigned int render_get_texture_id( const char * local, int indexed )
 {
     const render_hash_t needle_hash = hash_string( local );
     TextureMapEntry * entry = hash_find_entry( local, needle_hash );
@@ -261,9 +261,9 @@ void render_set_states_number( int number )
 void render_clear_graphics()
 {
     number_of_graphics = 0;
-    for ( int i = 0; i < GameStateMachine::MAX_STATES; ++i )
+    for ( int i = 0; i < MAX_STATES; ++i )
     {
-        for ( int j = 0; j < Unit::NUMBER_OF_LAYERS; ++j )
+        for ( int j = 0; j < NUMBER_OF_LAYERS; ++j )
         {
             graphics_per_layer[ i ][ j ] = 0;
         }
@@ -276,7 +276,7 @@ void render_clear_state_graphics( int state )
     int i = 0;
     for ( int si = 0; si < state; ++si )
     {
-        for ( int li = 0; li < Unit::NUMBER_OF_LAYERS; ++li )
+        for ( int li = 0; li < NUMBER_OF_LAYERS; ++li )
         {
             i += graphics_per_layer[ si ][ li ];
         }
@@ -297,7 +297,7 @@ void render_clear_state_graphics( int state )
     }
 
     // For every layer o’ current state, decrease # o’ graphics per layer & set graphics per layer to 0.
-    for ( int li = 0; li <= Unit::NUMBER_OF_LAYERS; ++li )
+    for ( int li = 0; li <= NUMBER_OF_LAYERS; ++li )
     {
         number_of_graphics -= graphics_per_layer[ state ][ li ];
         graphics_per_layer[ state ][ li ] = 0;
@@ -307,7 +307,7 @@ void render_clear_state_graphics( int state )
     // move later states’ graphics down to next blank space.
 };
 
-bool render_window_should_close()
+int render_window_should_close()
 {
     return glfwWindowShouldClose( window );
 };
@@ -379,13 +379,13 @@ void framebuffer_size_callback( GLFWwindow* window, int screen_width, int screen
     glViewport( x, y, magnified_canvas_width, magnified_canvas_height );
 }
 
-unsigned int render_add_graphic( Graphic gfx, int state, Unit::Layer layer )
+unsigned int render_add_graphic( Graphic gfx, int state, Layer layer )
 {
     // Count up graphics to where current graphic should be.
     int i = 0;
     for ( int si = 0; si < state; ++si )
     {
-        for ( int li = 0; li < Unit::NUMBER_OF_LAYERS; ++li )
+        for ( int li = 0; li < NUMBER_OF_LAYERS; ++li )
         {
             i += graphics_per_layer[ si ][ li ];
         }
@@ -428,9 +428,9 @@ unsigned int render_add_graphic( Graphic gfx, int state, Unit::Layer layer )
     return map_index;
 };
 
-Graphic & render_get_graphic( unsigned int id )
+Graphic * render_get_graphic( unsigned int id )
 {
-    return layers[ graphics_map[ id ] ];
+    return &layers[ graphics_map[ id ] ];
 };
 
 static void rect( const Rect & rect, const Color & color )
@@ -438,7 +438,7 @@ static void rect( const Rect & rect, const Color & color )
     draw_box( rect, color, color, color, color );
 };
 
-static void sprite( unsigned int texture_id, unsigned int palette_id, const Rect & src, const Rect & dest, bool flip_x, bool flip_y, float rotation_x, float rotation_y, float rotation_z )
+static void sprite( unsigned int texture_id, unsigned int palette_id, const Rect & src, const Rect & dest, int flip_x, int flip_y, float rotation_x, float rotation_y, float rotation_z )
 {
     glUseProgram(sprite_shader);
 
@@ -546,7 +546,8 @@ static unsigned int generate_shader_program( const char * vertex_shader, const c
     if( !success )
     {
         glGetProgramInfoLog( program, 512, NULL, infoLog );
-        printf( "ERROR: Failed to create shader program\n%s\n", infoLog );
+        log_error( "ERROR: Failed to create shader program\n" );
+        log_error( infoLog );
     }
 
     glDeleteShader( vertex_shader_id );
@@ -569,7 +570,8 @@ static unsigned int generate_shader( GLenum type, const char * file )
     if( !success )
     {
         glGetShaderInfoLog( shader, 512, NULL, infoLog );
-        printf( "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n%s\n", infoLog );
+        log_error( "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" );
+        log_error( infoLog );
     }
     return shader;
 }
@@ -595,7 +597,7 @@ static void buffer_vertices()
 
 static TextureMapEntry * hash_find_entry( const char * needle_string, render_hash_t needle_hash )
 {
-    while ( true )
+    while ( 1 )
     {
         TextureMapEntry * entry = &texture_map[ needle_hash ];
         if ( entry->key.string == NULL || strcmp( entry->key.string, needle_string ) == 0 )

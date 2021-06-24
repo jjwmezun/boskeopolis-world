@@ -3,18 +3,18 @@
 #include <stdlib.h>
 
 IntMap key_map;
-bool held[ INPUT_MAX ];
-bool pressed[ INPUT_MAX ];
-bool press_locks[ INPUT_MAX ];
+int held[ INPUT_MAX ];
+int pressed[ INPUT_MAX ];
+int press_locks[ INPUT_MAX ];
 
 void input_init( Vector * new_keys )
 {
     key_map = int_map_create( -1 );
     for ( int i = 0; i < INPUT_MAX; ++i )
     {
-        held[ i ] = false;
-        pressed[ i ] = false;
-        press_locks[ i ] = false;
+        held[ i ] = 0;
+        pressed[ i ] = 0;
+        press_locks[ i ] = 0;
     }
 
     for ( int i = 0; i < INPUT_MAX; ++i )
@@ -59,10 +59,10 @@ void input_press( int raw_key )
         for ( int i = 0; i < l->count; ++i )
         {
             int key_num = l->list[ i ].value.int_;
-            held[ key_num ] = true;
+            held[ key_num ] = 1;
             if ( !press_locks[ key_num ] )
             {
-                pressed[ key_num ] = press_locks[ key_num ] = true;
+                pressed[ key_num ] = press_locks[ key_num ] = 1;
             }
         }
     }
@@ -77,7 +77,7 @@ void input_release( int raw_key )
         for ( int i = 0; i < l->count; ++i )
         {
             int key_num = l->list[ i ].value.int_;
-            held[ key_num ] = press_locks[ key_num ] = false;
+            held[ key_num ] = press_locks[ key_num ] = 0;
         }
     }
 };
@@ -86,26 +86,26 @@ void input_update()
 {
     for ( int i = 0; i < INPUT_MAX; ++i )
     {
-        pressed[ i ] = false;
+        pressed[ i ] = 0;
     }
 };
 
-bool input_held_right()
+int input_held_right()
 {
     return held[ ( int )( INPUT_RIGHT ) ];
 };
 
-bool input_held_left()
+int input_held_left()
 {
     return held[ ( int )( INPUT_LEFT ) ];
 };
 
-bool input_pressed_right()
+int input_pressed_right()
 {
     return pressed[ ( int )( INPUT_RIGHT ) ];
 };
 
-bool input_pressed_left()
+int input_pressed_left()
 {
     return pressed[ ( int )( INPUT_LEFT ) ];
 };
