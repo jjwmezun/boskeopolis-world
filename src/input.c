@@ -90,22 +90,47 @@ void input_update()
     }
 };
 
+int input_held_jump()
+{
+    return held[ INPUT_JUMP ];
+};
+
 int input_held_right()
 {
-    return held[ ( int )( INPUT_RIGHT ) ];
+    return held[ INPUT_RIGHT ];
 };
 
 int input_held_left()
 {
-    return held[ ( int )( INPUT_LEFT ) ];
+    return held[ INPUT_LEFT ];
+};
+
+int input_pressed_confirm()
+{
+    return pressed[ INPUT_CONFIRM ];
+};
+
+int input_pressed_cancel()
+{
+    return pressed[ INPUT_CANCEL ];
+};
+
+int input_pressed_menu()
+{
+    return pressed[ INPUT_MENU ];
+};
+
+int input_pressed_jump()
+{
+    return pressed[ INPUT_JUMP ];
 };
 
 int input_pressed_right()
 {
-    return pressed[ ( int )( INPUT_RIGHT ) ];
+    return pressed[ INPUT_RIGHT ];
 };
 
 int input_pressed_left()
 {
-    return pressed[ ( int )( INPUT_LEFT ) ];
+    return pressed[ INPUT_LEFT ];
 };

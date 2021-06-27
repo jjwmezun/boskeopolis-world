@@ -4,6 +4,7 @@
 #include "graphic.h"
 #include "input.h"
 #include "render.h"
+#include "sprite.h"
 #include <stddef.h>
 #include "text.h"
 
@@ -24,7 +25,7 @@ void state_update()
     {
         case ( STATE_TITLE ):
         {
-            if ( input_pressed_right() )
+            if ( input_pressed_confirm() )
             {
                 state_change( state_create_level() );
             }
@@ -32,9 +33,8 @@ void state_update()
         break;
         case ( STATE_LEVEL ):
         {
-            Graphic * gfx = render_get_graphic( states[ number_of_states - 1 ].data.level.hero.gfx );
-            ++gfx->data.sprite.dest.x;
-            if ( input_pressed_left() )
+            hero_update( &states[ number_of_states - 1 ].data.level.hero );
+            if ( input_pressed_menu() )
             {
                 state_push( state_create_pause() );
             }
@@ -42,11 +42,11 @@ void state_update()
         break;
         case ( STATE_PAUSE ):
         {
-            if ( input_pressed_right() )
+            if ( input_pressed_confirm() )
             {
                 state_change( state_create_title() );
             }
-            else if ( input_pressed_left() )
+            else if ( input_pressed_cancel() || input_pressed_menu() )
             {
                 state_pop();
             }
@@ -142,26 +142,7 @@ static void state_init_single( int number )
         {
             Color color = { 0.0, 0.0, 255.0, 255.0 };
             render_add_graphic( graphic_create_full_rect( color ), number, LAYER_BG_1 );
-            states[ number ].data.level.hero.position.x = 32.0;
-            states[ number ].data.level.hero.position.y = 32.0;
-            states[ number ].data.level.hero.position.w = 16.0;
-            states[ number ].data.level.hero.position.h = 25.0;
-            states[ number ].data.level.hero.top_speed = 4.0;
-
-            states[ number ].data.level.hero.gfx = render_add_graphic
-            (
-                graphic_create_sprite
-                (
-                    render_get_texture_id( "sprites/autumn.png" ),
-                    0,
-                    states[ number ].data.level.hero.position,
-                    0.0,
-                    0.0,
-                    NULL
-                ),
-                number,
-                LAYER_BEFORE_SPRITES_1
-            );
+            states[ number ].data.level.hero = hero_create( number );
         }
         break;
         case ( STATE_PAUSE ):

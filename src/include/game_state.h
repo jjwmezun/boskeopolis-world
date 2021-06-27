@@ -2,20 +2,9 @@
 #define GAME_STATE_H
 
 #include "rect.h"
+#include "sprite.h"
 
 #define MAX_SPRITE_PROPS 32
-
-typedef struct
-{
-    unsigned int gfx;
-    Rect position;
-    float accx;
-    float accy;
-    float vx;
-    float vy;
-    float top_speed;
-}
-Sprite;
 
 typedef struct
 {

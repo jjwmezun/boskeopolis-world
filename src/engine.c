@@ -25,8 +25,12 @@ int engine_init()
     {
         keys[ i ] = vector_create( -1 );
     }
-    vector_push( &keys[ 0 ], value_create_int( GLFW_KEY_RIGHT ) );
-    vector_push( &keys[ 1 ], value_create_int( GLFW_KEY_LEFT ) );
+    vector_push( &keys[ INPUT_CONFIRM ], value_create_int( GLFW_KEY_Z ) );
+    vector_push( &keys[ INPUT_CANCEL ], value_create_int( GLFW_KEY_X ) );
+    vector_push( &keys[ INPUT_MENU ], value_create_int( GLFW_KEY_C ) );
+    vector_push( &keys[ INPUT_JUMP ], value_create_int( GLFW_KEY_Z ) );
+    vector_push( &keys[ INPUT_RIGHT ], value_create_int( GLFW_KEY_RIGHT ) );
+    vector_push( &keys[ INPUT_LEFT ], value_create_int( GLFW_KEY_LEFT ) );
     
     input_init( keys );
 

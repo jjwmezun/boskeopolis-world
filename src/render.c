@@ -517,12 +517,12 @@ static void sprite( unsigned int texture_id, unsigned int palette_id, const Rect
     };
     vec3 scale = { dest->w, dest->h, 0.0 };
     glm_scale( model, scale );
-    vec3 zrot = { 0.0, 0.0, 1.0 };
-    glm_rotate( model, DEGREES_TO_RADIANS( rotation_z ), zrot );
-    vec3 yrot = { 0.0, 1.0, 0.0 };
-    glm_rotate( model, DEGREES_TO_RADIANS( rotation_y ), yrot );
-    vec3 xrot = { 1.0, 0.0, 0.0 };
+    vec3 xrot = { 0.0, 1.0, 0.0 };
     glm_rotate( model, DEGREES_TO_RADIANS( rotation_x ), xrot );
+    vec3 yrot = { 0.0, 0.0, 1.0 };
+    glm_rotate( model, DEGREES_TO_RADIANS( rotation_y ), yrot );
+    vec3 zrot = { 1.0, 0.0, 0.0 };
+    glm_rotate( model, DEGREES_TO_RADIANS( rotation_z ), zrot );
     unsigned int model_location = glGetUniformLocation(sprite_shader, "model");
     glUniformMatrix4fv( model_location, 1, GL_FALSE, ( float * )(model));
 
