@@ -1,10 +1,11 @@
 #include "input.h"
 #include "render.h"
+#include "game_state.h"
 #include "sprite.h"
 #include <stddef.h>
 #include "unit.h"
 
-int sprite_on_ground( Sprite * sprite )
+int sprite_on_ground( Sprite * sprite, Map * map )
 {
     return SPRITE_BOTTOM( sprite ) >= ( float )( WINDOW_HEIGHT_PIXELS - 16 );
 };
@@ -39,6 +40,9 @@ Sprite hero_create( int state_number )
         state_number,
         LAYER_BEFORE_SPRITES_1
     );
+
+    //printf( "SPRITE GFX: %d\n", hero.gfx.id );
+
     hero.gfx.walk_frame = 0;
     hero.gfx.walk_timer = 0;
 
@@ -47,8 +51,9 @@ Sprite hero_create( int state_number )
     return hero;
 }
 
-void hero_update( Sprite * hero )
+void hero_update( Sprite * hero, void * level_state )
 {
+    Map * map = &(( LevelState * )( level_state ))->map;
     SpriteGraphics * gfx = &render_get_graphic( hero->gfx.id )->data.sprite;
 
     if ( input_held_left() )
@@ -66,7 +71,7 @@ void hero_update( Sprite * hero )
         hero->accx = 0.0f;
         hero->vx /= 1.15f;
     }
-    if ( input_pressed_jump() && sprite_on_ground( hero ) )
+    if ( input_pressed_jump() && sprite_on_ground( hero, map ) )
     {
         hero->jump = 1;
         hero->accy = -0.75f;
@@ -89,7 +94,7 @@ void hero_update( Sprite * hero )
 
     if ( !hero->jump )
     {
-        if ( !sprite_on_ground( hero ) )
+        if ( !sprite_on_ground( hero, map ) )
         {
             hero->accy = 0.25f;
         }
@@ -136,7 +141,7 @@ void hero_update( Sprite * hero )
         }
         break;
     }
-    if ( sprite_on_ground( hero ) )
+    if ( sprite_on_ground( hero, map ) )
     {
         if ( hero->accx == 0.0f )
         {

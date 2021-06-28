@@ -45,7 +45,20 @@ Text text_create( const char * text, AssocArray * args )
     Value alignentry = assoc_array_get( args, "align" );
     if ( alignentry.type == VALUE_INT )
     {
-        align = ( TextAlign )( alignentry.value.int_ );
+        align = alignentry.value.int_;
+    }
+
+    Value valignentry = assoc_array_get( args, "valign" );
+    if ( valignentry.type == VALUE_INT )
+    {
+        valign = valignentry.value.int_;
+    }
+
+    Value colorentry = assoc_array_get( args, "color" );
+    if ( colorentry.type == VALUE_UNIQUE_PTR || colorentry.type == VALUE_WEAK_PTR )
+    {
+        Color * cp = colorentry.value.ptr_;
+        t.color = *cp;
     }
 
     w -= ( padding_x * 2.0 );

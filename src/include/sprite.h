@@ -29,9 +29,9 @@ Sprite;
 
 #define SPRITE_BOTTOM( sprite ) ( ( sprite )->position.y + ( sprite )->position.h )
 
-int sprite_on_ground( Sprite * sprite );
+int sprite_on_ground( Sprite * sprite, Map * map );
 
 Sprite hero_create( int state_number );
-void hero_update( Sprite * hero );
+void hero_update( Sprite * hero, void * level_state );
 
 #endif // SPRITE_H

@@ -3,9 +3,12 @@
 #include "game_state_machine.h"
 #include "graphic.h"
 #include "input.h"
+#include "log.h"
+#include "map.h"
 #include "render.h"
 #include "sprite.h"
 #include <stddef.h>
+#include <stdlib.h>
 #include "text.h"
 
 GameState states[ MAX_STATES ];
@@ -33,7 +36,7 @@ void state_update()
         break;
         case ( STATE_LEVEL ):
         {
-            hero_update( &states[ number_of_states - 1 ].data.level.hero );
+            hero_update( &states[ number_of_states - 1 ].data.level.hero, &states[ number_of_states - 1 ].data.level );
             if ( input_pressed_menu() )
             {
                 state_push( state_create_pause() );
@@ -49,6 +52,14 @@ void state_update()
             else if ( input_pressed_cancel() || input_pressed_menu() )
             {
                 state_pop();
+            }
+        }
+        break;
+        case ( STATE_ERROR ):
+        {
+            if ( input_pressed_confirm() )
+            {
+                exit( -1 );
             }
         }
         break;
@@ -104,6 +115,14 @@ GameState state_create_pause()
     return s;
 };
 
+GameState state_create_error( const char * msg )
+{
+    GameState s;
+    s.type = STATE_ERROR;
+    s.data.error.msg = msg;
+    return s;
+};
+
 static void state_close_single( int number )
 {
     switch ( states[ number ].type )
@@ -114,6 +133,7 @@ static void state_close_single( int number )
         break;
         case ( STATE_LEVEL ):
         {
+            map_destroy( &states[ number ].data.level.map );
         }
         break;
         case ( STATE_PAUSE ):
@@ -140,9 +160,12 @@ static void state_init_single( int number )
         break;
         case ( STATE_LEVEL ):
         {
-            Color color = { 0.0, 0.0, 255.0, 255.0 };
-            render_add_graphic( graphic_create_full_rect( color ), number, LAYER_BG_1 );
             states[ number ].data.level.hero = hero_create( number );
+            int map_error = map_create( &states[ number ].data.level.map, number );
+            if ( map_error != 0 )
+            {
+                state_change( state_create_error( log_get_error() ) );
+            }
         }
         break;
         case ( STATE_PAUSE ):
@@ -150,6 +173,20 @@ static void state_init_single( int number )
             Rect rect = { 32.0, 32.0, 320.0, 128.0 };
             Color color = { 255.0, 0.0, 0.0, 255.0 };
             render_add_graphic( graphic_create_rect( rect, color ), number, LAYER_BG_1 );
+        }
+        break;
+        case ( STATE_ERROR ):
+        {
+            Color bg = { 0.0f, 0.0f, 0.0f, 255.0f };
+            render_add_graphic( graphic_create_full_rect( bg ), number, LAYER_BG_1 );
+            Color * color = calloc( 1, sizeof( Color ) );
+            color->r = color->g = color->b = color->a = 255.0f;
+            AssocArray args = assoc_array_create( -1 );
+            assoc_array_add( &args, "align", value_create_int( ALIGN_CENTER ) );
+            assoc_array_add( &args, "valign", value_create_int( VALIGN_MIDDLE ) );
+            assoc_array_add( &args, "color", value_create_unique_ptr( color ) );
+            render_add_graphic( graphic_create_text( text_create( states[ number ].data.error.msg, &args ) ), number, LAYER_FG_1 );
+            assoc_array_destroy( &args );
         }
         break;
     }

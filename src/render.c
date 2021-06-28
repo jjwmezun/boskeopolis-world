@@ -412,6 +412,7 @@ void framebuffer_size_callback( GLFWwindow * window, int screen_width, int scree
 
 unsigned int render_add_graphic( Graphic gfx, int state, Layer layer )
 {
+
     // Count up graphics to where current graphic should be.
     int i = 0;
     for ( int si = 0; si < state; ++si )
@@ -421,13 +422,13 @@ unsigned int render_add_graphic( Graphic gfx, int state, Layer layer )
             i += graphics_per_layer[ si ][ li ];
         }
     }
-    for ( int li = 0; li <= ( int )( layer ); ++li )
+    for ( int li = 0; li <= layer; ++li )
     {
         i += graphics_per_layer[ state ][ li ];
     }
 
-    // Move all graphics ’bove where current show go forward 1.
-    for ( int gi = number_of_graphics - 1; gi > i; --gi )
+    // Move all graphics ’bove where current should go forward 1.
+    for ( int gi = number_of_graphics - 1; gi >= i; --gi )
     {
         // Find index in graphic map & increment so they still match.
         for ( unsigned int mi = 0; mi != number_of_graphics; ++mi )
@@ -454,7 +455,7 @@ unsigned int render_add_graphic( Graphic gfx, int state, Layer layer )
         ++map_index;
     }
     graphics_map[ map_index ] = i;
-    ++graphics_per_layer[ state ][ ( int )( layer ) ];
+    ++graphics_per_layer[ state ][ layer ];
     ++number_of_graphics;
     return map_index;
 };

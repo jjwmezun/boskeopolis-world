@@ -37,7 +37,7 @@ Localization * localization_get_current()
 
 Localization * localization_create( const char * code )
 {
-    Localization * lang = ( Localization * )( calloc( 1, sizeof( Localization * ) ) );
+    Localization * lang = calloc( 1, sizeof( Localization * ) );
     lang->charmap = assoc_array_create( 255 );
 
     char * source = filename_localization( code );

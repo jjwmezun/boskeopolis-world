@@ -30,6 +30,7 @@ Value;
 
 Value value_create_int( int value );
 Value value_create_float( float value );
+Value value_create_weak_ptr( void * value );
 Value value_create_unique_ptr( void * value );
 
 #endif // VALUE_H

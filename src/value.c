@@ -16,6 +16,14 @@ Value value_create_float( float value )
     return v;
 };
 
+Value value_create_weak_ptr( void * value )
+{
+    Value v;
+    v.type = VALUE_WEAK_PTR;
+    v.value.ptr_ = value;
+    return v;
+};
+
 Value value_create_unique_ptr( void * value )
 {
     Value v;

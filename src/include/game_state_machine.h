@@ -14,5 +14,6 @@ void state_pop();
 GameState state_create_title();
 GameState state_create_level();
 GameState state_create_pause();
+GameState state_create_error( const char * msg );
 
 #endif // GAME_STATE_MACHINE
