@@ -18,5 +18,6 @@ void render_clear_graphics();
 void render_clear_state_graphics( int state );
 unsigned int render_add_graphic( Graphic gfx, int state, Layer layer );
 Graphic * render_get_graphic( unsigned int id );
+void render_adjust_camera( Rect * target, float max_w, float max_h );
 
 #endif // RENDER_H

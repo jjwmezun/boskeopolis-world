@@ -90,6 +90,16 @@ void input_update()
     }
 };
 
+int input_held_confirm()
+{
+    return held[ INPUT_CONFIRM ];
+};
+
+int input_held_cancel()
+{
+    return held[ INPUT_CANCEL ];
+};
+
 int input_held_jump()
 {
     return held[ INPUT_JUMP ];

@@ -27,22 +27,32 @@ typedef struct
 }
 SpriteGraphics;
 
+typedef struct
+{
+    int * tiles;
+    int w;
+    int h;
+} TilemapGraphics;
+
 typedef enum
 {
     GFX_RECT,
     GFX_TEXT,
-    GFX_SPRITE
+    GFX_SPRITE,
+    GFX_TILEMAP
 }
 GFXType;
 
 typedef struct
 {
     GFXType type;
+    int abs;
     union
     {
         RectGraphics rect;
         Text text;
         SpriteGraphics sprite;
+        TilemapGraphics tilemap;
     } data;
 }
 Graphic;
@@ -59,5 +69,6 @@ Graphic graphic_create_sprite
     float src_y,
     AssocArray * args
 );
+Graphic graphic_create_tilemap( int * tiles, int w, int h );
 
 #endif // GRAPHIC_H

@@ -7,7 +7,7 @@
 
 int sprite_on_ground( Sprite * sprite, Map * map )
 {
-    return SPRITE_BOTTOM( sprite ) >= ( float )( WINDOW_HEIGHT_PIXELS - 16 );
+    return SPRITE_BOTTOM( sprite ) >= ( float )( BLOCKS_TO_PIXELS( 31 ) );
 };
 
 Sprite hero_create( int state_number )
@@ -116,9 +116,20 @@ void hero_update( Sprite * hero, void * level_state )
     }
     hero->position.y += hero->vy;
 
-    if ( SPRITE_BOTTOM( hero ) > ( float )( WINDOW_HEIGHT_PIXELS - 16 ) )
+    if ( SPRITE_BOTTOM( hero ) > ( float )( BLOCKS_TO_PIXELS( 31 ) ) )
     {
-        hero->position.y = ( float )( WINDOW_HEIGHT_PIXELS - 16 ) - hero->position.h;
+        hero->position.y = ( float )( BLOCKS_TO_PIXELS( 31 ) ) - hero->position.h;
+    }
+
+    if ( hero->position.x < 0.0f )
+    {
+        hero->position.x = 0.0f;
+        hero->vx *= -0.25f;
+    }
+    else if ( RECT_RIGHT_DIR( hero->position ) > BLOCKS_TO_PIXELS( map->w ) )
+    {
+        hero->position.x = BLOCKS_TO_PIXELS( map->w ) - hero->position.w;
+        hero->vx *= -0.25f;
     }
 
     gfx->dest = hero->position;
@@ -172,4 +183,6 @@ void hero_update( Sprite * hero, void * level_state )
     {
         gfx->src.x = 48.0f;
     }
+
+    render_adjust_camera( &hero->position, ( float )( BLOCKS_TO_PIXELS( map->w ) ), ( float )( BLOCKS_TO_PIXELS( map->h ) ) );
 };

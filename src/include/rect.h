@@ -10,4 +10,9 @@ typedef struct
 }
 Rect;
 
+#define RECT_RIGHT( r ) ( ( r )->x + ( r )->w )
+#define RECT_BOTTOM( r ) ( ( r )->y + ( r )->h )
+#define RECT_RIGHT_DIR( r ) ( ( r ).x + ( r ).w )
+#define RECT_BOTTOM_DIR( r ) ( ( r ).y + ( r ).h )
+
 #endif // RECT_H

@@ -206,7 +206,13 @@ int map_create( Map * map, int state_number )
     }
     vector_destroy( &collision_layers );
 
-    render_add_graphic( graphic_create_full_rect( map->bgcolor ), state_number, LAYER_BG_1 );
+    Graphic bg_graphic = graphic_create_full_rect( map->bgcolor );
+    bg_graphic.abs = 1;
+    render_add_graphic( bg_graphic, state_number, LAYER_BG_1 );
+    for ( int i = 0; i < map->num_o_collision_layers; ++i )
+    {
+        render_add_graphic( graphic_create_tilemap( map->collision[ i ], map->w, map->h ), state_number, LAYER_BEFORE_BLOCKS_1 );
+    }
 
     return 0;
 };

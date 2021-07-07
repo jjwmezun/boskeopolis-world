@@ -3,6 +3,7 @@
 #include "game_state_machine.h"
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
+#include "input.h"
 #include "io.h"
 #include "log.h"
 #include <math.h>
@@ -27,6 +28,13 @@ Texture;
 #define VERTEX_SIZE 8
 #define MAX_GRAPHICS 512
 #define TEXTURE_MAP_CAPACITY 250
+
+#define BASE_MATRIX {\
+    { 1.0f, 0.0f, 0.0f, 0.0f },\
+    { 0.0f, 1.0f, 0.0f, 0.0f },\
+    { 0.0f, 0.0f, 1.0f, 0.0f },\
+    { 0.0f, 0.0f, 0.0f, 1.0f }\
+}
 
 typedef uint32_t render_hash_t;
 typedef struct { char * string; render_hash_t hash; } TextureMapKey;
@@ -60,6 +68,7 @@ static int number_of_states = 0;
 static int graphics_map[ MAX_GRAPHICS ];
 static Graphic layers[ MAX_GRAPHICS ];
 static GLFWwindow * window;
+static Rect camera = { 0.0f, 0.0f, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS };
 
 static void draw_box( const Rect * rect, const Color * top_left_color, const Color * top_right_color, const Color * bottom_left_color, const Color * bottom_right_color );
 static void framebuffer_size_callback( GLFWwindow* window, int width, int height );
@@ -67,10 +76,12 @@ static unsigned int generate_shader_program( const char * vertex_shader, const c
 static unsigned int generate_shader( GLenum type, const char * file );
 static char * load_shader( const char * local );
 static void buffer_vertices();
-static void rect( const Rect * rect, const Color * color );
 static void sprite( unsigned int texture_id, unsigned int palette_id, const Rect * src, const Rect * dest, int flip_x, int flip_y, float rotation_x, float rotation_y, float rotation_z );
 static void character( const Character * character, const Color * color );
 static unsigned int render_get_texture_id_generic( const char * local, int indexed );
+static void set_vertices_colors( const Color * top_left_color, const Color * top_right_color, const Color * bottom_left_color, const Color * bottom_right_color );
+static void set_vertices_view( float x, float y );
+static void render_vertices();
 
 static TextureMapEntry * hash_find_entry( const char * needle_string, render_hash_t needle_hash );
 static uint32_t hash_string( const char * key );
@@ -120,7 +131,7 @@ int render_init()
         };
         glm_ortho_rh_no( 0.0f, 400.0f, 224.0f, 0.0f, -1.0f, 1.0f, ortho );
         unsigned int ortho_location = glGetUniformLocation( shader, "ortho" );
-        glUniformMatrix4fv( ortho_location, 1, GL_FALSE, ( float * )( ortho ));
+        glUniformMatrix4fv( ortho_location, 1, GL_FALSE, ( float * )( ortho ) );
     }
 
     glfwSetFramebufferSizeCallback( window, framebuffer_size_callback );
@@ -173,11 +184,41 @@ void render_update()
     glClear( GL_COLOR_BUFFER_BIT );
     for ( unsigned int i = 0; i < number_of_graphics; ++i )
     {
+        // Adjust camera for this graphic.
+        unsigned int shaders[ 3 ] = { sprite_shader, rect_shader, text_shader };
+        Rect c = { 0.0f, 0.0f, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS };
+        if ( !layers[ i ].abs )
+        {
+            c = camera;
+        }
+        for ( unsigned int j = 0; j < 3; ++j )
+        {
+            unsigned int shader = shaders[ j ];
+            glUseProgram( shader );
+            mat4 ortho =
+            {
+                { 1.0f, 1.0f, 1.0f, 1.0f },
+                { 1.0f, 1.0f, 1.0f, 1.0f },
+                { 1.0f, 1.0f, 1.0f, 1.0f },
+                { 1.0f, 1.0f, 1.0f, 1.0f }
+            };
+            glm_ortho_rh_no( c.x, c.w, c.h, c.y, -1.0f, 1.0f, ortho );
+            unsigned int ortho_location = glGetUniformLocation( shader, "ortho" );
+            glUniformMatrix4fv( ortho_location, 1, GL_FALSE, ( float * )( ortho ) );
+        }
+
         switch ( layers[ i ].type )
         {
             case ( GFX_RECT ):
             {
-                rect( &layers[ i ].data.rect.rect, &layers[ i ].data.rect.color );
+                draw_box
+                (
+                    &layers[ i ].data.rect.rect,
+                    &layers[ i ].data.rect.color,
+                    &layers[ i ].data.rect.color,
+                    &layers[ i ].data.rect.color,
+                    &layers[ i ].data.rect.color
+                );
             }
             break;
             case ( GFX_TEXT ):
@@ -211,6 +252,7 @@ void render_update()
 
 void render_clear_textures()
 {
+    // Clear all textures ’cept palette & charset.
     for ( int i = 0; i < TEXTURE_MAP_CAPACITY; ++i )
     {
         if
@@ -333,58 +375,73 @@ void * render_get_window()
     return ( void * )( window );
 };
 
+void render_adjust_camera( Rect * target, float max_w, float max_h )
+{
+    float x_adjust = 0.0f;
+    const float right_edge = WINDOW_WIDTH_PIXELS * 0.75 + camera.x;
+    const float left_edge = WINDOW_WIDTH_PIXELS * 0.25 + camera.x;
+    const float target_right = RECT_RIGHT( target );
+    
+    if ( target_right > right_edge )
+    {
+        x_adjust = target_right - right_edge;
+    }
+    else if ( target->x < left_edge )
+    {
+        x_adjust = target->x - left_edge;
+    }
+    camera.x += x_adjust;
+    camera.w += x_adjust;
+    if ( camera.x < 0.0f )
+    {
+        camera.w = WINDOW_WIDTH_PIXELS;
+        camera.x = 0.0f;
+    }
+    else if ( camera.w > max_w )
+    {
+        camera.x = max_w - WINDOW_WIDTH_PIXELS;
+        camera.w = max_w;
+    }
+
+    float y_adjust = 0.0f;
+    const float bottom_edge = WINDOW_HEIGHT_PIXELS * 0.75 + camera.y;
+    const float top_edge = WINDOW_HEIGHT_PIXELS * 0.25 + camera.y;
+    const float target_bottom = RECT_BOTTOM( target );
+    
+    if ( target_bottom > bottom_edge )
+    {
+        y_adjust = target_bottom - bottom_edge;
+    }
+    else if ( target->y < top_edge )
+    {
+        y_adjust = target->y - top_edge;
+    }
+    camera.y += y_adjust;
+    camera.h += y_adjust;
+    if ( camera.y < 0.0f )
+    {
+        camera.h = WINDOW_HEIGHT_PIXELS;
+        camera.y = 0.0f;
+    }
+    else if ( camera.h > max_h )
+    {
+        camera.y = max_h - WINDOW_HEIGHT_PIXELS;
+        camera.h = max_h;
+    }
+};
+
 void draw_box( const Rect * rect, const Color * top_left_color, const Color * top_right_color, const Color * bottom_left_color, const Color * bottom_right_color )
 {
-    glUseProgram(rect_shader);
-
-    vertices[ 4 ] = bottom_right_color->r / 255.0f;
-    vertices[ 5 ] = bottom_right_color->g / 255.0f;
-    vertices[ 6 ] = bottom_right_color->b / 255.0f;
-    vertices[ 7 ] = bottom_right_color->a / 255.0f;
-
-    vertices[ 4 + VERTEX_SIZE ] = top_right_color->r / 255.0f;
-    vertices[ 5 + VERTEX_SIZE ] = top_right_color->g / 255.0f;
-    vertices[ 6 + VERTEX_SIZE ] = top_right_color->b / 255.0f;
-    vertices[ 7 + VERTEX_SIZE ] = top_right_color->a / 255.0f;
-
-    vertices[ 4 + VERTEX_SIZE * 2 ] = top_left_color->r / 255.0f;
-    vertices[ 5 + VERTEX_SIZE * 2 ] = top_left_color->g / 255.0f;
-    vertices[ 6 + VERTEX_SIZE * 2 ] = top_left_color->b / 255.0f;
-    vertices[ 7 + VERTEX_SIZE * 2 ] = top_left_color->a / 255.0f;
-
-    vertices[ 4 + VERTEX_SIZE * 3 ] = bottom_left_color->r / 255.0f;
-    vertices[ 5 + VERTEX_SIZE * 3 ] = bottom_left_color->g / 255.0f;
-    vertices[ 6 + VERTEX_SIZE * 3 ] = bottom_left_color->b / 255.0f;
-    vertices[ 7 + VERTEX_SIZE * 3 ] = bottom_left_color->a / 255.0f;
-
+    glUseProgram( rect_shader );
+    set_vertices_colors( top_left_color, top_right_color, bottom_left_color, bottom_right_color );
     buffer_vertices();
-
-    mat4 view = {
-        { 1.0f, 0.0f, 0.0f, 0.0f },
-        { 0.0f, 1.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 1.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f, 1.0f }
-    };
-    vec3 trans = { rect->x + ( rect->w / 2.0f ), rect->y + ( rect->h / 2.0f ), 0.0f };
-    glm_translate( view, trans );
-    unsigned int view_location = glGetUniformLocation( rect_shader, "view" );
-    glUniformMatrix4fv( view_location, 1, GL_FALSE, ( float * )( view ) );
-
-
-    mat4 model = {
-        { 1.0f, 0.0f, 0.0f, 0.0f },
-        { 0.0f, 1.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 1.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f, 1.0f }
-    };
+    set_vertices_view( rect->x + ( rect->w / 2.0f ), rect->y + ( rect->h / 2.0f ) );
+    mat4 model = BASE_MATRIX;
     vec3 scale = { rect->w, rect->h, 0.0 };
     glm_scale( model, scale );
     unsigned int model_location = glGetUniformLocation( rect_shader, "model" );
     glUniformMatrix4fv( model_location, 1, GL_FALSE, ( float * )( model ) );
-
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+    render_vertices();
 };
 
 void framebuffer_size_callback( GLFWwindow * window, int screen_width, int screen_height )
@@ -465,14 +522,9 @@ Graphic * render_get_graphic( unsigned int id )
     return &layers[ graphics_map[ id ] ];
 };
 
-static void rect( const Rect * rect, const Color * color )
-{
-    draw_box( rect, color, color, color, color );
-};
-
 static void sprite( unsigned int texture_id, unsigned int palette_id, const Rect * src, const Rect * dest, int flip_x, int flip_y, float rotation_x, float rotation_y, float rotation_z )
 {
-    glUseProgram(sprite_shader);
+    glUseProgram( sprite_shader );
 
     // Src Coords
     if ( flip_x )
@@ -498,24 +550,9 @@ static void sprite( unsigned int texture_id, unsigned int palette_id, const Rect
     }
 
     buffer_vertices();
+    set_vertices_view( dest->x + ( dest->w / 2.0f ), dest->y + ( dest->h / 2.0f ) );
 
-    mat4 view = {
-        { 1.0f, 0.0f, 0.0f, 0.0f },
-        { 0.0f, 1.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 1.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f, 1.0f }
-    };
-    vec3 trans = { dest->x + ( dest->w / 2.0f ), dest->y + ( dest->h / 2.0f ), 0.0f };
-    glm_translate( view, trans );
-    unsigned int view_location = glGetUniformLocation(sprite_shader, "view");
-    glUniformMatrix4fv( view_location, 1, GL_FALSE, ( float * )( view ) );
-
-    mat4 model = {
-        { 1.0f, 0.0f, 0.0f, 0.0f },
-        { 0.0f, 1.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 1.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f, 1.0f }
-    };
+    mat4 model = BASE_MATRIX;
     vec3 scale = { dest->w, dest->h, 0.0 };
     glm_scale( model, scale );
     vec3 xrot = { 0.0, 1.0, 0.0 };
@@ -525,9 +562,9 @@ static void sprite( unsigned int texture_id, unsigned int palette_id, const Rect
     vec3 zrot = { 1.0, 0.0, 0.0 };
     glm_rotate( model, DEGREES_TO_RADIANS( rotation_z ), zrot );
     unsigned int model_location = glGetUniformLocation(sprite_shader, "model");
-    glUniformMatrix4fv( model_location, 1, GL_FALSE, ( float * )(model));
+    glUniformMatrix4fv( model_location, 1, GL_FALSE, ( float * )( model ) );
 
-    GLint palette_id_location = glGetUniformLocation(sprite_shader, "palette_id");
+    GLint palette_id_location = glGetUniformLocation( sprite_shader, "palette_id" );
     glUniform1f( palette_id_location, ( float )( palette_id ) );
 
     GLint texture_data_location = glGetUniformLocation(sprite_shader, "texture_data");
@@ -538,9 +575,7 @@ static void sprite( unsigned int texture_id, unsigned int palette_id, const Rect
     glActiveTexture(GL_TEXTURE1 );
     glBindTexture(GL_TEXTURE_2D, texture_ids[ palette_texture ] );
     glUniform1i(palette_data_location, 1);
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+    render_vertices();
 };
 
 static void character( const Character * character, const Color * color )
@@ -554,24 +589,9 @@ static void character( const Character * character, const Color * color )
         vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ text_texture ].height ) * character->src_y;  // Bottom Y
 
     buffer_vertices();
+    set_vertices_view( character->dest_x + ( character->w / 2.0f ), character->dest_y + ( character->h / 2.0f ) );
 
-    mat4 view = {
-        { 1.0f, 0.0f, 0.0f, 0.0f },
-        { 0.0f, 1.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 1.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f, 1.0f }
-    };
-    vec3 trans = { character->dest_x + ( character->w / 2.0f ), character->dest_y + ( character->h / 2.0f ), 0.0f };
-    glm_translate( view, trans );
-    unsigned int view_location = glGetUniformLocation(text_shader, "view");
-    glUniformMatrix4fv( view_location, 1, GL_FALSE, (float *)(view));
-
-    mat4 model = {
-        { 1.0f, 0.0f, 0.0f, 0.0f },
-        { 0.0f, 1.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 1.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f, 1.0f }
-    };
+    mat4 model = BASE_MATRIX;
     vec3 scale = { character->w, character->h, 0.0 };
     glm_scale( model, scale );
     unsigned int model_location = glGetUniformLocation(text_shader, "model");
@@ -584,9 +604,7 @@ static void character( const Character * character, const Color * color )
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture_ids[ text_texture ] );
     glUniform1i(texture_data_location, 0);
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+    render_vertices();
 };
 
 static unsigned int generate_shader_program( const char * vertex_shader, const char * fragment_shader )
@@ -678,3 +696,42 @@ static uint32_t hash_string( const char * key )
     }
     return hash % TEXTURE_MAP_CAPACITY;
 }
+
+static void set_vertices_colors( const Color * top_left_color, const Color * top_right_color, const Color * bottom_left_color, const Color * bottom_right_color )
+{
+    vertices[ 4 ] = bottom_right_color->r / 255.0f;
+    vertices[ 5 ] = bottom_right_color->g / 255.0f;
+    vertices[ 6 ] = bottom_right_color->b / 255.0f;
+    vertices[ 7 ] = bottom_right_color->a / 255.0f;
+
+    vertices[ 4 + VERTEX_SIZE ] = top_right_color->r / 255.0f;
+    vertices[ 5 + VERTEX_SIZE ] = top_right_color->g / 255.0f;
+    vertices[ 6 + VERTEX_SIZE ] = top_right_color->b / 255.0f;
+    vertices[ 7 + VERTEX_SIZE ] = top_right_color->a / 255.0f;
+
+    vertices[ 4 + VERTEX_SIZE * 2 ] = top_left_color->r / 255.0f;
+    vertices[ 5 + VERTEX_SIZE * 2 ] = top_left_color->g / 255.0f;
+    vertices[ 6 + VERTEX_SIZE * 2 ] = top_left_color->b / 255.0f;
+    vertices[ 7 + VERTEX_SIZE * 2 ] = top_left_color->a / 255.0f;
+
+    vertices[ 4 + VERTEX_SIZE * 3 ] = bottom_left_color->r / 255.0f;
+    vertices[ 5 + VERTEX_SIZE * 3 ] = bottom_left_color->g / 255.0f;
+    vertices[ 6 + VERTEX_SIZE * 3 ] = bottom_left_color->b / 255.0f;
+    vertices[ 7 + VERTEX_SIZE * 3 ] = bottom_left_color->a / 255.0f;
+};
+
+static void set_vertices_view( float x, float y )
+{
+    mat4 view = BASE_MATRIX;
+    vec3 trans = { x, y, 0.0f };
+    glm_translate( view, trans );
+    unsigned int view_location = glGetUniformLocation( rect_shader, "view" );
+    glUniformMatrix4fv( view_location, 1, GL_FALSE, ( float * )( view ) );
+};
+
+static void render_vertices()
+{
+    glBindVertexArray( VAO );
+    glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
+    glBindVertexArray( 0 );
+};

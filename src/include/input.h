@@ -21,6 +21,8 @@ void input_close();
 void input_press( int raw_key );
 void input_release( int raw_key );
 void input_update();
+int input_held_confirm();
+int input_held_cancel();
 int input_held_jump();
 int input_held_right();
 int input_held_left();
