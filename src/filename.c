@@ -15,14 +15,18 @@
 #define SHADER_EXT_SIZE strlen( SHADER_EXT )
 #define JSON_EXT ".json"
 #define JSON_EXT_SIZE strlen( JSON_EXT )
+#define PNG_EXT ".png"
+#define PNG_EXT_SIZE strlen( PNG_EXT )
 
 static char * master_directory = NULL;
 static char * image_directory = NULL;
+static char * tileset_directory = NULL;
 static char * map_directory = NULL;
 static char * shader_directory = NULL;
 static char * localization_directory = NULL;
 static int master_directory_size;
 static int image_directory_size;
+static int tileset_directory_size;
 static int map_directory_size;
 static int shader_directory_size;
 static int localization_directory_size;
@@ -45,6 +49,12 @@ void filename_init()
     strcpy( image_directory, master_directory );
     strcat( image_directory, "graphics" );
     strcat( image_directory, PATH_DIVIDER );
+
+    // Don’t add extra 1 for NULL, since master_directory_size already has extra NULL.
+    tileset_directory_size = strlen( "tilesets" ) + PATH_DIVIDER_SIZE;
+    tileset_directory = ( char * )( malloc( tileset_directory_size ) );
+    strcpy( tileset_directory, "tilesets" );
+    strcat( tileset_directory, PATH_DIVIDER );
 
     // Don’t add extra 1 for NULL, since master_directory_size already has extra NULL.
     map_directory_size = master_directory_size + strlen( "maps" ) + PATH_DIVIDER_SIZE;
@@ -72,6 +82,7 @@ void filename_close()
 {
     free( master_directory );
     free( image_directory );
+    free( tileset_directory );
     free( localization_directory );
     free( shader_directory );
 }
@@ -79,6 +90,16 @@ void filename_close()
 char * filename_image( const char * local )
 {
     return jstring_concat( image_directory, local );
+};
+
+char * filename_local_tileset( const char * local )
+{
+    const int size = tileset_directory_size + strlen( local ) + PNG_EXT_SIZE;
+    char * full_filename = ( char * )( malloc( size ) );
+    strcpy( full_filename, tileset_directory );
+    strcat( full_filename, local );
+    strcat( full_filename, PNG_EXT );
+    return full_filename;
 };
 
 char * filename_map( const char * local )

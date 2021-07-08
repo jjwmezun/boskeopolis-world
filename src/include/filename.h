@@ -4,6 +4,7 @@
 void filename_init();
 void filename_close();
 char * filename_image( const char * local );
+char * filename_local_tileset( const char * local );
 char * filename_map( const char * local );
 char * filename_localization( const char * local );
 char * filename_shader( const char * local );

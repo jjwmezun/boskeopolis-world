@@ -19,5 +19,6 @@ void render_clear_state_graphics( int state );
 unsigned int render_add_graphic( Graphic gfx, int state, Layer layer );
 Graphic * render_get_graphic( unsigned int id );
 void render_adjust_camera( Rect * target, float max_w, float max_h );
+unsigned int render_add_tilemap( const char * tileset, const int * tiles, int w, int h, unsigned int pal, int state_number, Layer layer );
 
 #endif // RENDER_H

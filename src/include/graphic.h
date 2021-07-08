@@ -29,9 +29,9 @@ SpriteGraphics;
 
 typedef struct
 {
-    int * tiles;
-    int w;
-    int h;
+    unsigned int texture;
+    unsigned int tilemap;
+    unsigned int palette;
 } TilemapGraphics;
 
 typedef enum

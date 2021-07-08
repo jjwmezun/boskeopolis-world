@@ -9,6 +9,23 @@
 #include "unit.h"
 #include "vector.h"
 
+typedef enum
+{
+    MLAYER_NULL,
+    MLAYER_COLLISION,
+    MLAYER_TILES
+}
+MapLayerType;
+
+typedef struct
+{
+    MapLayerType type;
+    int width;
+    int height;
+    int * tiles;
+}
+MapLayer;
+
 int map_create( Map * map, int state_number )
 {
     map->w = 0;
@@ -16,7 +33,8 @@ int map_create( Map * map, int state_number )
     map->num_o_collision_layers = 0;
     map->collision = NULL;
 
-    Vector collision_layers = vector_create( -1 );
+    Vector layers = vector_create( -1 );
+    unsigned int number_of_tile_layers = 0;
 
     char * source = filename_map( "blueberry-1" );
     char * text = io_read( source );
@@ -119,7 +137,6 @@ int map_create( Map * map, int state_number )
 
                 for ( unsigned int ki = 0; ki < layer->u.object.length; ++ki )
                 {
-
                     char * key = layer->u.object.values[ ki ].name;
                     json_value * value = layer->u.object.values[ ki ].value;
 
@@ -161,12 +178,24 @@ int map_create( Map * map, int state_number )
                     }
                 }
 
+                MapLayerType type = MLAYER_NULL;
                 if ( strcmp( name, "collision" ) == 0 )
                 {
-                    AssocArray array = assoc_array_create( -1 );
-                    assoc_array_add( &array, "w", value_create_int( width ) );
-                    assoc_array_add( &array, "h", value_create_int( height ) );
-                    int * tiles = calloc( data->u.array.length, sizeof( int ) );
+                    type = MLAYER_COLLISION;
+                    ++map->num_o_collision_layers;
+                }
+                else if ( strcmp( name, "tiles" ) == 0 )
+                {
+                    type = MLAYER_TILES;
+                }
+
+                if ( type != MLAYER_NULL )
+                {
+                    MapLayer * l = calloc( 1, sizeof( MapLayer ) );
+                    l->type = type;
+                    l->width = width;
+                    l->height = height;
+                    l->tiles = calloc( data->u.array.length, sizeof( int ) );
                     for ( unsigned int ti = 0; ti < data->u.array.length; ++ti )
                     {
                         json_value * tile = data->u.array.values[ ti ];
@@ -175,44 +204,53 @@ int map_create( Map * map, int state_number )
                             log_error( "Map json file isn’t formatted correctly.\n" );
                             return -1;
                         }
-                        tiles[ ti ] = tile->u.integer;
+                        l->tiles[ ti ] = tile->u.integer;
                     }
-                    assoc_array_add( &array, "data", value_create_unique_ptr( tiles ) );
-                    vector_push( &collision_layers, value_create_weak_ptr( &array ) );
+                    vector_push( &layers, value_create_weak_ptr( l ) );
                 }
             }
         }
     }
     json_value_free( root );
 
-    map->num_o_collision_layers = collision_layers.count;
-    map->collision = calloc( map->num_o_collision_layers, sizeof( int * ) );
-    for ( int i = 0; i < collision_layers.count; ++i )
-    {
-        AssocArray * array = collision_layers.list[ i ].value.ptr_;
-        if
-        (
-            map->w != assoc_array_get( array, "w" ).value.int_ ||
-            map->h != assoc_array_get( array, "h" ).value.int_
-        )
-        {
-            log_error( "Map json file isn’t formatted correctly.\n" );
-            return -1;
-        }
-        map->collision[ i ] = calloc( map->w * map->h, sizeof( int ) );
-        int * tiles = assoc_array_get( array, "data" ).value.ptr_;
-        memcpy( map->collision[ i ], tiles, sizeof( int ) * map->w * map->h );
-        assoc_array_destroy( array );
-    }
-    vector_destroy( &collision_layers );
-
     Graphic bg_graphic = graphic_create_full_rect( map->bgcolor );
     bg_graphic.abs = 1;
     render_add_graphic( bg_graphic, state_number, LAYER_BG_1 );
-    for ( int i = 0; i < map->num_o_collision_layers; ++i )
+
+    map->collision = calloc( map->num_o_collision_layers, sizeof( int * ) );
+    unsigned int collision_i = 0;
+    for ( int i = 0; i < layers.count; ++i )
     {
-        render_add_graphic( graphic_create_tilemap( map->collision[ i ], map->w, map->h ), state_number, LAYER_BEFORE_BLOCKS_1 );
+        MapLayer * l = ( MapLayer * )( layers.list[ i ].value.ptr_ );
+        switch ( l->type )
+        {
+            case ( MLAYER_COLLISION ):
+            {
+                if ( map->w != l->width || map->h != l->height )
+                {
+                    log_error( "Map json file isn’t formatted correctly.\n" );
+                    return -1;
+                }
+                map->collision[ collision_i ] = calloc( map->w * map->h, sizeof( int ) );
+                memcpy( map->collision[ collision_i ], l->tiles, sizeof( int ) * map->w * map->h );
+                ++collision_i;
+            }
+            break;
+            case ( MLAYER_TILES ):
+            {
+                if ( map->w != l->width || map->h != l->height )
+                {
+                    log_error( "Map json file isn’t formatted correctly.\n" );
+                    return -1;
+                }
+                render_add_tilemap( "urban", l->tiles, map->w, map->h, 1, state_number, LAYER_BG_1 );
+            }
+            break;
+        }
+        free( l->tiles );
+        free( l );
     }
+    vector_destroy( &layers );
 
     return 0;
 };
