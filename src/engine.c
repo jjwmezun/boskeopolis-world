@@ -29,7 +29,9 @@ int engine_init()
     vector_push( &keys[ INPUT_CANCEL ], value_create_int( GLFW_KEY_X ) );
     vector_push( &keys[ INPUT_MENU ], value_create_int( GLFW_KEY_C ) );
     vector_push( &keys[ INPUT_JUMP ], value_create_int( GLFW_KEY_Z ) );
+    vector_push( &keys[ INPUT_UP ], value_create_int( GLFW_KEY_UP ) );
     vector_push( &keys[ INPUT_RIGHT ], value_create_int( GLFW_KEY_RIGHT ) );
+    vector_push( &keys[ INPUT_DOWN ], value_create_int( GLFW_KEY_DOWN ) );
     vector_push( &keys[ INPUT_LEFT ], value_create_int( GLFW_KEY_LEFT ) );
     
     input_init( keys );

@@ -9,6 +9,7 @@ int press_locks[ INPUT_MAX ];
 
 void input_init( Vector * new_keys )
 {
+    // Init values.
     key_map = int_map_create( -1 );
     for ( int i = 0; i < INPUT_MAX; ++i )
     {
@@ -17,6 +18,7 @@ void input_init( Vector * new_keys )
         press_locks[ i ] = 0;
     }
 
+    // For each input, loop through keys for that value & set in map.
     for ( int i = 0; i < INPUT_MAX; ++i )
     {
         for ( int j = 0; j < new_keys[ i ].count; ++j )
@@ -24,12 +26,13 @@ void input_init( Vector * new_keys )
             int raw_key = new_keys[ i ].list[ j ].value.int_;
             Value v = int_map_get( &key_map, raw_key );
             Vector * l;
+            // If key list doesn’t exist for this input, create 1.
             if ( v.type == VALUE_NULL )
             {
                 l = ( Vector * )( calloc( 1, sizeof( Vector ) ) );
                 int_map_add( &key_map, raw_key, value_create_unique_ptr( ( void * )( l ) ) );
             }
-            else
+            else // Else just take the 1 that already exists.
             {
                 l = ( Vector * )( v.value.ptr_ );
             }
@@ -105,9 +108,19 @@ int input_held_jump()
     return held[ INPUT_JUMP ];
 };
 
+int input_held_up()
+{
+    return held[ INPUT_UP ];
+};
+
 int input_held_right()
 {
     return held[ INPUT_RIGHT ];
+};
+
+int input_held_down()
+{
+    return held[ INPUT_DOWN ];
 };
 
 int input_held_left()
@@ -135,9 +148,19 @@ int input_pressed_jump()
     return pressed[ INPUT_JUMP ];
 };
 
+int input_pressed_up()
+{
+    return pressed[ INPUT_UP ];
+};
+
 int input_pressed_right()
 {
     return pressed[ INPUT_RIGHT ];
+};
+
+int input_pressed_down()
+{
+    return pressed[ INPUT_DOWN ];
 };
 
 int input_pressed_left()

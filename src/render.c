@@ -62,8 +62,6 @@ static TextureMapEntry texture_map[ TEXTURE_MAP_CAPACITY ];
 static unsigned int number_of_textures = 0;
 static unsigned int palette_texture;
 static unsigned int text_texture;
-static unsigned int map_texture;
-static unsigned int tileset_texture;
 static unsigned int number_of_graphics = 0;
 static int graphics_per_layer[ MAX_STATES ][ NUMBER_OF_LAYERS ];
 static int number_of_states = 0;
@@ -119,8 +117,6 @@ int render_init()
 
     palette_texture = render_get_texture_id_noindex( "sprites/palette.png" );
     text_texture = render_get_texture_id_noindex( "text/latin.png" );
-    map_texture = render_get_texture_id_noindex( "maps/blueberry-burroughs-1.png" );
-    tileset_texture = render_get_texture_id( "tilesets/urban.png" );
 
     unsigned int shaders[ 4 ] = { sprite_shader, rect_shader, text_shader, tilemap_shader };
     for ( int i = 0; i < 4; ++i )
@@ -252,15 +248,16 @@ void render_update()
             break;
             case ( GFX_TILEMAP ):
             {
+                TilemapGraphics * tg = &layers[ i ].data.tilemap;
                 glUseProgram( tilemap_shader );
 
-                Rect src = { 0.0f, 0.0f, ( float )( textures[ map_texture ].width ), ( float )( textures[ map_texture ].height ) };
-                Rect dest = { 0.0f, 0.0f, ( float )( textures[ map_texture ].width ) * 16.0f, ( float )( textures[ map_texture ].height ) * 16.0f };
+                Rect src = { 0.0f, 0.0f, ( float )( textures[ tg->tilemap ].width ), ( float )( textures[ tg->tilemap ].height ) };
+                Rect dest = { 0.0f, 0.0f, ( float )( textures[ tg->tilemap ].width ) * 16.0f, ( float )( textures[ tg->tilemap ].height ) * 16.0f };
 
-                vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ map_texture ].width ) * src.x; // Left X
-                vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ map_texture ].width ) * ( src.x + src.w );  // Right X
-                vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ map_texture ].height ) * ( src.y + src.h ); // Top Y
-                vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ map_texture ].height ) * src.y;  // Bottom Y
+                vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ tg->tilemap ].width ) * src.x; // Left X
+                vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ tg->tilemap ].width ) * ( src.x + src.w );  // Right X
+                vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ tg->tilemap ].height ) * ( src.y + src.h ); // Top Y
+                vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ tg->tilemap ].height ) * src.y;  // Bottom Y
                 buffer_vertices();
                 set_vertices_view( dest.x + ( dest.w / 2.0f ), dest.y + ( dest.h / 2.0f ) );
 
@@ -274,28 +271,28 @@ void render_update()
                 glUniform1f( palette_id_location, ( float )( 3 ) );
 
                 GLint map_width_location = glGetUniformLocation( tilemap_shader, "map_width" );
-                glUniform1f( map_width_location, ( float )( textures[ map_texture ].width ) );
+                glUniform1f( map_width_location, ( float )( textures[ tg->tilemap ].width ) );
 
                 GLint map_height_location = glGetUniformLocation( tilemap_shader, "map_height" );
-                glUniform1f( map_height_location, ( float )( textures[ map_texture ].height ) );
+                glUniform1f( map_height_location, ( float )( textures[ tg->tilemap ].height ) );
 
                 GLint tileset_width_location = glGetUniformLocation( tilemap_shader, "tileset_width" );
-                glUniform1f( tileset_width_location, ( float )( textures[ tileset_texture ].width ) );
+                glUniform1f( tileset_width_location, ( float )( textures[ tg->texture ].width ) );
 
                 GLint tileset_height_location = glGetUniformLocation( tilemap_shader, "tileset_height" );
-                glUniform1f( tileset_height_location, ( float )( textures[ tileset_texture ].height ) );
+                glUniform1f( tileset_height_location, ( float )( textures[ tg->texture ].height ) );
 
                 GLint texture_data_location = glGetUniformLocation(tilemap_shader, "texture_data");
                 GLint palette_data_location = glGetUniformLocation(tilemap_shader, "palette_data");
                 GLint map_data_location = glGetUniformLocation(tilemap_shader, "map_data");
                 glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, texture_ids[ tileset_texture ] );
+                glBindTexture(GL_TEXTURE_2D, texture_ids[ tg->texture ] );
                 glUniform1i(texture_data_location, 0);
                 glActiveTexture(GL_TEXTURE1 );
                 glBindTexture(GL_TEXTURE_2D, texture_ids[ palette_texture ] );
                 glUniform1i(palette_data_location, 1);
                 glActiveTexture(GL_TEXTURE2 );
-                glBindTexture(GL_TEXTURE_2D, texture_ids[ map_texture ] );
+                glBindTexture(GL_TEXTURE_2D, texture_ids[ tg->tilemap ] );
                 glUniform1i(map_data_location, 2);
                 render_vertices();
             }
@@ -795,6 +792,47 @@ unsigned int render_add_tilemap( const char * tileset, const int * tiles, int w,
 {
     Graphic gfx;
     gfx.type = GFX_TILEMAP;
+    gfx.data.tilemap.palette = pal;
+
+    char * tileset_gfx = filename_local_tileset( tileset );
+    gfx.data.tilemap.texture = render_get_texture_id( tileset_gfx );
+    free( tileset_gfx );
+
+    textures[ number_of_textures ].width = w;
+    textures[ number_of_textures ].height = h;
+    unsigned char * texture_data = calloc( w * h * 4, sizeof( unsigned char ) );
+    int i4 = 0;
+    for ( int i = 0; i < w * h; ++i )
+    {
+        int v = ( tiles[ i ] - 4097 ) % ( 256 * 256 );
+        unsigned char x = ( unsigned char )( v % 256 );
+        unsigned char y = ( unsigned char )( floor( v / 256 ) );
+        unsigned char z = floor( ( tiles[ i ] - 4097 ) / ( 256 * 256 ) );
+        unsigned char a = 0;
+        if ( v < 0 )
+        {
+            x = 255;
+            y = 255;
+            z = 255;
+            a = 255;
+        }
+        texture_data[ i4 ] = x;
+        texture_data[ i4 + 1 ] = y;
+        texture_data[ i4 + 2 ] = z;
+        texture_data[ i4 + 3 ] = a;
+        i4 += 4;
+    }
+    if ( texture_data == NULL )
+    {
+        log_error( "Couldn’t generate tilemap." );
+    }
+    glBindTexture(GL_TEXTURE_2D, texture_ids[ number_of_textures ] );
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textures[ number_of_textures ].width, textures[ number_of_textures ].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
     gfx.data.tilemap.tilemap = number_of_textures++;
     return render_add_graphic( gfx, state_number, layer );
 };
