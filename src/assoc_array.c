@@ -6,7 +6,7 @@
 
 #define ASSOC_ARRAY_START_CAPACITY 8
 
-static AssocArrayEntry * assoc_array_find_entry( const AssocArray * array, const char * needle_string, hash_t needle_hash );
+static AssocArrayEntry * assoc_array_find_entry( const AssocArrayEntry * entries, int capacity, const char * needle_string, hash_t needle_hash );
 static hash_t assoc_array_hash( const char * key, int capacity );
 
 AssocArray assoc_array_create( int init_capacity )
@@ -43,14 +43,14 @@ void assoc_array_destroy( AssocArray * array )
 Value assoc_array_get( const AssocArray * array, const char * key )
 {
     hash_t key_hash = assoc_array_hash( key, array->capacity );
-    AssocArrayEntry * entry = assoc_array_find_entry( array, key, key_hash );
+    AssocArrayEntry * entry = assoc_array_find_entry( array->entries, array->capacity, key, key_hash );
     return entry->value;
 };
 
 void assoc_array_add( AssocArray * array, const char * key, Value value )
 {
     hash_t key_hash = assoc_array_hash( key, array->capacity );
-    AssocArrayEntry * entry = assoc_array_find_entry( array, key, key_hash );
+    AssocArrayEntry * entry = assoc_array_find_entry( array->entries, array->capacity, key, key_hash );
     if ( entry->key.string == NULL )
     {
         if ( array->count + 1 > array->capacity * 0.75 )
@@ -68,9 +68,10 @@ void assoc_array_add( AssocArray * array, const char * key, Value value )
                 if ( array->entries[ i ].key.string != NULL )
                 {
                     hash_t new_hash = assoc_array_hash( array->entries[ i ].key.string, new_capacity );
-                    new_list[ new_hash ].key.string = array->entries[ i ].key.string;
-                    new_list[ new_hash ].key.hash = new_hash;
-                    new_list[ new_hash ].value = array->entries[ i ].value;
+                    AssocArrayEntry * new_entry = assoc_array_find_entry( new_list, new_capacity, array->entries[ i ].key.string, new_hash );
+                    new_entry->key.string = array->entries[ i ].key.string;
+                    new_entry->key.hash = new_hash;
+                    new_entry->value = array->entries[ i ].value;
                 }
             }
             free( array->entries );
@@ -97,17 +98,17 @@ void assoc_array_add( AssocArray * array, const char * key, Value value )
     }
 };
 
-static AssocArrayEntry * assoc_array_find_entry( const AssocArray * array, const char * needle_string, hash_t needle_hash )
+static AssocArrayEntry * assoc_array_find_entry( const AssocArrayEntry * entries, int capacity, const char * needle_string, hash_t needle_hash )
 {
     while ( 1 )
     {
-        AssocArrayEntry * entry = &array->entries[ needle_hash ];
+        AssocArrayEntry * entry = &entries[ needle_hash ];
         if ( entry->key.string == NULL || strcmp( entry->key.string, needle_string ) == 0 )
         {
             entry->key.hash = needle_hash;
             return entry;
         }
-        needle_hash = ( needle_hash + 1 ) % array->capacity;
+        needle_hash = ( needle_hash + 1 ) % capacity;
     }
 }
 
