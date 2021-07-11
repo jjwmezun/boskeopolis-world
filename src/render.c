@@ -115,6 +115,7 @@ int render_init()
 
     glGenTextures( MAX_TEXTURES, texture_ids );
 
+    memset( texture_map, 0, sizeof( TextureMapEntry ) * TEXTURE_MAP_CAPACITY );
     palette_texture = render_get_texture_id_noindex( "sprites/palette.png" );
     text_texture = render_get_texture_id_noindex( "text/latin.png" );
 
@@ -156,8 +157,6 @@ int render_init()
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     buffer_vertices();
-
-    memset( texture_map, 0, sizeof( TextureMapEntry ) * TEXTURE_MAP_CAPACITY );
 
     for ( int i = 0; i < MAX_GRAPHICS; ++i )
     {
@@ -832,6 +831,8 @@ unsigned int render_add_tilemap( const char * tileset, const int * tiles, int w,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    free( texture_data );
 
     gfx.data.tilemap.tilemap = number_of_textures++;
     return render_add_graphic( gfx, state_number, layer );
