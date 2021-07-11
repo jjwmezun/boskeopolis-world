@@ -5,9 +5,13 @@
 #include <stddef.h>
 #include "unit.h"
 
+static int sprite_test_collide_bottom( const Sprite * sprite, const Map * map, float bottom );
+static int sprite_test_bottom_collide_type( int collide, int bottom, int jump, float vy );
+
 int sprite_on_ground( Sprite * sprite, Map * map )
 {
-    return SPRITE_BOTTOM( sprite ) >= ( float )( BLOCKS_TO_PIXELS( 31 ) );
+    int collide = sprite_test_collide_bottom( sprite, map, RECT_BOTTOM_DIR( sprite->position ) );
+    return collide == 1 || collide == 2;
 };
 
 Sprite hero_create( int state_number )
@@ -55,6 +59,9 @@ void hero_update( Sprite * hero, void * level_state )
 {
     Map * map = &(( LevelState * )( level_state ))->map;
     SpriteGraphics * gfx = &render_get_graphic( hero->gfx.id )->data.sprite;
+
+    float prevx = hero->position.x;
+    float prevy = hero->position.y;
 
     if ( input_held_left() )
     {
@@ -110,16 +117,11 @@ void hero_update( Sprite * hero, void * level_state )
     {
         hero->vy = 4.0f;
     }
-    else if ( hero->vy < -4.0f )
+    else if ( hero->vy < -5.0f )
     {
         hero->jump = 0;
     }
     hero->position.y += hero->vy;
-
-    if ( SPRITE_BOTTOM( hero ) > ( float )( BLOCKS_TO_PIXELS( 31 ) ) )
-    {
-        hero->position.y = ( float )( BLOCKS_TO_PIXELS( 31 ) ) - hero->position.h;
-    }
 
     if ( hero->position.x < 0.0f )
     {
@@ -184,5 +186,100 @@ void hero_update( Sprite * hero, void * level_state )
         gfx->src.x = 48.0f;
     }
 
+
+    {
+        const int left_tilex = ( int )( floor( hero->position.x / PIXELS_PER_BLOCK ) );
+        const int right_tilex = ( int )( floor( RECT_RIGHT_DIR( hero->position ) / PIXELS_PER_BLOCK ) );
+        const int bottom_tiley = ( int )( floor( ( RECT_BOTTOM_DIR( hero->position ) - 5.0 ) / PIXELS_PER_BLOCK ) );
+        const int top_tiley = ( int )( floor( ( hero->position.y + 5.0 ) / PIXELS_PER_BLOCK ) );
+
+        for ( int i = 0; i < map->num_o_collision_layers; ++i )
+        {
+            const int left_top_collide = map->collision[ i ][ ( map->w * top_tiley ) + left_tilex ];
+            const int left_bottom_collide = map->collision[ i ][ ( map->w * bottom_tiley ) + left_tilex ];
+            if ( left_top_collide == 1 || left_bottom_collide == 1 )
+            {
+                hero->position.x = ( ceil( hero->position.x / 16.0f ) * 16.0f );
+                hero->vx *= -0.5f;
+                hero->accx = 0.0f;
+            }
+
+            const int right_top_collide = map->collision[ i ][ ( map->w * top_tiley ) + right_tilex ];
+            const int right_bottom_collide = map->collision[ i ][ ( map->w * bottom_tiley ) + right_tilex ];
+            if ( right_top_collide == 1 || right_bottom_collide == 1 )
+            {
+                hero->position.x = ( floor( RECT_RIGHT_DIR( hero->position ) / 16.0f ) * 16.0f ) - hero->position.w;
+                hero->vx *= -0.5f;
+                hero->accx = 0.0f;
+            }
+        }
+    }
+
+    {
+        const int left_tilex = ( int )( floor( ( hero->position.x + 2.0f ) / PIXELS_PER_BLOCK ) );
+        const int right_tilex = ( int )( floor( ( RECT_RIGHT_DIR( hero->position ) - 2.0f ) / PIXELS_PER_BLOCK ) );
+        const int top_tiley = ( int )( floor( ( hero->position.y ) / PIXELS_PER_BLOCK ) );
+
+        for ( int i = 0; i < map->num_o_collision_layers; ++i )
+        {
+            const int left_collide = map->collision[ i ][ ( map->w * top_tiley ) + left_tilex ];
+            const int right_collide = map->collision[ i ][ ( map->w * top_tiley ) + right_tilex ];
+            if ( left_collide == 1 || right_collide == 1 )
+            {
+                hero->position.y = ( ceil( hero->position.y / 16.0f ) * 16.0f );
+                hero->vy *= -0.5f;
+                hero->accy = 0.0f;
+                hero->jump = 0;
+            }
+        }
+    }
+
+    int bottom_collide = sprite_test_collide_bottom( hero, map, RECT_BOTTOM_DIR( hero->position ) - 1.0 );
+    if ( bottom_collide == 1 || bottom_collide == 2 )
+    {
+        hero->position.y = ( floor( RECT_BOTTOM_DIR( hero->position ) / 16.0f ) * 16.0f ) - hero->position.h;
+        hero->vy = 0.0f;
+        hero->accy = 0.0f;
+    }
+
     render_adjust_camera( &hero->position, ( float )( BLOCKS_TO_PIXELS( map->w ) ), ( float )( BLOCKS_TO_PIXELS( map->h ) ) );
+};
+
+static int sprite_test_collide_bottom( const Sprite * sprite, const Map * map, float bottom )
+{
+    const int bottom_tiley = ( int )( floor( bottom / PIXELS_PER_BLOCK ) );
+    if ( bottom_tiley >= map->h ) return 0;
+
+    const int left_tilex = ( int )( floor( ( sprite->position.x + 2.0f ) / PIXELS_PER_BLOCK ) );
+    const int right_tilex = ( int )( floor( ( RECT_RIGHT_DIR( sprite->position ) - 2.0f ) / PIXELS_PER_BLOCK ) );
+
+    for ( int i = 0; i < map->num_o_collision_layers; ++i )
+    {
+        if ( left_tilex >= 0 )
+        {
+            int test_collide = sprite_test_bottom_collide_type( map->collision[ i ][ ( map->w * bottom_tiley ) + left_tilex ], ( int )( bottom ), sprite->jump, sprite->vy );
+            if ( test_collide != 0 ) return test_collide;
+        }
+
+        if ( right_tilex < map->w )
+        {
+            int test_collide = sprite_test_bottom_collide_type( map->collision[ i ][ ( map->w * bottom_tiley ) + right_tilex ], ( int )( bottom ), sprite->jump, sprite->vy );
+            if ( test_collide != 0 ) return test_collide;
+        }
+    }
+
+    return 0;
+};
+
+static int sprite_test_bottom_collide_type( int collide, int bottom, int jump, float vy )
+{
+    if ( collide > 0 )
+    {
+        const int bottom_rel = bottom % 16;
+        const int target_bottom_rel = ( vy > 0.0f ) ? 5 : 2;
+        return ( collide == 2 )
+            ? ( ( !jump && bottom_rel < target_bottom_rel && bottom_rel != 0 ) ? 2 : 0 )
+            : collide;
+    }
+    return 0;
 };
