@@ -13,7 +13,8 @@ typedef enum
 {
     MLAYER_NULL,
     MLAYER_COLLISION,
-    MLAYER_TILES
+    MLAYER_TILES,
+    MLAYER_OBJECTS
 }
 MapLayerType;
 
@@ -188,6 +189,10 @@ int map_create( Map * map, int state_number )
                 {
                     type = MLAYER_TILES;
                 }
+                else if ( strcmp( name, "obj" ) == 0 )
+                {
+                    type = MLAYER_OBJECTS;
+                }
 
                 if ( type != MLAYER_NULL )
                 {
@@ -217,6 +222,7 @@ int map_create( Map * map, int state_number )
     bg_graphic.abs = 1;
     render_add_graphic( bg_graphic, state_number, LAYER_BG_1 );
 
+    map->objects = calloc( map->w * map->h, sizeof( int ) );
     map->collision = calloc( map->num_o_collision_layers, sizeof( int * ) );
     unsigned int collision_i = 0;
     for ( int i = 0; i < layers.count; ++i )
@@ -246,6 +252,16 @@ int map_create( Map * map, int state_number )
                 render_add_tilemap( "urban", l->tiles, map->w, map->h, 1, state_number, LAYER_BG_1 );
             }
             break;
+            case ( MLAYER_OBJECTS ):
+            {
+                if ( map->w != l->width || map->h != l->height )
+                {
+                    log_error( "Map json file isn’t formatted correctly.\n" );
+                    return -1;
+                }
+                memcpy( map->objects, l->tiles, map->w * map->h );
+            }
+            break;
         }
         free( l->tiles );
         free( l );
@@ -257,6 +273,10 @@ int map_create( Map * map, int state_number )
 
 void map_destroy( Map * map )
 {
+    if ( map->objects != NULL )
+    {
+        free( map->objects );
+    }
     for ( int i = 0; i < map->num_o_collision_layers; ++i )
     {
         free( map->collision[ i ] );

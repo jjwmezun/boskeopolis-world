@@ -69,6 +69,8 @@ static int graphics_map[ MAX_GRAPHICS ];
 static Graphic layers[ MAX_GRAPHICS ];
 static GLFWwindow * window;
 static Rect camera = { 0.0f, 0.0f, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS };
+static unsigned int animation_timer = 0;
+static unsigned int animation_frame = 0;
 
 static void draw_box( const Rect * rect, const Color * top_left_color, const Color * top_right_color, const Color * bottom_left_color, const Color * bottom_right_color );
 static void framebuffer_size_callback( GLFWwindow* window, int width, int height );
@@ -182,6 +184,21 @@ void render_update()
 {
     glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
     glClear( GL_COLOR_BUFFER_BIT );
+
+    if ( animation_timer == 7 )
+    {
+        animation_timer = 0;
+        ++animation_frame;
+        if ( animation_frame > 255 )
+        {
+            animation_frame = 0;
+        }
+    }
+    else
+    {
+        ++animation_timer;
+    }
+
     for ( unsigned int i = 0; i < number_of_graphics; ++i )
     {
         // Adjust camera for this graphic.
@@ -280,6 +297,9 @@ void render_update()
 
                 GLint tileset_height_location = glGetUniformLocation( tilemap_shader, "tileset_height" );
                 glUniform1f( tileset_height_location, ( float )( textures[ tg->texture ].height ) );
+
+                GLint animation_location = glGetUniformLocation( tilemap_shader, "animation" );
+                glUniform1ui( animation_location, animation_frame );
 
                 GLint texture_data_location = glGetUniformLocation(tilemap_shader, "texture_data");
                 GLint palette_data_location = glGetUniformLocation(tilemap_shader, "palette_data");
@@ -814,6 +834,10 @@ unsigned int render_add_tilemap( const char * tileset, const int * tiles, int w,
             y = 255;
             z = 255;
             a = 255;
+        }
+        else if ( v == 768 )
+        {
+            a = 6;
         }
         texture_data[ i4 ] = x;
         texture_data[ i4 + 1 ] = y;
