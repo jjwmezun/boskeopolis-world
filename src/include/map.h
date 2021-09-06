@@ -10,7 +10,9 @@ typedef struct
     Color bgcolor;
     int * * collision;
     int num_o_collision_layers;
-    int * objects;
+    int * * object_layers;
+    int num_o_object_layers;
+    unsigned int * object_layer_textures;
 }
 Map;
 

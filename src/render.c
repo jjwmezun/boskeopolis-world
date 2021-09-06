@@ -817,16 +817,19 @@ unsigned int render_add_tilemap( const char * tileset, const int * tiles, int w,
     gfx.data.tilemap.texture = render_get_texture_id( tileset_gfx );
     free( tileset_gfx );
 
+    int tileset_w = ceil( textures[ gfx.data.tilemap.texture ].width / PIXELS_PER_BLOCK );
+    int tileset_h = ceil( textures[ gfx.data.tilemap.texture ].height / PIXELS_PER_BLOCK );
+
     textures[ number_of_textures ].width = w;
     textures[ number_of_textures ].height = h;
     unsigned char * texture_data = calloc( w * h * 4, sizeof( unsigned char ) );
     int i4 = 0;
     for ( int i = 0; i < w * h; ++i )
     {
-        int v = ( tiles[ i ] - 4097 ) % ( 256 * 256 );
-        unsigned char x = ( unsigned char )( v % 256 );
-        unsigned char y = ( unsigned char )( floor( v / 256 ) );
-        unsigned char z = floor( ( tiles[ i ] - 4097 ) / ( 256 * 256 ) );
+        int v = ( tiles[ i ] - 4097 ) % ( tileset_w * tileset_h );
+        unsigned char x = ( unsigned char )( v % tileset_w );
+        unsigned char y = ( unsigned char )( floor( v / tileset_w ) );
+        unsigned char z = floor( ( tiles[ i ] - 4097 ) / ( tileset_w * tileset_h ) );
         unsigned char a = 0;
         if ( v < 0 )
         {

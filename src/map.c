@@ -33,6 +33,9 @@ int map_create( Map * map, int state_number )
     map->h = 0;
     map->num_o_collision_layers = 0;
     map->collision = NULL;
+    map->object_layers = NULL;
+    map->num_o_object_layers = 0;
+    map->object_layer_textures = NULL;
 
     Vector layers = vector_create( -1 );
     unsigned int number_of_tile_layers = 0;
@@ -192,6 +195,7 @@ int map_create( Map * map, int state_number )
                 else if ( strcmp( name, "obj" ) == 0 )
                 {
                     type = MLAYER_OBJECTS;
+                    ++map->num_o_object_layers;
                 }
 
                 if ( type != MLAYER_NULL )
@@ -222,9 +226,11 @@ int map_create( Map * map, int state_number )
     bg_graphic.abs = 1;
     render_add_graphic( bg_graphic, state_number, LAYER_BG_1 );
 
-    map->objects = calloc( map->w * map->h, sizeof( int ) );
     map->collision = calloc( map->num_o_collision_layers, sizeof( int * ) );
+    map->object_layers = calloc( map->num_o_object_layers, sizeof( int * ) );
+    map->object_layer_textures = calloc( map->num_o_object_layers, sizeof( unsigned int ) );
     unsigned int collision_i = 0;
+    unsigned int object_i = 0;
     for ( int i = 0; i < layers.count; ++i )
     {
         MapLayer * l = ( MapLayer * )( layers.list[ i ].value.ptr_ );
@@ -259,7 +265,9 @@ int map_create( Map * map, int state_number )
                     log_error( "Map json file isn’t formatted correctly.\n" );
                     return -1;
                 }
-                memcpy( map->objects, l->tiles, map->w * map->h );
+                map->object_layers[ object_i ] = calloc( map->w * map->h, sizeof( int ) );
+                memcpy( map->object_layers[ object_i ], l->tiles, sizeof( int ) * map->w * map->h );
+                ++object_i;
             }
             break;
         }
@@ -273,9 +281,17 @@ int map_create( Map * map, int state_number )
 
 void map_destroy( Map * map )
 {
-    if ( map->objects != NULL )
+    if ( map->object_layer_textures != NULL )
     {
-        free( map->objects );
+        free( map->object_layer_textures );
+    }
+    for ( int i = 0; i < map->num_o_object_layers; ++i )
+    {
+        free( map->object_layers[ i ] );
+    }
+    if ( map->object_layers != NULL )
+    {
+        free( map->object_layers );
     }
     for ( int i = 0; i < map->num_o_collision_layers; ++i )
     {
