@@ -1,5 +1,4 @@
 #include "character.h"
-#include "filename.h"
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
 #include "io.h"
@@ -8,6 +7,7 @@
 #include "rect.h"
 #include "render.h"
 #include <stdint.h>
+#include <string>
 
 #include <cglm/cglm.h>
 #include <cglm/call.h>
@@ -355,9 +355,10 @@ unsigned int render_get_texture_id_generic( const char * local, int indexed )
     entry->value = number_of_textures;
 
     int texture_channels;
-    char * full_filename = filename_image( local );
+    const std::string ffn = ( std::string( "assets/graphics/" ) + std::string( local ) );
+    const char * full_filename = ffn.c_str();
+    printf( "%s\n", full_filename );
     unsigned char * texture_data = stbi_load( full_filename, &textures[ number_of_textures ].width, &textures[ number_of_textures ].height, &texture_channels, STBI_rgb_alpha );
-    free( full_filename );
     if ( texture_data == NULL )
     {
         log_error( "Couldn’t load texture file." );
@@ -717,9 +718,8 @@ static unsigned int generate_shader( GLenum type, const char * file )
 
 static char * load_shader( const char * local )
 {
-    char * full_filename = filename_shader( local );
-    char * content = io_read( full_filename );
-    free( full_filename );
+    const std::string full_filename = ( std::string( "assets/shaders/" ) + std::string( local ) );
+    char * content = io_read( full_filename.c_str() );
     return content;
 };
 
@@ -804,16 +804,15 @@ unsigned int render_add_tilemap( const char * tileset, const int * tiles, int w,
     gfx.type = GFX_TILEMAP;
     gfx.data.tilemap.palette = pal;
 
-    char * tileset_gfx = filename_local_tileset( tileset );
-    gfx.data.tilemap.texture = render_get_texture_id( tileset_gfx );
-    free( tileset_gfx );
+    const std::string tileset_gfx = std::string( "assets/tilesets/" ) + std::string( tileset );
+    gfx.data.tilemap.texture = render_get_texture_id( tileset_gfx.c_str() );
 
     int tileset_w = ceil( textures[ gfx.data.tilemap.texture ].width / PIXELS_PER_BLOCK );
     int tileset_h = ceil( textures[ gfx.data.tilemap.texture ].height / PIXELS_PER_BLOCK );
 
     textures[ number_of_textures ].width = w;
     textures[ number_of_textures ].height = h;
-    unsigned char * texture_data = calloc( w * h * 4, sizeof( unsigned char ) );
+    unsigned char * texture_data = ( unsigned char * )( calloc( w * h * 4, sizeof( unsigned char ) ) );
     int i4 = 0;
     for ( int i = 0; i < w * h; ++i )
     {

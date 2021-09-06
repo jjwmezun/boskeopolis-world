@@ -1,6 +1,5 @@
 #include "color.h"
 #include "engine.h"
-#include "filename.h"
 #include "log.h"
 #include "rect.h"
 #include "render.h"
@@ -13,7 +12,6 @@ static int accumulator = 0;
 
 int main()
 {
-    filename_init();
     if ( !engine_init() )
     {
         log_error( "¡Error! Failed to initialize game!\n" );
@@ -39,6 +37,5 @@ int main()
 
     render_close();
     engine_close();
-    filename_close();
     return 0;
 }
