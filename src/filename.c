@@ -1,5 +1,4 @@
 #include "filename.h"
-#include "jstring.h"
 #include "log.h"
 #include <stdlib.h>
 #include <string.h>
@@ -89,7 +88,8 @@ void filename_close()
 
 char * filename_image( const char * local )
 {
-    return jstring_concat( image_directory, local );
+    return local;
+    //return jstring_concat( image_directory, local );
 };
 
 char * filename_local_tileset( const char * local )

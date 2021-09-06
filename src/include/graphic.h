@@ -1,10 +1,8 @@
 #ifndef GRAPHIC_H
 #define GRAPHIC_H
 
-#include "assoc_array.h"
 #include "color.h"
 #include "rect.h"
-#include "text.h"
 
 typedef struct
 {
@@ -37,7 +35,6 @@ typedef struct
 typedef enum
 {
     GFX_RECT,
-    GFX_TEXT,
     GFX_SPRITE,
     GFX_TILEMAP
 }
@@ -50,7 +47,6 @@ typedef struct
     union
     {
         RectGraphics rect;
-        Text text;
         SpriteGraphics sprite;
         TilemapGraphics tilemap;
     } data;
@@ -59,15 +55,13 @@ Graphic;
 
 Graphic graphic_create_rect( Rect rect, Color color );
 Graphic graphic_create_full_rect( Color color );
-Graphic graphic_create_text( Text text );
 Graphic graphic_create_sprite
 (
     unsigned int texture,
     unsigned int palette,
     Rect dest,
     float src_x,
-    float src_y,
-    AssocArray * args
+    float src_y
 );
 Graphic graphic_create_tilemap( int * tiles, int w, int h );
 

@@ -19,22 +19,13 @@ Graphic graphic_create_full_rect( Color color )
     return graphic_create_rect( rect, color );
 };
 
-Graphic graphic_create_text( Text text )
-{
-    Graphic g;
-    g.type = GFX_TEXT;
-    g.data.text = text;
-    return g;
-};
-
 Graphic graphic_create_sprite
 (
     unsigned int texture,
     unsigned int palette,
     Rect dest,
     float src_x,
-    float src_y,
-    AssocArray * args
+    float src_y
 )
 {
     Graphic g;

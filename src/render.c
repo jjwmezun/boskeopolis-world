@@ -1,9 +1,7 @@
 #include "character.h"
 #include "filename.h"
-#include "game_state_machine.h"
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
-#include "input.h"
 #include "io.h"
 #include "log.h"
 #include <math.h>
@@ -24,6 +22,7 @@ typedef struct
 }
 Texture;
 
+#define MAX_STATES 5
 #define MAX_TEXTURES 200
 #define VERTEX_SIZE 8
 #define MAX_GRAPHICS 512
@@ -236,14 +235,6 @@ void render_update()
                     &layers[ i ].data.rect.color,
                     &layers[ i ].data.rect.color
                 );
-            }
-            break;
-            case ( GFX_TEXT ):
-            {
-                for ( int c = 0; c < layers[ i ].data.text.number_of_characters; ++c )
-                {
-                    character( &layers[ i ].data.text.characters[ c ], &layers[ i ].data.text.color );
-                }
             }
             break;
             case ( GFX_SPRITE ):

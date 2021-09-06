@@ -1,14 +1,11 @@
-#include "assoc_array.h"
 #include "color.h"
 #include "engine.h"
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
-#include "input.h"
 #include "log.h"
 #include <math.h>
 #include "render.h"
 #include "unit.h"
-#include "vector.h"
 
 static void engine_handle_input( GLFWwindow * window, int key, int scancode, int action, int mods );
 
@@ -19,27 +16,6 @@ int engine_init()
     glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
     glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
     glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
-
-    Vector keys[ INPUT_MAX ];
-    for ( int i = 0; i < INPUT_MAX; ++i )
-    {
-        keys[ i ] = vector_create( -1 );
-    }
-    vector_push( &keys[ INPUT_CONFIRM ], value_create_int( GLFW_KEY_Z ) );
-    vector_push( &keys[ INPUT_CANCEL ], value_create_int( GLFW_KEY_X ) );
-    vector_push( &keys[ INPUT_MENU ], value_create_int( GLFW_KEY_C ) );
-    vector_push( &keys[ INPUT_JUMP ], value_create_int( GLFW_KEY_Z ) );
-    vector_push( &keys[ INPUT_UP ], value_create_int( GLFW_KEY_UP ) );
-    vector_push( &keys[ INPUT_RIGHT ], value_create_int( GLFW_KEY_RIGHT ) );
-    vector_push( &keys[ INPUT_DOWN ], value_create_int( GLFW_KEY_DOWN ) );
-    vector_push( &keys[ INPUT_LEFT ], value_create_int( GLFW_KEY_LEFT ) );
-    
-    input_init( keys );
-
-    for ( int i = 0; i < INPUT_MAX; ++i )
-    {
-        vector_destroy( &keys[ i ] );
-    }
 
     if ( !render_init() )
     {
@@ -81,12 +57,10 @@ static void engine_handle_input( GLFWwindow * window, int key, int scancode, int
     {
         case ( GLFW_PRESS ):
         {
-            input_press( key );
         }
         break;
         case ( GLFW_RELEASE ):
         {
-            input_release( key );
         }
         break;
     }

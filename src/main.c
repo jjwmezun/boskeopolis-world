@@ -1,9 +1,6 @@
 #include "color.h"
 #include "engine.h"
 #include "filename.h"
-#include "game_state_machine.h"
-#include "input.h"
-#include "localization.h"
 #include "log.h"
 #include "rect.h"
 #include "render.h"
@@ -23,8 +20,6 @@ int main()
         return -1;
     }
 
-    localization_init();
-    state_init();
 
     ticks = engine_get_ticks();
     while ( running )
@@ -36,16 +31,12 @@ int main()
         accumulator += frame_time;
         while ( accumulator >= DT )
         {
-            state_update();
-            input_update();
             accumulator -= DT;
         }
 
         render_update();
     }
 
-    input_close();
-    localization_close();
     render_close();
     engine_close();
     filename_close();
