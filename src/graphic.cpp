@@ -2,16 +2,11 @@
 #include "render.hpp"
 #include "unit.hpp"
 #include <cstdlib>
-#include "text.hpp"
 
 Graphic Graphic::createRect( Rect rect, Color color )
 {
-    Graphic g;
-    g.type = GFXType::RECT;
-    g.abs = 0;
-    g.data.rect.rect = rect;
-    g.data.rect.color = color;
-    return g;
+    RectGraphics r { rect, color };
+    return { r, 0 };
 };
 
 Graphic Graphic::createFullRect( Color color )
@@ -29,25 +24,11 @@ Graphic Graphic::createSprite
     float src_y
 )
 {
-    Graphic g;
-    g.type = GFXType::SPRITE;
-    g.abs = 0;
-    g.data.sprite.texture = texture;
-    g.data.sprite.palette = palette;
-    g.data.sprite.dest = dest;
-    g.data.sprite.src.x = src_x;
-    g.data.sprite.src.y = src_y;
-    g.data.sprite.src.w = dest.w;
-    g.data.sprite.src.h = dest.h;
-    g.data.sprite.flip_x = g.data.sprite.flip_y = 0;
-    g.data.sprite.rotation_x = g.data.sprite.rotation_y = g.data.sprite.rotation_z = 0.0;
-    return g;
+    SpriteGraphics g { texture, palette, { src_x, src_y, dest.w, dest.h }, dest, 0, 0, 0.0f, 0.0f, 0.0f };
+    return { g, 0 };
 };
 
 Graphic Graphic::createText( Text text )
 {
-    Graphic g;
-    g.type = GFXType::TEXT;
-    g.data.text = new Text( text );
-    return g;
+    return { text, 1 };
 };

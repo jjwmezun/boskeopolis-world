@@ -3,8 +3,8 @@
 
 #include "color.hpp"
 #include "rect.hpp"
-
-class Text;
+#include "text.hpp"
+#include <variant>
 
 struct RectGraphics
 {
@@ -32,26 +32,10 @@ struct TilemapGraphics
     unsigned int palette;
 };
 
-enum class GFXType
-{
-    RECT,
-    SPRITE,
-    TILEMAP,
-    TEXT,
-    __NULL
-};
-
 struct Graphic
 {
-    GFXType type;
+    std::variant<std::monostate, RectGraphics, SpriteGraphics, TilemapGraphics, Text> data;
     int abs;
-    union
-    {
-        RectGraphics rect;
-        SpriteGraphics sprite;
-        TilemapGraphics tilemap;
-        Text * text;
-    } data;
 
     static Graphic createRect( Rect rect, Color color );
     static Graphic createFullRect( Color color );

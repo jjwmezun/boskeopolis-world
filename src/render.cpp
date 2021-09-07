@@ -223,29 +223,31 @@ namespace Render
                 glUniformMatrix4fv( ortho_location, 1, GL_FALSE, ( float * )( ortho ) );
             }
 
-            switch ( layers[ i ].type )
+            switch ( layers[ i ].data.index() )
             {
-                case ( GFXType::RECT ):
+                case ( 1 ):
                 {
+                    const auto & rect = std::get<RectGraphics>( layers[ i ].data );
                     drawBox
                     (
-                        &layers[ i ].data.rect.rect,
-                        &layers[ i ].data.rect.color,
-                        &layers[ i ].data.rect.color,
-                        &layers[ i ].data.rect.color,
-                        &layers[ i ].data.rect.color
+                        &rect.rect,
+                        &rect.color,
+                        &rect.color,
+                        &rect.color,
+                        &rect.color
                     );
                 }
                 break;
-                case ( GFXType::SPRITE ):
+                case ( 2 ):
                 {
-                    unsigned int texture_id = layers[ i ].data.sprite.texture;
-                    const Rect * src = &layers[ i ].data.sprite.src;
-                    const Rect * dest = &layers[ i ].data.sprite.dest;
+                    const auto & sprite = std::get<SpriteGraphics>( layers[ i ].data );
+                    unsigned int texture_id = sprite.texture;
+                    const Rect * src = &sprite.src;
+                    const Rect * dest = &sprite.dest;
                     glUseProgram( sprite_shader );
 
                     // Src Coords
-                    if ( layers[ i ].data.sprite.flip_x )
+                    if ( sprite.flip_x )
                     {
                         vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].width ) * src->x; // Left X
                         vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src->x + src->w );  // Right X
@@ -256,7 +258,7 @@ namespace Render
                         vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].width ) * ( src->x + src->w );  // Right X
                     }
 
-                    if ( layers[ i ].data.sprite.flip_y )
+                    if ( sprite.flip_y )
                     {
                         vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ texture_id ].height ) * ( src->y + src->h ); // Top Y
                         vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ texture_id ].height ) * src->y;  // Bottom Y
@@ -274,16 +276,16 @@ namespace Render
                     vec3 scale = { dest->w, dest->h, 0.0 };
                     glm_scale( model, scale );
                     vec3 xrot = { 0.0, 1.0, 0.0 };
-                    glm_rotate( model, Unit::degreesToRadians( layers[ i ].data.sprite.rotation_x ), xrot );
+                    glm_rotate( model, Unit::degreesToRadians( sprite.rotation_x ), xrot );
                     vec3 yrot = { 0.0, 0.0, 1.0 };
-                    glm_rotate( model, Unit::degreesToRadians( layers[ i ].data.sprite.rotation_y ), yrot );
+                    glm_rotate( model, Unit::degreesToRadians( sprite.rotation_y ), yrot );
                     vec3 zrot = { 1.0, 0.0, 0.0 };
-                    glm_rotate( model, Unit::degreesToRadians( layers[ i ].data.sprite.rotation_z ), zrot );
+                    glm_rotate( model, Unit::degreesToRadians( sprite.rotation_z ), zrot );
                     unsigned int model_location = glGetUniformLocation(sprite_shader, "model");
                     glUniformMatrix4fv( model_location, 1, GL_FALSE, ( float * )( model ) );
 
                     GLint palette_id_location = glGetUniformLocation( sprite_shader, "palette_id" );
-                    glUniform1f( palette_id_location, ( float )( layers[ i ].data.sprite.palette ) );
+                    glUniform1f( palette_id_location, ( float )( sprite.palette ) );
 
                     GLint texture_data_location = glGetUniformLocation(sprite_shader, "texture_data");
                     GLint palette_data_location = glGetUniformLocation(sprite_shader, "palette_data");
@@ -296,18 +298,18 @@ namespace Render
                     setupVertices();
                 }
                 break;
-                case ( GFXType::TILEMAP ):
+                case ( 3 ):
                 {
-                    TilemapGraphics * tg = &layers[ i ].data.tilemap;
+                    const auto & tg = std::get<TilemapGraphics>( layers[ i ].data );
                     glUseProgram( tilemap_shader );
 
-                    Rect src = { 0.0f, 0.0f, ( float )( textures[ tg->tilemap ].width ), ( float )( textures[ tg->tilemap ].height ) };
-                    Rect dest = { 0.0f, 0.0f, ( float )( textures[ tg->tilemap ].width ) * 16.0f, ( float )( textures[ tg->tilemap ].height ) * 16.0f };
+                    Rect src = { 0.0f, 0.0f, ( float )( textures[ tg.tilemap ].width ), ( float )( textures[ tg.tilemap ].height ) };
+                    Rect dest = { 0.0f, 0.0f, ( float )( textures[ tg.tilemap ].width ) * 16.0f, ( float )( textures[ tg.tilemap ].height ) * 16.0f };
 
-                    vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ tg->tilemap ].width ) * src.x; // Left X
-                    vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ tg->tilemap ].width ) * ( src.x + src.w );  // Right X
-                    vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ tg->tilemap ].height ) * ( src.y + src.h ); // Top Y
-                    vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ tg->tilemap ].height ) * src.y;  // Bottom Y
+                    vertices[ 2 + VERTEX_SIZE * 3 ] = vertices[ 2 + VERTEX_SIZE * 2 ] = 1.0f / ( float )( textures[ tg.tilemap ].width ) * src.x; // Left X
+                    vertices[ 2 ] = vertices[ 2 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ tg.tilemap ].width ) * ( src.x + src.w );  // Right X
+                    vertices[ 3 + VERTEX_SIZE * 3 ] = vertices[ 3 ] = 1.0f / ( float )( textures[ tg.tilemap ].height ) * ( src.y + src.h ); // Top Y
+                    vertices[ 3 + VERTEX_SIZE * 2 ] = vertices[ 3 + VERTEX_SIZE ] = 1.0f / ( float )( textures[ tg.tilemap ].height ) * src.y;  // Bottom Y
                     bufferVertices();
                     setVerticesView( dest.x + ( dest.w / 2.0f ), dest.y + ( dest.h / 2.0f ) );
 
@@ -321,16 +323,16 @@ namespace Render
                     glUniform1f( palette_id_location, ( float )( 3 ) );
 
                     GLint map_width_location = glGetUniformLocation( tilemap_shader, "map_width" );
-                    glUniform1f( map_width_location, ( float )( textures[ tg->tilemap ].width ) );
+                    glUniform1f( map_width_location, ( float )( textures[ tg.tilemap ].width ) );
 
                     GLint map_height_location = glGetUniformLocation( tilemap_shader, "map_height" );
-                    glUniform1f( map_height_location, ( float )( textures[ tg->tilemap ].height ) );
+                    glUniform1f( map_height_location, ( float )( textures[ tg.tilemap ].height ) );
 
                     GLint tileset_width_location = glGetUniformLocation( tilemap_shader, "tileset_width" );
-                    glUniform1f( tileset_width_location, ( float )( textures[ tg->texture ].width ) );
+                    glUniform1f( tileset_width_location, ( float )( textures[ tg.texture ].width ) );
 
                     GLint tileset_height_location = glGetUniformLocation( tilemap_shader, "tileset_height" );
-                    glUniform1f( tileset_height_location, ( float )( textures[ tg->texture ].height ) );
+                    glUniform1f( tileset_height_location, ( float )( textures[ tg.texture ].height ) );
 
                     GLint animation_location = glGetUniformLocation( tilemap_shader, "animation" );
                     glUniform1ui( animation_location, animation_frame );
@@ -339,21 +341,21 @@ namespace Render
                     GLint palette_data_location = glGetUniformLocation(tilemap_shader, "palette_data");
                     GLint map_data_location = glGetUniformLocation(tilemap_shader, "map_data");
                     glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, texture_ids[ tg->texture ] );
+                    glBindTexture(GL_TEXTURE_2D, texture_ids[ tg.texture ] );
                     glUniform1i(texture_data_location, 0);
                     glActiveTexture(GL_TEXTURE1 );
                     glBindTexture(GL_TEXTURE_2D, texture_ids[ palette_texture ] );
                     glUniform1i(palette_data_location, 1);
                     glActiveTexture(GL_TEXTURE2 );
-                    glBindTexture(GL_TEXTURE_2D, texture_ids[ tg->tilemap ] );
+                    glBindTexture(GL_TEXTURE_2D, texture_ids[ tg.tilemap ] );
                     glUniform1i(map_data_location, 2);
                     setupVertices();
                 }
                 break;
-                case ( GFXType::TEXT ):
+                case ( 4 ):
                 {
-                    Text * t = layers[ i ].data.text;
-                    for ( const auto & c : t->characters_ )
+                    const auto & t = std::get<Text>( layers[ i ].data );
+                    for ( const auto & c : t.characters_ )
                     {
                         character( &c, &c.color );
                     }
@@ -432,13 +434,6 @@ namespace Render
 
     void clearGraphics()
     {
-        for ( int i = 0; i < number_of_graphics; ++i )
-        {
-            if ( layers[ i ].type == GFXType::TEXT )
-            {
-                delete layers[ i ].data.text;
-            }
-        }
         number_of_graphics = 0;
         for ( int i = 0; i < Unit::MAX_STATES; ++i )
         {
@@ -639,12 +634,7 @@ namespace Render
 
     void removeGraphic( unsigned int id )
     {
-        if ( layers[ id ].type == GFXType::TEXT )
-        {
-            delete layers[ id ].data.text;
-            layers[ id ].data.text = nullptr;
-        }
-        layers[ id ].type = GFXType::__NULL;
+        layers[ id ] = {};
     };
 
     Graphic * getGraphic( unsigned int id )
@@ -804,15 +794,11 @@ namespace Render
 
     unsigned int addTilemap( const char * tileset, const int * tiles, int w, int h, unsigned int pal, int state_number, Layer layer )
     {
-        Graphic gfx;
-        gfx.type = GFXType::TILEMAP;
-        gfx.data.tilemap.palette = pal;
-
         const std::string tileset_gfx = std::string( "tilesets/" ) + std::string( tileset ) + std::string( ".png" );
-        gfx.data.tilemap.texture = getTextureID( tileset_gfx.c_str() );
+        unsigned int texture = getTextureID( tileset_gfx.c_str() );
 
-        int tileset_w = ceil( textures[ gfx.data.tilemap.texture ].width / Unit::PIXELS_PER_BLOCK );
-        int tileset_h = ceil( textures[ gfx.data.tilemap.texture ].height / Unit::PIXELS_PER_BLOCK );
+        int tileset_w = ceil( textures[ texture ].width / Unit::PIXELS_PER_BLOCK );
+        int tileset_h = ceil( textures[ texture ].height / Unit::PIXELS_PER_BLOCK );
 
         textures[ number_of_textures ].width = w;
         textures[ number_of_textures ].height = h;
@@ -855,7 +841,7 @@ namespace Render
 
         free( texture_data );
 
-        gfx.data.tilemap.tilemap = number_of_textures++;
-        return addGraphic( gfx, state_number, layer );
+        Graphic g { TilemapGraphics{ texture, number_of_textures++, pal }, 0 };
+        return addGraphic( g, state_number, layer );
     };
 }
