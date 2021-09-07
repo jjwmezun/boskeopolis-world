@@ -1,3 +1,4 @@
+#include "config.hpp"
 #include <cstdio>
 #include "log.hpp"
 #include <vector>
@@ -9,7 +10,9 @@ namespace Log
     void sendError( std::string string )
     {
         string += "\n";
-        printf( "ERROR: %s\n", string.c_str() );
+        #ifdef DEBUG
+            printf( "ERROR: %s\n", string.c_str() );
+        #endif
         errors.emplace_back( std::move( string ) );
     };
 }

@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "io.hpp"
+#include "log.hpp"
 
 namespace IO
 {
@@ -11,7 +12,8 @@ namespace IO
 
         if ( file == NULL )
         {
-            return NULL;
+            Log::sendError( "IO: Failed to open file “" + std::string( source ) + "”" );
+            exit( -1 );
         }
 
         // Go thru file to find size.
@@ -26,7 +28,8 @@ namespace IO
 
         if ( buffer == NULL )
         {
-            return NULL;
+            Log::sendError( "IO: Failed to allocate buffer for file “" + std::string( source ) + "”" );
+            exit( -1 );
         }
 
         // Read file into buffer & get buffer length.
@@ -34,7 +37,8 @@ namespace IO
 
         if ( bytes < size )
         {
-            return NULL;
+            Log::sendError( "IO: Buffer size wrong for “" + std::string( source ) + "”" );
+            exit( -1 );
         }
 
         // Make sure buffer ends with string terminator.

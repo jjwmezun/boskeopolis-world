@@ -1,6 +1,7 @@
 #include "color.hpp"
 #include "engine.hpp"
 #include "layer.hpp"
+#include "localization.hpp"
 #include "log.hpp"
 #include "rect.hpp"
 #include "render.hpp"
@@ -20,6 +21,7 @@ int main()
         Log::sendError( "¡Error! Failed to initialize game!" );
         return -1;
     }
+    Localization::init();
 
     Color c;
     c.r = 255.0f;

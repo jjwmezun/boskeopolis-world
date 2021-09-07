@@ -1,17 +1,16 @@
 #ifndef CHARACTER_TEMPLATE_H
 #define CHARACTER_TEMPLATE_H
 
-typedef enum
+enum class CharacterType
 {
-    CHAR_NORMAL,
-    CHAR_WHITESPACE,
-    CHAR_NEWLINE
-}
-CharacterTemplateType;
+    NORMAL,
+    WHITESPACE,
+    NEWLINE
+};
 
 typedef struct
 {
-    CharacterTemplateType type;
+    CharacterType type;
     float w;
     float h;
     float x;
