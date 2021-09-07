@@ -12,7 +12,7 @@ namespace Input
         RIGHT,
         LEFT
     };
-    static constexpr int NUMBER_OF_KEYS = 2;
+    static constexpr int NUMBER_OF_KEYS = 3;
     void init();
     void initKeys( std::unordered_map<Key, std::vector<int>> new_keys );
     void press( int raw_key );
