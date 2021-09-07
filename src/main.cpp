@@ -1,6 +1,7 @@
 #include "color.hpp"
 #include "engine.hpp"
 #include "game_state_machine.hpp"
+#include "input.hpp"
 #include "layer.hpp"
 #include "localization.hpp"
 #include "log.hpp"
@@ -15,6 +16,7 @@ static int accumulator = 0;
 
 int main()
 {
+    Input::init();
     if ( !Engine::init() )
     {
         Log::sendError( "¡Error! Failed to initialize game!" );
@@ -37,6 +39,7 @@ int main()
         }
 
         GameStateMachine::update();
+        Input::update();
         Render::update();
     }
 

@@ -65,10 +65,12 @@ namespace Engine
         {
             case ( GLFW_PRESS ):
             {
+                Input::press( key );
             }
             break;
             case ( GLFW_RELEASE ):
             {
+                Input::release( key );
             }
             break;
         }

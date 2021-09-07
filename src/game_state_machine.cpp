@@ -22,6 +22,10 @@ struct GSUpdate
     }
     void operator()( LevelState & level )
     {
+        if ( Input::pressedConfirm() )
+        {
+            GameStateMachine::changeState( GameStateMachine::createTitleState() );
+        }
     }
 };
 
@@ -70,6 +74,11 @@ namespace GameStateMachine
             initState( states[ 0 ], number_of_states - 1 );
             change = {};
         }
+    };
+
+    GameState createTitleState()
+    {
+        return TitleState( 0.0f );
     };
 
     GameState createLevelState()

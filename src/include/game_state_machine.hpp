@@ -31,6 +31,7 @@ namespace GameStateMachine
 {
     void init();
     void update();
+    GameState createTitleState();
     GameState createLevelState();
     void changeState( GameState state );
 };
