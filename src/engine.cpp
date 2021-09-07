@@ -1,67 +1,69 @@
-#include "color.h"
-#include "engine.h"
+#include "color.hpp"
+#include "engine.hpp"
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
-#include "log.h"
-#include <math.h>
-#include "render.h"
-#include "unit.h"
+#include "log.hpp"
+#include <cmath>
+#include "render.hpp"
+#include "unit.hpp"
 
-static void engine_handle_input( GLFWwindow * window, int key, int scancode, int action, int mods );
-
-int engine_init()
+namespace Engine
 {
-    glfwInit();
-    glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
-    glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
-    glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
-    glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
+    static void handle_input( GLFWwindow * window, int key, int scancode, int action, int mods );
 
-    if ( !render_init() )
+    int init()
     {
-        log_error( "¡Error! ¡Failed to initialize game renderer!\n" );
-        return 0;
-    }
-    glfwSetKeyCallback( ( GLFWwindow * )( render_get_window() ), &engine_handle_input );
-    return 1;
-};
+        glfwInit();
+        glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
+        glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
+        glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
+        glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
+        if ( !Render::init() )
+        {
+            Log::sendError( "¡Error! ¡Failed to initialize game renderer!" );
+            return 0;
+        }
+        glfwSetKeyCallback( ( GLFWwindow * )( Render::getWindow() ), &handle_input );
+        return 1;
+    };
 
-void engine_close()
-{
-    glfwTerminate();
-};
-
-int engine_get_ticks()
-{
-    return ( int )( floor( glfwGetTime() * 1000 ) );
-};
-
-int engine_handle_events()
-{
-    int running = !render_window_should_close();
-    if ( running )
+    void close()
     {
-        GLFWwindow * window = ( GLFWwindow * )( render_get_window() );
-        if( glfwGetKey( window, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
-        {
-            glfwSetWindowShouldClose( window, 1 );
-        }
-        glfwPollEvents();
-    }
-    return running;
-};
+        glfwTerminate();
+    };
 
-static void engine_handle_input( GLFWwindow * window, int key, int scancode, int action, int mods )
-{
-    switch ( action )
+    int getTicks()
     {
-        case ( GLFW_PRESS ):
+        return ( int )( floor( glfwGetTime() * 1000 ) );
+    };
+
+    int handleEvents()
+    {
+        int running = !Render::shouldWindowClose();
+        if ( running )
         {
+            GLFWwindow * window = ( GLFWwindow * )( Render::getWindow() );
+            if( glfwGetKey( window, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
+            {
+                glfwSetWindowShouldClose( window, 1 );
+            }
+            glfwPollEvents();
         }
-        break;
-        case ( GLFW_RELEASE ):
+        return running;
+    };
+
+    static void handle_input( GLFWwindow * window, int key, int scancode, int action, int mods )
+    {
+        switch ( action )
         {
+            case ( GLFW_PRESS ):
+            {
+            }
+            break;
+            case ( GLFW_RELEASE ):
+            {
+            }
+            break;
         }
-        break;
-    }
+    };
 }

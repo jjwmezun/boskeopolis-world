@@ -1,15 +1,15 @@
-#include <stdio.h>
-#include "log.h"
+#include <cstdio>
+#include "log.hpp"
+#include <vector>
 
-char * latest_error = "No Error";
+std::vector<std::string> errors;
 
-void log_error( char * string )
+namespace Log
 {
-    latest_error = string;
-    printf( "ERROR: %s\n", string );
-};
-
-const char * log_get_error()
-{
-    return latest_error;
-};
+    void sendError( std::string string )
+    {
+        string += "\n";
+        printf( "ERROR: %s\n", string.c_str() );
+        errors.emplace_back( std::move( string ) );
+    };
+}

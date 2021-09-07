@@ -1,25 +1,25 @@
-#include "graphic.h"
-#include "render.h"
-#include "unit.h"
-#include <stdlib.h>
+#include "graphic.hpp"
+#include "render.hpp"
+#include "unit.hpp"
+#include <cstdlib>
 
-Graphic graphic_create_rect( Rect rect, Color color )
+Graphic Graphic::createRect( Rect rect, Color color )
 {
     Graphic g;
-    g.type = GFX_RECT;
+    g.type = GFXType::RECT;
     g.abs = 0;
     g.data.rect.rect = rect;
     g.data.rect.color = color;
     return g;
 };
 
-Graphic graphic_create_full_rect( Color color )
+Graphic Graphic::createFullRect( Color color )
 {
-    Rect rect = { 0.0, 0.0, ( float )( WINDOW_WIDTH_PIXELS ), ( float )( WINDOW_HEIGHT_PIXELS ) };
-    return graphic_create_rect( rect, color );
+    Rect rect = { 0.0, 0.0, ( float )( Unit::WINDOW_WIDTH_PIXELS ), ( float )( Unit::WINDOW_HEIGHT_PIXELS ) };
+    return createRect( rect, color );
 };
 
-Graphic graphic_create_sprite
+Graphic Graphic::createSprite
 (
     unsigned int texture,
     unsigned int palette,
@@ -29,7 +29,7 @@ Graphic graphic_create_sprite
 )
 {
     Graphic g;
-    g.type = GFX_SPRITE;
+    g.type = GFXType::SPRITE;
     g.abs = 0;
     g.data.sprite.texture = texture;
     g.data.sprite.palette = palette;
@@ -40,20 +40,5 @@ Graphic graphic_create_sprite
     g.data.sprite.src.h = dest.h;
     g.data.sprite.flip_x = g.data.sprite.flip_y = 0;
     g.data.sprite.rotation_x = g.data.sprite.rotation_y = g.data.sprite.rotation_z = 0.0;
-    return g;
-};
-
-Graphic graphic_create_tilemap( int * tiles, int w, int h )
-{
-    Graphic g;
-    g.type = GFX_TILEMAP;
-    g.abs = 0;
-    /*
-    const size_t size = sizeof( int ) * w * h;
-    g.data.tilemap.tiles = malloc( size );
-    memcpy( g.data.tilemap.tiles, tiles, size );
-    g.data.tilemap.w = w;
-    g.data.tilemap.h = h;
-    */
     return g;
 };

@@ -1,13 +1,12 @@
 #ifndef COLOR_H
 #define COLOR_H
 
-typedef struct
+struct Color
 {
     float r;
     float g;
     float b;
     float a;
-}
-Color;
+};
 
 #endif // COLOR_H

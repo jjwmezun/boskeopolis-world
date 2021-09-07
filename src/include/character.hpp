@@ -1,7 +1,7 @@
 #ifndef CHARACTER_H
 #define CHARACTER_H
 
-typedef struct
+struct Character
 {
     float w;
     float h;
@@ -9,7 +9,6 @@ typedef struct
     float src_y;
     float dest_x;
     float dest_y;
-}
-Character;
+};
 
 #endif // CHARACTER_H

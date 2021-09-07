@@ -1,12 +1,13 @@
-#include "color.h"
-#include "engine.h"
-#include "log.h"
-#include "rect.h"
-#include "render.h"
+#include "color.hpp"
+#include "engine.hpp"
+#include "layer.hpp"
+#include "log.hpp"
+#include "rect.hpp"
+#include "render.hpp"
 
-#include <stdlib.h>
+#include <cstdlib>
 
-#define DT 17
+static constexpr int DT = 17;
 
 static int running = 1;
 static int ticks = 0;
@@ -14,9 +15,9 @@ static int accumulator = 0;
 
 int main()
 {
-    if ( !engine_init() )
+    if ( !Engine::init() )
     {
-        log_error( "¡Error! Failed to initialize game!\n" );
+        Log::sendError( "¡Error! Failed to initialize game!" );
         return -1;
     }
 
@@ -25,16 +26,19 @@ int main()
     c.g = 255.0f;
     c.b = 255.0f;
     c.a = 255.0f;
-    render_add_graphic( graphic_create_full_rect( c ), 1, LAYER_BEFORE_BLOCKS_1 );
+    Render::addGraphic( Graphic::createFullRect( c ), 1, Layer::BEFORE_BLOCKS_1 );
     int * tiles = ( int * )( calloc( 25 * 14, sizeof( int ) ) );
     tiles[ 5 ] = 4102;
-    render_add_tilemap( "urban", tiles, 25, 14, 2, 1, LAYER_BLOCKS_1 );
+    Render::addTilemap( "urban", tiles, 25, 14, 2, 1, Layer::BLOCKS_1 );
 
-    ticks = engine_get_ticks();
+    Graphic sprite = Graphic::createSprite( Render::getTextureID( "sprites/autumn.png" ), 0, { 0, 0, 16, 24 }, 0, 0 );
+    Render::addGraphic( sprite, 1, Layer::SPRITES_1 );
+
+    ticks = Engine::getTicks();
     while ( running )
     {
-        running = engine_handle_events();
-        int new_time = engine_get_ticks();
+        running = Engine::handleEvents();
+        int new_time = Engine::getTicks();
         int frame_time = new_time - ticks;
         ticks = new_time;
         accumulator += frame_time;
@@ -43,10 +47,12 @@ int main()
             accumulator -= DT;
         }
 
-        render_update();
+        Render::update();
     }
 
-    render_close();
-    engine_close();
+    free( tiles );
+
+    Render::close();
+    Engine::close();
     return 0;
 }
