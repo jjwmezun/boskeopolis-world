@@ -9,7 +9,7 @@ LDFLAGS = -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lstdc++fs -lpthread
 
 # Makefile settings - Can be customized.
 APPNAME = BoskeopolisWorld
-EXT = .c
+EXT = .cpp
 SRCDIR = src
 OBJDIR = obj
 LOCALINC = -Isrc/include
