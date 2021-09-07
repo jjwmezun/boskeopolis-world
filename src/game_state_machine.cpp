@@ -1,5 +1,6 @@
 #include "game_state_machine.hpp"
 #include "graphic.hpp"
+#include "input.hpp"
 #include "render.hpp"
 #include "text.hpp"
 #include "unit.hpp"
@@ -13,11 +14,10 @@ struct GSUpdate
     }
     void operator()( TitleState & title )
     {
-        if ( title.x() >= 100.0f )
+        if ( Input::pressedConfirm() )
         {
             GameStateMachine::changeState( GameStateMachine::createLevelState() );
         }
-        title.inc();
 
     }
     void operator()( LevelState & level )
