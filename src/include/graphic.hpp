@@ -4,6 +4,8 @@
 #include "color.hpp"
 #include "rect.hpp"
 
+class Text;
+
 struct RectGraphics
 {
     Rect rect;
@@ -34,7 +36,9 @@ enum class GFXType
 {
     RECT,
     SPRITE,
-    TILEMAP
+    TILEMAP,
+    TEXT,
+    __NULL
 };
 
 struct Graphic
@@ -46,6 +50,7 @@ struct Graphic
         RectGraphics rect;
         SpriteGraphics sprite;
         TilemapGraphics tilemap;
+        Text * text;
     } data;
 
     static Graphic createRect( Rect rect, Color color );
@@ -58,6 +63,7 @@ struct Graphic
         float src_x,
         float src_y
     );
+    static Graphic createText( Text text );
 };
 
 #endif // GRAPHIC_H

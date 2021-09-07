@@ -2,6 +2,7 @@
 #include "render.hpp"
 #include "unit.hpp"
 #include <cstdlib>
+#include "text.hpp"
 
 Graphic Graphic::createRect( Rect rect, Color color )
 {
@@ -40,5 +41,13 @@ Graphic Graphic::createSprite
     g.data.sprite.src.h = dest.h;
     g.data.sprite.flip_x = g.data.sprite.flip_y = 0;
     g.data.sprite.rotation_x = g.data.sprite.rotation_y = g.data.sprite.rotation_z = 0.0;
+    return g;
+};
+
+Graphic Graphic::createText( Text text )
+{
+    Graphic g;
+    g.type = GFXType::TEXT;
+    g.data.text = new Text( text );
     return g;
 };

@@ -8,6 +8,7 @@
 #include "render.hpp"
 #include <cstdint>
 #include <string>
+#include "text.hpp"
 #include <unordered_map>
 
 #include <cglm/cglm.h>
@@ -349,6 +350,15 @@ namespace Render
                     setupVertices();
                 }
                 break;
+                case ( GFXType::TEXT ):
+                {
+                    Text * t = layers[ i ].data.text;
+                    for ( const auto & c : t->characters_ )
+                    {
+                        character( &c, &c.color );
+                    }
+                }
+                break;
             }
         }
         glfwSwapBuffers( window );
@@ -422,6 +432,13 @@ namespace Render
 
     void clearGraphics()
     {
+        for ( int i = 0; i < number_of_graphics; ++i )
+        {
+            if ( layers[ i ].type == GFXType::TEXT )
+            {
+                delete layers[ i ].data.text;
+            }
+        }
         number_of_graphics = 0;
         for ( int i = 0; i < Unit::MAX_STATES; ++i )
         {
@@ -573,7 +590,6 @@ namespace Render
 
     unsigned int addGraphic( Graphic gfx, int state, Layer layer )
     {
-
         // Count up graphics to where current graphic should be.
         int i = 0;
         for ( int si = 0; si < state; ++si )
@@ -619,6 +635,16 @@ namespace Render
         ++graphics_per_layer[ state ][ ( int )( layer ) ];
         ++number_of_graphics;
         return map_index;
+    };
+
+    void removeGraphic( unsigned int id )
+    {
+        if ( layers[ id ].type == GFXType::TEXT )
+        {
+            delete layers[ id ].data.text;
+            layers[ id ].data.text = nullptr;
+        }
+        layers[ id ].type = GFXType::__NULL;
     };
 
     Graphic * getGraphic( unsigned int id )

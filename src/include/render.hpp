@@ -20,6 +20,7 @@ namespace Render
     void clearGraphics();
     void clearStateGraphics( int state );
     unsigned int addGraphic( Graphic gfx, int state, Layer layer );
+    void removeGraphic( unsigned int id );
     Graphic * getGraphic( unsigned int id );
     void adjustCamera( Rect * target, float max_w, float max_h );
     unsigned int addTilemap( const char * tileset, const int * tiles, int w, int h, unsigned int pal, int state_number, Layer layer );

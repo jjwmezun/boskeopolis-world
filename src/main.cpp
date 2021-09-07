@@ -7,6 +7,7 @@
 #include "render.hpp"
 
 #include <cstdlib>
+#include "text.hpp"
 
 static constexpr int DT = 17;
 
@@ -36,6 +37,10 @@ int main()
     Graphic sprite = Graphic::createSprite( Render::getTextureID( "sprites/autumn.png" ), 0, { 0, 0, 16, 24 }, 0, 0 );
     Render::addGraphic( sprite, 1, Layer::SPRITES_1 );
 
+    Text t { "There have been several rumors, misconceptions, and urban legends regarding production history, fictional details, and gameplay elements within the Mario franchise. This article is a list of the history of Mario rumors and details the extent to which they are true. Each section is supported by one or more references that detail the spread or debunking of their respective topics. While the origins of some rumors remain a mystery, others stem from unsourced edits on articles from Wikipedia, or from the Super Mario Wiki. Others have been spread through misinterpretation, or gags being received and spread as fact. The above text is from the Super Mario Wiki and is available under a Creative Commons license. Attribution must be provided through a list of authors or a link back to the original article. Source: https://www.mariowiki.com/Main_Page", { { "x_padding", 8.0f }, { "y_padding", 8.0f }, { "color", Color{ 255.0f, 0.0f, 0.0f, 255.0f } } } };
+    Graphic text = Graphic::createText( t );
+    const unsigned int tt = Render::addGraphic( text, 1, Layer::FG_1 );
+
     ticks = Engine::getTicks();
     while ( running )
     {
@@ -47,6 +52,11 @@ int main()
         while ( accumulator >= DT )
         {
             accumulator -= DT;
+        }
+
+        if ( ticks > 5000 )
+        {
+            Render::removeGraphic( tt );
         }
 
         Render::update();
