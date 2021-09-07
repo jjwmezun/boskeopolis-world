@@ -357,7 +357,6 @@ unsigned int render_get_texture_id_generic( const char * local, int indexed )
     int texture_channels;
     const std::string ffn = ( std::string( "assets/graphics/" ) + std::string( local ) );
     const char * full_filename = ffn.c_str();
-    printf( "%s\n", full_filename );
     unsigned char * texture_data = stbi_load( full_filename, &textures[ number_of_textures ].width, &textures[ number_of_textures ].height, &texture_channels, STBI_rgb_alpha );
     if ( texture_data == NULL )
     {
@@ -718,7 +717,7 @@ static unsigned int generate_shader( GLenum type, const char * file )
 
 static char * load_shader( const char * local )
 {
-    const std::string full_filename = ( std::string( "assets/shaders/" ) + std::string( local ) );
+    const std::string full_filename = std::string( "assets/shaders/" ) + std::string( local ) + std::string( ".glsl" );
     char * content = io_read( full_filename.c_str() );
     return content;
 };
@@ -804,7 +803,7 @@ unsigned int render_add_tilemap( const char * tileset, const int * tiles, int w,
     gfx.type = GFX_TILEMAP;
     gfx.data.tilemap.palette = pal;
 
-    const std::string tileset_gfx = std::string( "assets/tilesets/" ) + std::string( tileset );
+    const std::string tileset_gfx = std::string( "tilesets/" ) + std::string( tileset ) + std::string( ".png" );
     gfx.data.tilemap.texture = render_get_texture_id( tileset_gfx.c_str() );
 
     int tileset_w = ceil( textures[ gfx.data.tilemap.texture ].width / PIXELS_PER_BLOCK );
