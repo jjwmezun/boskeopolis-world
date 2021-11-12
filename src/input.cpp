@@ -77,9 +77,19 @@ namespace Input
         }
     };
 
+    bool heldUp()
+    {
+        return held[ ( int )( Key::UP ) ];
+    };
+
     bool heldRight()
     {
         return held[ ( int )( Key::RIGHT ) ];
+    };
+
+    bool heldDown()
+    {
+        return held[ ( int )( Key::DOWN ) ];
     };
 
     bool heldLeft()

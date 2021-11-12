@@ -6,6 +6,8 @@
 #include "layer.hpp"
 #include "unit.hpp"
 
+class Tile;
+
 namespace Render
 {
     int init();
@@ -23,7 +25,7 @@ namespace Render
     void removeGraphic( unsigned int id );
     Graphic * getGraphic( unsigned int id );
     void adjustCamera( Rect * target, float max_w, float max_h );
-    unsigned int addTilemap( const char * tileset, const int * tiles, int w, int h, unsigned int pal, int state_number, Layer layer );
+    unsigned int addTilemap( const char * tileset, const Tile * tiles, int w, int h, int state_number, Layer layer );
 }
 
 #endif // RENDER_H

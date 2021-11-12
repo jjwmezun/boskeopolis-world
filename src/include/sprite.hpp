@@ -18,6 +18,9 @@ struct Sprite
     float vx;
     float accx;
     float top_speed;
+    float vy;
+    float accy;
+    float gravity;
     SpriteUpdate update = []( Sprite & self, LevelState & level ){};
     std::unordered_map<std::string, std::variant<bool, int, float, std::string>> props;
 };

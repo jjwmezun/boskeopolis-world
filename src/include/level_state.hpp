@@ -1,9 +1,10 @@
 #ifndef LEVEL_STATE_H
 #define LEVEL_STATE_H
 
+#include "map.hpp"
 #include "sprite.hpp"
 
-struct LevelState
+class LevelState
 {
     public:
         LevelState();
@@ -11,6 +12,7 @@ struct LevelState
         void init( unsigned int state );
 
     private:
+        Map map_;
         Sprite hero_;
 };
 

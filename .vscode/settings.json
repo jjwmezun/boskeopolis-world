@@ -60,6 +60,7 @@
         "iomanip": "cpp",
         "shared_mutex": "cpp",
         "stop_token": "cpp",
-        "color.h": "c"
+        "color.h": "c",
+        "iostream": "cpp"
     }
 }

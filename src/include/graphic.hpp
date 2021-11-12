@@ -29,16 +29,15 @@ struct TilemapGraphics
 {
     unsigned int texture;
     unsigned int tilemap;
-    unsigned int palette;
 };
 
 struct Graphic
 {
     std::variant<std::monostate, RectGraphics, SpriteGraphics, TilemapGraphics, Text> data;
-    int abs;
+    bool abs;
 
-    static Graphic createRect( Rect rect, Color color );
-    static Graphic createFullRect( Color color );
+    static Graphic createRect( Rect rect, Color color, bool abs = false );
+    static Graphic createFullRect( Color color, bool abs = false );
     static Graphic createSprite
     (
         unsigned int texture,
@@ -47,7 +46,7 @@ struct Graphic
         float src_x,
         float src_y
     );
-    static Graphic createText( Text text );
+    static Graphic createText( Text text, bool abs = true );
 };
 
 #endif // GRAPHIC_H

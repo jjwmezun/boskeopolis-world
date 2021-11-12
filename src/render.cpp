@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <string>
 #include "text.hpp"
+#include "tile.hpp"
 #include <unordered_map>
 
 #include <cglm/cglm.h>
@@ -117,7 +118,7 @@ namespace Render
         glGenTextures( MAX_TEXTURES, texture_ids );
 
         memset( texture_map, 0, sizeof( TextureMapEntry ) * TEXTURE_MAP_CAPACITY );
-        palette_texture = getTextureIDNoIndex( "sprites/palette.png" );
+        palette_texture = getTextureIDNoIndex( "palettes/palette.png" );
         text_texture = getTextureIDNoIndex( "text/latin.png" );
 
         unsigned int shaders[ 4 ] = { sprite_shader, rect_shader, text_shader, tilemap_shader };
@@ -188,7 +189,7 @@ namespace Render
         {
             animation_timer = 0;
             ++animation_frame;
-            if ( animation_frame > 255 )
+            if ( animation_frame > 2*3*4*5*6*7*8*9*10*11*12*13*14*15 )
             {
                 animation_frame = 0;
             }
@@ -318,9 +319,6 @@ namespace Render
                     glm_scale( model, scale );
                     unsigned int model_location = glGetUniformLocation(tilemap_shader, "model");
                     glUniformMatrix4fv( model_location, 1, GL_FALSE, ( float * )( model ) );
-
-                    GLint palette_id_location = glGetUniformLocation( tilemap_shader, "palette_id" );
-                    glUniform1f( palette_id_location, ( float )( 3 ) );
 
                     GLint map_width_location = glGetUniformLocation( tilemap_shader, "map_width" );
                     glUniform1f( map_width_location, ( float )( textures[ tg.tilemap ].width ) );
@@ -792,7 +790,7 @@ namespace Render
         glBindVertexArray( 0 );
     };
 
-    unsigned int addTilemap( const char * tileset, const int * tiles, int w, int h, unsigned int pal, int state_number, Layer layer )
+    unsigned int addTilemap( const char * tileset, const Tile * tiles, int w, int h, int state_number, Layer layer )
     {
         const std::string tileset_gfx = std::string( "tilesets/" ) + std::string( tileset ) + std::string( ".png" );
         unsigned int texture = getTextureID( tileset_gfx.c_str() );
@@ -806,26 +804,10 @@ namespace Render
         int i4 = 0;
         for ( int i = 0; i < w * h; ++i )
         {
-            int v = ( tiles[ i ] - 4097 ) % ( tileset_w * tileset_h );
-            unsigned char x = ( unsigned char )( v % tileset_w );
-            unsigned char y = ( unsigned char )( floor( v / tileset_w ) );
-            unsigned char z = floor( ( tiles[ i ] - 4097 ) / ( tileset_w * tileset_h ) );
-            unsigned char a = 0;
-            if ( v < 0 )
-            {
-                x = 255;
-                y = 255;
-                z = 255;
-                a = 255;
-            }
-            else if ( v == 768 )
-            {
-                a = 6;
-            }
-            texture_data[ i4 ] = x;
-            texture_data[ i4 + 1 ] = y;
-            texture_data[ i4 + 2 ] = z;
-            texture_data[ i4 + 3 ] = a;
+            texture_data[ i4 ] = tiles[ i ].x;
+            texture_data[ i4 + 1 ] = tiles[ i ].y;
+            texture_data[ i4 + 2 ] = tiles[ i ].palette;
+            texture_data[ i4 + 3 ] = tiles[ i ].animation;
             i4 += 4;
         }
         if ( texture_data == NULL )
@@ -841,7 +823,7 @@ namespace Render
 
         free( texture_data );
 
-        Graphic g { TilemapGraphics{ texture, number_of_textures++, pal }, 0 };
+        Graphic g { TilemapGraphics{ texture, number_of_textures++ }, 0 };
         return addGraphic( g, state_number, layer );
     };
 }
