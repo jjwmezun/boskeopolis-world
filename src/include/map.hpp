@@ -12,6 +12,7 @@ struct MapLayer
     enum class Type
     {
         TILES,
+        OBJ,
         __NULL
     };
 

@@ -86,6 +86,10 @@ Map::Map( std::string slug )
                         {
                             l.type = MapLayer::Type::TILES;
                         }
+                        else if ( strcmp( "obj", layer_entry.value->u.string.ptr ) == 0 )
+                        {
+                            l.type = MapLayer::Type::OBJ;
+                        }
                     }
                     else if ( strcmp( "width", layer_entry.name ) == 0 )
                     {
@@ -246,13 +250,26 @@ void Map::init( unsigned int state )
                 {
                     const int n = layer.tiles[ i ] - 4097;
                     const int tileset_w = 16;
-                    tiles[ i ].empty = ( n < 0 );
-                    tiles[ i ].x = ( unsigned char )( ( tiles[ i ].empty ) ? 255 : ( n % tileset_w ) );
-                    tiles[ i ].y = ( unsigned char )( ( tiles[ i ].empty ) ? 255 : ( std::floor( ( double )( n ) / ( double )( tileset_w ) ) ) );
+                    tiles[ i ].x = ( unsigned char )( n % tileset_w );
+                    tiles[ i ].y = ( unsigned char )( std::floor( ( double )( n ) / ( double )( tileset_w ) ) );
                     tiles[ i ].palette = ( i % 2 ) + 1;
-                    tiles[ i ].animation = 0;
+                    tiles[ i ].animation = ( n < 0 ) ? 255 : 0;
                 }
                 Render::addTilemap( "urban", tiles, width, height, state, Layer::BLOCKS_1 );
+            }
+            break;
+            case ( MapLayer::Type::OBJ ):
+            {
+                Tile tiles[ width * height ];
+                for ( int i = 0; i < width * height; ++i )
+                {
+                    const int n = layer.tiles[ i ] - 512;
+                    tiles[ i ].x = ( unsigned char )( 0 );
+                    tiles[ i ].y = ( unsigned char )( 0 );
+                    tiles[ i ].palette = 1;
+                    tiles[ i ].animation = ( n < 0 ) ? 255 : 6;
+                }
+                Render::addTilemap( "objects", tiles, width, height, state, Layer::BLOCKS_1 );
             }
             break;
             default:

@@ -33,5 +33,5 @@ void main()
     float yoffset = tile.y * 255.0 * ( 16 / tileset_height );
     float palette = tile.z * 256.0;
     vec4 index = texture( texture_data, vec2( xoffset + ( xrel / ( tileset_width / 256.0 ) ), yoffset + ( yrel / ( tileset_height / 256.0 ) ) ) );
-    final_color = texture( palette_data, vec2( index.r / 16.0, ( palette / 2.0 ) ) );
+    final_color = ( tile.a < 1.0 ) ? texture( palette_data, vec2( index.r / 16.0, ( palette / 2.0 ) ) ) : vec4( 0.0, 0.0, 0.0, 0.0 );
 }
