@@ -10,7 +10,7 @@ namespace Hero
     Sprite create()
     {
         Sprite hero;
-        hero.position = { 300.0f, 400.0f, 16.0f, 26.0f };
+        hero.position = { 0.0f, 0.0f, 16.0f, 26.0f };
         hero.vx = 0.0f;
         hero.accx = 0.0f;
         hero.top_speed = 2.0f;

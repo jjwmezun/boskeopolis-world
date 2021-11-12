@@ -1,4 +1,5 @@
 #include <cmath>
+#include "graphic.hpp"
 #include "jjson.hpp"
 #include "log.hpp"
 #include "map.hpp"
@@ -269,7 +270,10 @@ void Map::init( unsigned int state )
                     tiles[ i ].palette = 1;
                     tiles[ i ].animation = ( n < 0 ) ? 255 : 6;
                 }
-                Render::addTilemap( "objects", tiles, width, height, state, Layer::BLOCKS_1 );
+                auto tilemap = Render::addTilemap( "objects", tiles, width, height, state, Layer::BLOCKS_1 );
+                const Graphic * gfx = Render::getGraphic( tilemap );
+                const Tile tile = { 0, 0, 1, 6 };
+                Render::changeTilemap( std::get<TilemapGraphics>( gfx->data ), 0, 0, tile );
             }
             break;
             default:

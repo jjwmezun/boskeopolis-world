@@ -826,4 +826,11 @@ namespace Render
         Graphic g { TilemapGraphics{ texture, number_of_textures++ }, 0 };
         return addGraphic( g, state_number, layer );
     };
+
+    void changeTilemap( const TilemapGraphics & tilemap, int x, int y, Tile tile )
+    {
+        unsigned char v[ 4 ] = { tile.x, tile.y, tile.palette, tile.animation };
+        glBindTexture(GL_TEXTURE_2D, texture_ids[ tilemap.tilemap ] );
+        glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &v );
+    };
 }

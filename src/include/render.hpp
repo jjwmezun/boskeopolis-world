@@ -26,6 +26,7 @@ namespace Render
     Graphic * getGraphic( unsigned int id );
     void adjustCamera( Rect * target, float max_w, float max_h );
     unsigned int addTilemap( const char * tileset, const Tile * tiles, int w, int h, int state_number, Layer layer );
+    void changeTilemap( const TilemapGraphics & tilemap, int x, int y, Tile tile );
 }
 
 #endif // RENDER_H

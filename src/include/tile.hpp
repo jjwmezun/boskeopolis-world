@@ -3,7 +3,6 @@
 
 struct Tile
 {
-    bool empty;
     unsigned char x;
     unsigned char y;
     unsigned char palette;
