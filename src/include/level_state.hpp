@@ -4,16 +4,14 @@
 #include "map.hpp"
 #include "sprite.hpp"
 
-class LevelState
+struct LevelState
 {
-    public:
-        LevelState();
-        void update();
-        void init( unsigned int state );
+    LevelState();
+    void update();
+    void init( unsigned int state );
 
-    private:
-        Map map_;
-        Sprite hero_;
+    Map map;
+    Sprite hero;
 };
 
 #endif // LEVEL_STATE_H

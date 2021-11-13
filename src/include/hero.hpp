@@ -6,6 +6,7 @@
 namespace Hero
 {
     Sprite create();
+    void mapInteract( Sprite & self, LevelState & level );
 };
 
 #endif // HERO_H

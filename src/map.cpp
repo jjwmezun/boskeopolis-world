@@ -240,6 +240,10 @@ Map::Map( std::string slug )
 
 void Map::init( unsigned int state )
 {
+    for ( int i = 0; i < width * height; ++i ) {
+        objs.push_back( {} );
+    }
+
     for ( const auto & layer : layers )
     {
         switch ( layer.type )
@@ -271,9 +275,15 @@ void Map::init( unsigned int state )
                     tiles[ i ].animation = ( n < 0 ) ? 255 : 6;
                 }
                 auto tilemap = Render::addTilemap( "objects", tiles, width, height, state, Layer::BLOCKS_1 );
-                const Graphic * gfx = Render::getGraphic( tilemap );
-                const Tile tile = { 0, 0, 1, 6 };
-                Render::changeTilemap( std::get<TilemapGraphics>( gfx->data ), 0, 0, tile );
+
+                for ( int i = 0; i < width * height; ++i )
+                {
+                    const int n = layer.tiles[ i ] - 512;
+                    if ( n >= 0 )
+                    {
+                        objs[ i ].push_back({ MapObjType::GEM, tilemap, { { "amount", 100 } } } );
+                    }
+                }
             }
             break;
             default:

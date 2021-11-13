@@ -2,10 +2,24 @@
 #define MAP_H
 
 #include "color.hpp"
+#include "prop_map.hpp"
 #include <string>
-#include <unordered_map>
 #include <vector>
-#include <variant>
+
+class LevelState;
+class Sprite;
+
+enum class MapObjType
+{
+    GEM
+};
+
+struct MapObj
+{
+    MapObjType type;
+    unsigned int tilemap;
+    PropMap props;
+};
 
 struct MapLayer
 {
@@ -20,7 +34,7 @@ struct MapLayer
     int height;
     Type type = Type::__NULL;
     std::vector<int> tiles;
-    std::unordered_map<std::string, std::variant<bool, int, float, std::string>> props;
+    PropMap props;
 };
 
 struct Map
@@ -31,6 +45,7 @@ struct Map
     int width;
     int height;
     std::vector<MapLayer> layers;
+    std::vector<std::vector<MapObj>> objs;
     Color bg_color;
 };
 
