@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include "graphic.hpp"
 #include "jjson.hpp"
@@ -320,7 +321,7 @@ int Map::getIFromXAndY( int x, int y ) const
 
 bool Map::testTile( int i, MapCollisionType type ) const
 {
-    if ( i < collision.size() )
+    if ( i < ( int )( collision.size() ) )
     {
         for ( const auto t : collision[ i ] )
         {
@@ -336,7 +337,7 @@ bool Map::testTile( int i, MapCollisionType type ) const
 
 bool Map::testTileMulti( int i, std::vector<MapCollisionType> types ) const
 {
-    if ( i < collision.size() )
+    if ( i < ( int )( collision.size() ) )
     {
         for ( const auto t : collision[ i ] )
         {

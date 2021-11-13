@@ -24,6 +24,11 @@ namespace Hero
         hero.props = { { "traction", 1.15f } };
         hero.update = []( Sprite & self, LevelState & level )
         {
+            if ( Input::pressedMenu() )
+            {
+                GameStateMachine::changeState( TitleState() );
+            }
+
             if ( Input::heldJump() )
             {
                 if ( !self.jump_lock && testOnGround( self, level ) )
@@ -98,13 +103,8 @@ namespace Hero
     void mapInteract( Sprite & self, LevelState & level )
     {
         Map & map = level.map;
-        const int sx = Unit::pixelsToBlocks( self.position.centerX() );
-        const int sy = Unit::pixelsToBlocks( self.position.centerY() );
-        const int i = map.getIFromXAndY( sx, sy );
-        const int ox = i % map.width;
-        const int oy = std::floor( ( double )( i ) / ( double )( map.width ) );
 
-        // Handle basic collision interaction.
+        // Handle basic downward collision.
         const int dlx = Unit::pixelsToBlocks( self.position.x + 2.0f );
         const int drx = Unit::pixelsToBlocks( self.position.right() - 2.0f );
         const int dy = Unit::pixelsToBlocks( self.position.bottom() - 1.0f );
@@ -128,6 +128,7 @@ namespace Hero
         }
 
         
+        // Handle basic upward collision.
         const int ulx = Unit::pixelsToBlocks( self.position.x + 2.0f );
         const int urx = Unit::pixelsToBlocks( self.position.right() - 2.0f );
         const int uy = Unit::pixelsToBlocks( self.position.y );
@@ -141,6 +142,7 @@ namespace Hero
         }
 
         
+        // Handle basic leftward collision.
         const int lx = Unit::pixelsToBlocks( self.position.x );
         const int lty = Unit::pixelsToBlocks( self.position.y + 2.0f );
         const int lby = Unit::pixelsToBlocks( self.position.bottom() - 4.0f );
@@ -153,6 +155,7 @@ namespace Hero
             self.position.x += Unit::blocksToPixels( lx + 1 ) - self.position.x;
         }
 
+        // Handle basic rightward collision.
         const int rx = Unit::pixelsToBlocks( self.position.right() );
         const int rty = Unit::pixelsToBlocks( self.position.y + 2.0f );
         const int rby = Unit::pixelsToBlocks( self.position.bottom() - 4.0f );
@@ -165,26 +168,44 @@ namespace Hero
             self.position.x -= self.position.right() - Unit::blocksToPixels( rx );
         }
 
-        // Handle object interaction.
-        if ( i < map.objs.size() )
+
+        // Handle special object collision.
+        for ( int sx = lx; sx <= rx; ++sx ) // From left tile touching to right tile.
         {
-            for ( MapObj & obj : map.objs[ i ] )
+            for ( int sy = uy; sy <= dy; ++sy ) // From top tile touching to bottom.
             {
-                const TilemapGraphics & tilemapgfx = std::get<TilemapGraphics>( Render::getGraphic( obj.tilemap )->data );
-                switch ( obj.type )
+                const int i = map.getIFromXAndY( sx, sy );
+                const int ox = i % map.width;
+                const int oy = std::floor( ( double )( i ) / ( double )( map.width ) );
+
+                if ( i < ( int )( map.objs.size() ) )
                 {
-                    case ( MapObjType::GEM ):
+                    auto it = map.objs[ i ].begin();
+                    while ( it != map.objs[ i ].end() )
                     {
-                        const auto seek = obj.props.find( "amount" );
-                        if ( seek != obj.props.end() )
+                        auto & obj = *it;
+                        const TilemapGraphics & tilemapgfx = std::get<TilemapGraphics>( Render::getGraphic( obj.tilemap )->data );
+                        switch ( obj.type )
                         {
-                            const int amount = std::get<int>( seek->second );
-                            level.inventory.addGems( amount );
-                            Render::changeTilemap( tilemapgfx, ox, oy, { 255, 255, 255, 255 } );
-                            obj.type = MapObjType::__NULL;
+                            case ( MapObjType::GEM ):
+                            {
+                                // Add amount to inventory gems.
+                                const auto seek = obj.props.find( "amount" );
+                                if ( seek != obj.props.end() )
+                                {
+                                    const int amount = std::get<int>( seek->second );
+                                    level.inventory.addGems( amount );
+                                }
+
+                                // Remove gem tile graphics.
+                                Render::changeTilemap( tilemapgfx, ox, oy, { 255, 255, 255, 255 } );
+
+                                // Remove gem & set current iterator to next.
+                                it = map.objs[ i ].erase( it );
+                            }
+                            break;
                         }
                     }
-                    break;
                 }
             }
         }

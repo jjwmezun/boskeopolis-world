@@ -2,6 +2,7 @@
 #define MAP_H
 
 #include "color.hpp"
+#include <list>
 #include "prop_map.hpp"
 #include <string>
 #include <vector>
@@ -11,8 +12,7 @@ class Sprite;
 
 enum class MapObjType
 {
-    GEM,
-    __NULL
+    GEM
 };
 
 struct MapObj

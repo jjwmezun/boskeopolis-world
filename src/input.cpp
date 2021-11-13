@@ -107,6 +107,11 @@ namespace Input
         return pressed[ ( int )( Key::CONFIRM ) ];
     };
 
+    bool pressedMenu()
+    {
+        return pressed[ ( int )( Key::MENU ) ];
+    };
+
     bool pressedRight()
     {
         return pressed[ ( int )( Key::RIGHT ) ];
