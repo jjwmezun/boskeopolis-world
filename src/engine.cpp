@@ -22,6 +22,7 @@ namespace Engine
         Input::initKeys
         ({
             { Input::Key::CONFIRM, { ( int )( GLFW_KEY_Z ) } },
+            { Input::Key::JUMP, { ( int )( GLFW_KEY_Z ) } },
             { Input::Key::UP, { ( int )( GLFW_KEY_UP ) } },
             { Input::Key::RIGHT, { ( int )( GLFW_KEY_RIGHT ) } },
             { Input::Key::DOWN, { ( int )( GLFW_KEY_DOWN ) } },

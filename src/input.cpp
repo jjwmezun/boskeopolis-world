@@ -77,6 +77,11 @@ namespace Input
         }
     };
 
+    bool heldJump()
+    {
+        return held[ ( int )( Key::JUMP ) ];
+    };
+
     bool heldUp()
     {
         return held[ ( int )( Key::UP ) ];

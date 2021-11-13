@@ -83,7 +83,11 @@ Map::Map( std::string slug )
                         {
                             Log::sendError( "JSON for map “" + slug + "” is malformed: layer name isn’t a string." );
                         }
-                        if ( strcmp( "tiles", layer_entry.value->u.string.ptr ) == 0 )
+                        if ( strcmp( "collision", layer_entry.value->u.string.ptr ) == 0 )
+                        {
+                            l.type = MapLayer::Type::COLLISION;
+                        }
+                        else if ( strcmp( "tiles", layer_entry.value->u.string.ptr ) == 0 )
                         {
                             l.type = MapLayer::Type::TILES;
                         }
@@ -240,7 +244,9 @@ Map::Map( std::string slug )
 
 void Map::init( unsigned int state )
 {
+    // Initialize collision & objs to have an empty list for every map tile.
     for ( int i = 0; i < width * height; ++i ) {
+        collision.push_back( {} );
         objs.push_back( {} );
     }
 
@@ -248,6 +254,18 @@ void Map::init( unsigned int state )
     {
         switch ( layer.type )
         {
+            case ( MapLayer::Type::COLLISION ):
+            {
+                for ( int i = 0; i < width * height; ++i )
+                {
+                    const int n = layer.tiles[ i ] - 1;
+                    if ( n >= 0 )
+                    {
+                        collision[ i ].emplace_back( ( MapCollisionType )( n ) );
+                    }
+                }
+            }
+            break;
             case ( MapLayer::Type::TILES ):
             {
                 Tile tiles[ width * height ];
@@ -293,4 +311,44 @@ void Map::init( unsigned int state )
             break;
         }
     }
+};
+
+int Map::getIFromXAndY( int x, int y ) const
+{
+    return ( y * width ) + ( x % width );
+};
+
+bool Map::testTile( int i, MapCollisionType type ) const
+{
+    if ( i < collision.size() )
+    {
+        for ( const auto t : collision[ i ] )
+        {
+            if ( t == type )
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+};
+
+bool Map::testTileMulti( int i, std::vector<MapCollisionType> types ) const
+{
+    if ( i < collision.size() )
+    {
+        for ( const auto t : collision[ i ] )
+        {
+            for ( const auto type : types )
+            {
+                if ( t == type )
+                {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 };

@@ -8,22 +8,22 @@ struct Rect
     float w;
     float h;
 
-    constexpr float right()
+    constexpr float right() const
     {
         return x + w;
     };
 
-    constexpr float bottom()
+    constexpr float bottom() const
     {
         return y + h;
     }
 
-    constexpr float centerX()
+    constexpr float centerX() const
     {
         return x + ( w / 2.0 );
     }
 
-    constexpr float centerY()
+    constexpr float centerY() const
     {
         return y + ( h / 2.0 );
     }

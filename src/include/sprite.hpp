@@ -20,6 +20,8 @@ struct Sprite
     float vy;
     float accy;
     float gravity;
+    bool is_jumping;
+    bool jump_lock;
     SpriteUpdate update = []( Sprite & self, LevelState & level ){};
     PropMap props;
 };

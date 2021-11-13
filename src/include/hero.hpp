@@ -7,6 +7,7 @@ namespace Hero
 {
     Sprite create();
     void mapInteract( Sprite & self, LevelState & level );
+    bool testOnGround( const Sprite & self, const LevelState & level );
 };
 
 #endif // HERO_H
