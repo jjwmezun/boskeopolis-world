@@ -1,6 +1,7 @@
 #ifndef LEVEL_STATE_H
 #define LEVEL_STATE_H
 
+#include "inventory.hpp"
 #include "map.hpp"
 #include "sprite.hpp"
 
@@ -12,6 +13,7 @@ struct LevelState
 
     Map map;
     Sprite hero;
+    Inventory inventory;
 };
 
 #endif // LEVEL_STATE_H

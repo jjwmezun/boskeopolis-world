@@ -11,7 +11,8 @@ class Sprite;
 
 enum class MapObjType
 {
-    GEM
+    GEM,
+    __NULL
 };
 
 struct MapObj

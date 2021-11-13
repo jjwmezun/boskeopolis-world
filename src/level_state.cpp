@@ -15,6 +15,8 @@ void LevelState::update()
 {
     hero.update( hero, *this );
     Render::adjustCamera( &hero.position, ( float )( Unit::blocksToPixels( map.width ) ), ( float )( Unit::blocksToPixels( map.height ) ) );
+    inventory.update();
+    printf( "%d\n", inventory.getShownGems() );
 };
 
 void LevelState::init( unsigned int state )

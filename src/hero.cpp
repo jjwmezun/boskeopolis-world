@@ -89,7 +89,14 @@ namespace Hero
                 {
                     case ( MapObjType::GEM ):
                     {
-                        Render::changeTilemap( tilemapgfx, ox, oy, { 255, 255, 255, 255 } );
+                        const auto seek = obj.props.find( "amount" );
+                        if ( seek != obj.props.end() )
+                        {
+                            const int amount = std::get<int>( seek->second );
+                            level.inventory.addGems( amount );
+                            Render::changeTilemap( tilemapgfx, ox, oy, { 255, 255, 255, 255 } );
+                            obj.type = MapObjType::__NULL;
+                        }
                     }
                     break;
                 }
