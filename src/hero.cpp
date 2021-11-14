@@ -19,8 +19,8 @@ namespace Hero
         hero.vy = 0.0f;
         hero.accy = 0.0f;
         hero.gravity = 6.0f;
-        hero.is_jumping = false;
         hero.jump_lock = false;
+        hero.state = SpriteState::NORMAL;
         hero.props = { { "traction", 1.15f } };
         hero.update = []( Sprite & self, LevelState & level )
         {
@@ -29,66 +29,166 @@ namespace Hero
                 GameStateMachine::changeState( TitleState() );
             }
 
-            if ( Input::heldJump() )
+            switch ( self.state )
             {
-                if ( !self.jump_lock && testOnGround( self, level ) )
+                case ( SpriteState::NORMAL ):
                 {
-                    self.is_jumping = true;
+                    if ( Input::heldJump() )
+                    {
+                        if ( !self.jump_lock && testOnGround( self, level ) )
+                        {
+                            self.state = SpriteState::JUMPING;
+                        }
+                        self.jump_lock = true;
+                    }
+                    else
+                    {
+                        self.jump_lock = false;
+                    }
+
+                    if ( Input::heldUp() )
+                    {
+                        const int climbleft = Unit::pixelsToBlocks( self.position.x );
+                        const int climbup = Unit::pixelsToBlocks( self.position.y );
+                        const int climbdown = Unit::pixelsToBlocks( self.position.bottom() - 8.0f );
+                        const int climbright = Unit::pixelsToBlocks( self.position.right() );
+                        const int climblu = level.map.getIFromXAndY( climbleft, climbup );
+                        const int climbru = level.map.getIFromXAndY( climbright, climbup );
+                        const int climbld = level.map.getIFromXAndY( climbleft, climbdown );
+                        const int climbrd = level.map.getIFromXAndY( climbright, climbdown );
+                        if
+                        (
+                            level.map.testTile( climblu, MapCollisionType::CLIMB ) ||
+                            level.map.testTile( climbru, MapCollisionType::CLIMB ) ||
+                            level.map.testTile( climbld, MapCollisionType::CLIMB ) ||
+                            level.map.testTile( climbrd, MapCollisionType::CLIMB )
+                        )
+                        {
+                            self.state = SpriteState::ON_LADDER;
+                            self.vy = 0;
+                            self.accy = 0;
+                        }
+                    }
+                    else if ( Input::heldDown() )
+                    {
+                        const int climbleft = Unit::pixelsToBlocks( self.position.x );
+                        const int climbup = Unit::pixelsToBlocks( self.position.y + 8.0f );
+                        const int climbdown = Unit::pixelsToBlocks( self.position.bottom() + 2.0f );
+                        const int climbright = Unit::pixelsToBlocks( self.position.right() );
+                        const int climblu = level.map.getIFromXAndY( climbleft, climbup );
+                        const int climbru = level.map.getIFromXAndY( climbright, climbup );
+                        const int climbld = level.map.getIFromXAndY( climbleft, climbdown );
+                        const int climbrd = level.map.getIFromXAndY( climbright, climbdown );
+                        if
+                        (
+                            level.map.testTile( climblu, MapCollisionType::CLIMB ) ||
+                            level.map.testTile( climbru, MapCollisionType::CLIMB ) ||
+                            level.map.testTile( climbld, MapCollisionType::CLIMB ) ||
+                            level.map.testTile( climbrd, MapCollisionType::CLIMB )
+                        )
+                        {
+                            self.state = SpriteState::ON_LADDER;
+                            self.vy = 0;
+                            self.accy = 0;
+                        }
+
+                    }
+
+                    moveHorizontally( self, 0.25f, self.top_speed, std::get<float>( self.props[ "traction" ] ) );
+
+                    self.accy = 0.25f;
+                    self.vy += self.accy;
+                    if ( self.vy > self.gravity )
+                    {
+                        self.vy = self.gravity;
+                    }
+                    self.position.y += self.vy;
                 }
-                self.jump_lock = true;
-            }
-            else
-            {
-                self.is_jumping = false;
-                self.jump_lock = false;
-            }
-
-            if ( Input::heldRight() )
-            {
-                self.accx = 0.25f;
-            }
-            else if ( Input::heldLeft() )
-            {
-                self.accx = -0.25f;
-            }
-            else
-            {
-                self.accx = 0.0f;
-                self.vx /= std::get<float>( self.props[ "traction" ] );
-            }
-
-            self.vx += self.accx;
-            if ( self.vx > self.top_speed )
-            {
-                self.vx = self.top_speed;
-            }
-            else if ( self.vx < -self.top_speed )
-            {
-                self.vx = -self.top_speed;
-            }
-
-            self.position.x += self.vx;
-
-            if ( self.is_jumping )
-            {
-                self.accy = -0.25f;
-                self.vy += self.accy;
-                if ( self.vy < -4.0f )
+                break;
+                case ( SpriteState::JUMPING ):
                 {
-                    self.vy = -4.0f;
-                    self.is_jumping = false;
+                    if ( Input::heldJump() )
+                    {
+                        self.jump_lock = true;
+                    }
+                    else
+                    {
+                        self.state = SpriteState::NORMAL;
+                        self.jump_lock = false;
+                    }
+
+                    moveHorizontally( self, 0.25f, self.top_speed, std::get<float>( self.props[ "traction" ] ) );
+
+                    self.accy = -0.25f;
+                    self.vy += self.accy;
+                    if ( self.vy < -4.0f )
+                    {
+                        self.vy = -4.0f;
+                        self.state = SpriteState::NORMAL;
+                    }
+                    self.position.y += self.vy;
                 }
-                self.position.y += self.vy;
-            }
-            else
-            {
-                self.accy = 0.25f;
-                self.vy += self.accy;
-                if ( self.vy > self.gravity )
+                break;
+                case ( SpriteState::ON_LADDER ):
                 {
-                    self.vy = self.gravity;
+                    self.jump_lock = false;
+                    const int climbleft = Unit::pixelsToBlocks( self.position.x );
+                    const int climbup = Unit::pixelsToBlocks( self.position.y );
+                    const int climbdown = Unit::pixelsToBlocks( self.position.bottom() );
+                    const int climbright = Unit::pixelsToBlocks( self.position.right() );
+                    const int climblu = level.map.getIFromXAndY( climbleft, climbup );
+                    const int climbru = level.map.getIFromXAndY( climbright, climbup );
+                    const int climbld = level.map.getIFromXAndY( climbleft, climbdown );
+                    const int climbrd = level.map.getIFromXAndY( climbright, climbdown );
+                    if
+                    (
+                        !level.map.testTile( climblu, MapCollisionType::CLIMB ) &&
+                        !level.map.testTile( climbru, MapCollisionType::CLIMB ) &&
+                        !level.map.testTile( climbld, MapCollisionType::CLIMB ) &&
+                        !level.map.testTile( climbrd, MapCollisionType::CLIMB )
+                    )
+                    {
+                        self.state = SpriteState::NORMAL;
+                    }
+                    else if ( Input::heldJump() )
+                    {
+                        self.state = SpriteState::JUMPING;
+                    }
+                    else
+                    {
+
+                        const float ladder_start_speed = 0.25;
+                        const float ladder_top_speed = 1.0;
+                        const float ladder_traction = 1.25;
+
+                        moveHorizontally( self, ladder_start_speed, ladder_top_speed, ladder_traction );
+
+                        if ( Input::heldUp() )
+                        {
+                            self.accy = -ladder_start_speed;
+                        }
+                        else if ( Input::heldDown() )
+                        {
+                            self.accy = ladder_start_speed;
+                        }
+                        else
+                        {
+                            self.accy = 0.0f;
+                            self.vy /= ladder_traction;
+                        }
+                        self.vy += self.accy;
+                        if ( self.vy > ladder_top_speed )
+                        {
+                            self.vy = ladder_top_speed;
+                        }
+                        else if ( self.vy < -ladder_top_speed )
+                        {
+                            self.vy = -ladder_top_speed;
+                        }
+                        self.position.y += self.vy;
+                    }
                 }
-                self.position.y += self.vy;
+                break;
             }
 
             mapInteract( self, level );
@@ -114,7 +214,7 @@ namespace Hero
         (
             map.testTile( dli, MapCollisionType::SOLID ) || map.testTile( dri, MapCollisionType::SOLID ) ||
             (
-                self.vy >= 0.0f && ( self.position.bottom() - Unit::blocksToPixels( dy ) < 8.0f ) &&
+                self.state != SpriteState::ON_LADDER && self.vy >= 0.0f && ( self.position.bottom() - Unit::blocksToPixels( dy ) < 8.0f ) &&
                 (
                     map.testTile( dli, MapCollisionType::SOLID_TOP ) ||
                     map.testTile( dri, MapCollisionType::SOLID_TOP )
@@ -222,4 +322,33 @@ namespace Hero
         return map.testTileMulti( dli, { MapCollisionType::SOLID, MapCollisionType::SOLID_TOP } ) ||
             map.testTileMulti( dri, { MapCollisionType::SOLID, MapCollisionType::SOLID_TOP } );
     };
+
+    void moveHorizontally( Sprite & self, float start_speed, float top_speed, float traction )
+    {
+        if ( Input::heldRight() )
+        {
+            self.accx = start_speed;
+        }
+        else if ( Input::heldLeft() )
+        {
+            self.accx = -start_speed;
+        }
+        else
+        {
+            self.accx = 0.0f;
+            self.vx /= traction;
+        }
+
+        self.vx += self.accx;
+        if ( self.vx > top_speed )
+        {
+            self.vx = top_speed;
+        }
+        else if ( self.vx < -top_speed )
+        {
+            self.vx = -top_speed;
+        }
+
+        self.position.x += self.vx;
+    }
 };

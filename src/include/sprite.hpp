@@ -10,6 +10,13 @@ class Sprite;
 
 typedef std::function<void( Sprite & self, LevelState & level )> SpriteUpdate;
 
+enum class SpriteState
+{
+    NORMAL,
+    JUMPING,
+    ON_LADDER
+};
+
 struct Sprite
 {
     Rect position;
@@ -20,8 +27,8 @@ struct Sprite
     float vy;
     float accy;
     float gravity;
-    bool is_jumping;
     bool jump_lock;
+    SpriteState state;
     SpriteUpdate update = []( Sprite & self, LevelState & level ){};
     PropMap props;
 };
