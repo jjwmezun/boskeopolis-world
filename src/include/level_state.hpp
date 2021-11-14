@@ -4,6 +4,7 @@
 #include "inventory.hpp"
 #include "map.hpp"
 #include "sprite.hpp"
+#include "tileset_system.hpp"
 
 struct LevelState
 {
@@ -14,6 +15,7 @@ struct LevelState
     Map map;
     Sprite hero;
     Inventory inventory;
+    TilesetSystem tilesets;
 };
 
 #endif // LEVEL_STATE_H

@@ -7,6 +7,7 @@
 #include "render.hpp"
 #include <sstream>
 #include "tile.hpp"
+#include "tileset_system.hpp"
 
 Map::Map( std::string slug )
 :
@@ -243,7 +244,7 @@ Map::Map( std::string slug )
     json_value_free( root );
 };
 
-void Map::init( unsigned int state )
+void Map::init( unsigned int state, TilesetSystem & tilesets )
 {
     // Initialize collision & objs to have an empty list for every map tile.
     for ( int i = 0; i < width * height; ++i ) {
@@ -287,17 +288,14 @@ void Map::init( unsigned int state )
                 Tile tiles[ width * height ];
                 for ( int i = 0; i < width * height; ++i )
                 {
-                    const int n = layer.tiles[ i ] - 512;
-                    tiles[ i ].x = ( unsigned char )( 0 );
-                    tiles[ i ].y = ( unsigned char )( 0 );
-                    tiles[ i ].palette = 1;
-                    tiles[ i ].animation = ( n < 0 ) ? 255 : 6;
+                    const int n = layer.tiles[ i ] - 1121;
+                    tiles[ i ] = tilesets.get( "objects" ).get( n );
                 }
                 auto tilemap = Render::addTilemap( "objects", tiles, width, height, state, Layer::BLOCKS_1 );
 
                 for ( int i = 0; i < width * height; ++i )
                 {
-                    const int n = layer.tiles[ i ] - 512;
+                    const int n = layer.tiles[ i ] - 1121;
                     if ( n >= 0 )
                     {
                         objs[ i ].push_back({ MapObjType::GEM, tilemap, { { "amount", 100 } } } );

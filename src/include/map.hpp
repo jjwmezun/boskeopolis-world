@@ -9,6 +9,7 @@
 
 class LevelState;
 class Sprite;
+class TilesetSystem;
 
 enum class MapObjType
 {
@@ -50,7 +51,7 @@ enum class MapCollisionType
 struct Map
 {
     Map( std::string slug );
-    void init( unsigned int state );
+    void init( unsigned int state, TilesetSystem & tilesets );
     int getIFromXAndY( int x, int y ) const;
     bool testTile( int i, MapCollisionType type ) const;
     bool testTileMulti( int i, std::vector<MapCollisionType> types ) const;

@@ -22,6 +22,7 @@ void LevelState::update()
 void LevelState::init( unsigned int state )
 {
     Render::addGraphic( Graphic::createFullRect( map.bg_color, true ), state, Layer::BG_1 );
-    map.init( state );
+    tilesets.init();
+    map.init( state, tilesets );
     hero.gfx = Render::addGraphic( Graphic::createSprite( Render::getTextureID( "sprites/autumn.png" ), 0, hero.position, 0.0f, 0.0f ), state, Layer::SPRITES_1 );
 };
