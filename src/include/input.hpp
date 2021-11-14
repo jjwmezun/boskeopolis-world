@@ -29,6 +29,7 @@ namespace Input
     bool heldLeft();
     bool pressedConfirm();
     bool pressedMenu();
+    bool pressedUp();
     bool pressedRight();
     bool pressedLeft();
 };

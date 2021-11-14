@@ -296,9 +296,25 @@ void Map::init( unsigned int state, TilesetSystem & tilesets )
                 for ( int i = 0; i < width * height; ++i )
                 {
                     const int n = layer.tiles[ i ] - 1121;
+
                     if ( n >= 0 )
                     {
-                        objs[ i ].push_back({ MapObjType::GEM, tilemap, { { "amount", 100 } } } );
+                        if ( n < 512 )
+                        {
+                            objs[ i ].push_back({ MapObjType::TREASURE, tilemap, { { "id", n } } } );
+                        }
+                        else if ( n < 512 + 5 )
+                        {
+                            static constexpr int GEM_AMOUNTS[ 5 ] =
+                            {
+                                100,
+                                250,
+                                500,
+                                1000,
+                                5000
+                            };
+                            objs[ i ].push_back({ MapObjType::GEM, tilemap, { { "amount", GEM_AMOUNTS[ n - 512 ] } } } );
+                        }
                     }
                 }
             }

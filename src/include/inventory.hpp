@@ -8,6 +8,7 @@ class Inventory
         void update();
         void addGems( int amount );
         int getShownGems() const;
+        void getTreasure( int id );
 
     private:
         int gems;

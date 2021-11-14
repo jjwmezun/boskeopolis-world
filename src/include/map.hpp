@@ -13,7 +13,8 @@ class TilesetSystem;
 
 enum class MapObjType
 {
-    GEM
+    GEM,
+    TREASURE
 };
 
 struct MapObj

@@ -1,5 +1,7 @@
 #include "inventory.hpp"
 
+#include <cstdio>
+
 Inventory::Inventory()
 :
     gems ( 0 ),
@@ -26,4 +28,9 @@ void Inventory::addGems( int amount )
 int Inventory::getShownGems() const
 {
     return shown_gems;
+};
+
+void Inventory::getTreasure( int id )
+{
+    printf( "Get treasure ID #%d\n", id );
 };

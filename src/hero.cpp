@@ -304,6 +304,29 @@ namespace Hero
                                 it = map.objs[ i ].erase( it );
                             }
                             break;
+                            default:
+                            {
+                                if ( Input::pressedUp() )
+                                {
+                                    const auto seek = obj.props.find( "id" );
+                                    if ( seek != obj.props.end() )
+                                    {
+                                        const int id = std::get<int>( seek->second );
+                                        level.inventory.getTreasure( id );
+                                    }
+
+                                    // Change graphics to opened chest.
+                                    Render::changeTilemap( tilemapgfx, ox, oy, { 7, 0, 1, 0 } );
+
+                                    // Remove object & set current iterator to next.
+                                    it = map.objs[ i ].erase( it );
+                                }
+                                else
+                                {
+                                    ++it;
+                                }
+                            }
+                            break;
                         }
                     }
                 }
