@@ -1,3 +1,4 @@
+#include "direction.hpp"
 #include "game_state_machine.hpp"
 #include "graphic.hpp"
 #include "input.hpp"
@@ -22,7 +23,13 @@ namespace Hero
         hero.gravity = 6.0f;
         hero.jump_lock = false;
         hero.state = SpriteState::NORMAL;
-        hero.props = { { "traction", 1.15f } };
+        hero.props =
+        {
+            { "traction", 1.15f },
+            { "direction", ( int )( Direction::LEFT ) },
+            { "walk_timer", 0 },
+            { "walk_animation", 0 }
+        };
         hero.update = []( Sprite & self, LevelState & level )
         {
             if ( Input::pressedMenu() )
@@ -196,10 +203,7 @@ namespace Hero
             }
 
             mapInteract( self, level );
-
-            Graphic * gfx = Render::getGraphic( self.gfx );
-            auto & g = std::get<SpriteGraphics>( gfx->data );
-            g.dest = self.position;
+            updateGraphics( self, level );
         };
         return hero;
     };
@@ -339,6 +343,78 @@ namespace Hero
                 }
             }
         }
+    };
+
+    void updateGraphics( Sprite & self, LevelState & level )
+    {
+        Graphic * gfx = Render::getGraphic( self.gfx );
+        auto & g = std::get<SpriteGraphics>( gfx->data );
+        g.dest = self.position;
+
+        switch ( ( Direction )( std::get<int> ( self.props[ "direction" ] ) ) )
+        {
+            case ( Direction::LEFT ):
+            {
+                if ( g.rotation_x > 0.0f )
+                {
+                    g.rotation_x = std::max( 0.0f, g.rotation_x - 10.0f );
+                }
+            }
+            break;
+            case ( Direction::RIGHT ):
+            {
+                if ( g.rotation_x < 180.0f )
+                {
+                    g.rotation_x = std::min( 180.f, g.rotation_x + 10.0f );
+                }
+            }
+            break;
+        }
+
+        switch ( self.state )
+        {
+            case ( SpriteState::NORMAL ):
+            case ( SpriteState::JUMPING ):
+            {
+                if ( testOnGround( self, level ) )
+                {
+                    if ( self.accx != 0.0f )
+                    {
+                        int walk_timer = std::get<int> ( self.props[ "walk_timer" ] );
+                        int walk_animation = std::get<int> ( self.props[ "walk_animation" ] );
+                        if ( walk_timer >= 7 )
+                        {
+                            self.props[ "walk_timer" ] = 0;
+                            ++walk_animation;
+                            if ( walk_animation >= 4 )
+                            {
+                                walk_animation = 0;
+                            }
+                            self.props[ "walk_animation" ] = walk_animation;
+                        }
+                        else
+                        {
+                            self.props[ "walk_timer" ] = walk_timer + 1;
+                        }
+                        static constexpr float WALK_FRAMES[ 4 ] = { 0.0f, 16.0f, 0.0f, 32.0f };
+                        g.src.x = WALK_FRAMES[ walk_animation ];
+                    }
+                    else
+                    {
+                        g.src.x = 0.0f;
+                        self.props[ "walk_timer" ] = 0;
+                        self.props[ "walk_animation" ] = 0;
+                    }
+                }
+                else
+                {
+                    g.src.x = 48.0f;
+                    self.props[ "walk_timer" ] = 0;
+                    self.props[ "walk_animation" ] = 0;
+                }
+            }
+            break;
+        }
     }
 
     bool testOnGround( const Sprite & self, const LevelState & level )
@@ -358,10 +434,12 @@ namespace Hero
         if ( Input::heldRight() )
         {
             self.accx = start_speed;
+            self.props[ "direction" ] = ( int )( Direction::RIGHT );
         }
         else if ( Input::heldLeft() )
         {
             self.accx = -start_speed;
+            self.props[ "direction" ] = ( int )( Direction::LEFT );
         }
         else
         {

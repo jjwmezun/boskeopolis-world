@@ -7,6 +7,7 @@ namespace Hero
 {
     Sprite create();
     void mapInteract( Sprite & self, LevelState & level );
+    void updateGraphics( Sprite & self, LevelState & level );
     bool testOnGround( const Sprite & self, const LevelState & level );
     void moveHorizontally( Sprite & self, float start_speed, float top_speed, float traction );
 };
