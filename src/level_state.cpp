@@ -21,6 +21,7 @@ void LevelState::update()
 
 void LevelState::init( unsigned int state )
 {
+    Render::resetCamera();
     Render::addGraphic( Graphic::createFullRect( map.bg_color, true ), state, Layer::BG_1 );
     tilesets.init();
     map.init( state, tilesets );

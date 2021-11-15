@@ -15,6 +15,6 @@ void TitleState::update()
 
 void TitleState::init( unsigned int state )
 {
-    Render::addGraphic( Graphic::createFullRect( { 255.0f, 255.0f, 255.0f, 255.0f } ), state, Layer::BG_1 );
-    Render::addGraphic( Graphic::createText( { "Boskeopolis World", { { "align", Text::Align::CENTER }, { "x_padding", 8.0f }, { "y_padding", 8.0f } } } ), state, Layer::BLOCKS_1 );
+    Render::addGraphic( Graphic::createFullRect( { 0.0f, 0.0f, 0.0f, 255.0f }, true ), state, Layer::BG_1 );
+    Render::addGraphic( Graphic::createText( { "Boskeopolis World", { { "color", Color{ 255.0f, 255.0f, 255.0f, 255.0f } }, { "align", Text::Align::CENTER }, { "x_padding", 8.0f }, { "y_padding", 8.0f } } }, true ), state, Layer::BLOCKS_1 );
 };

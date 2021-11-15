@@ -489,6 +489,14 @@ namespace Render
         return ( void * )( window );
     };
 
+    void resetCamera()
+    {
+        camera.x = 0.0f;
+        camera.y = 0.0f;
+        camera.w = Unit::WINDOW_WIDTH_PIXELS;
+        camera.h = Unit::WINDOW_HEIGHT_PIXELS;
+    };
+
     void adjustCamera( Rect * target, float max_w, float max_h )
     {
         float x_adjust = 0.0f;
