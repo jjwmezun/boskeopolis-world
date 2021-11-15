@@ -6,7 +6,12 @@ Inventory::Inventory()
 :
     gems ( 0 ),
     shown_gems ( 0 )
-{};
+{
+    for ( int i = 0; i < MAX_TREASURES; ++i )
+    {
+        treasures_collected[ i ] = false;
+    }
+};
 
 void Inventory::update()
 {
@@ -32,5 +37,10 @@ int Inventory::getShownGems() const
 
 void Inventory::getTreasure( int id )
 {
-    printf( "Get treasure ID #%d\n", id );
+    treasures_collected[ id ] = true;
+};
+
+bool Inventory::hasTreasure( TreasureType type ) const
+{
+    return treasures_collected[ ( int )( type ) ];
 };

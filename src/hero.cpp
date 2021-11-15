@@ -46,52 +46,55 @@ namespace Hero
                         self.jump_lock = false;
                     }
 
-                    if ( Input::heldUp() )
+                    if ( level.inventory.hasTreasure( TreasureType::GLOVES ) )
                     {
-                        const int climbleft = Unit::pixelsToBlocks( self.position.x );
-                        const int climbup = Unit::pixelsToBlocks( self.position.y );
-                        const int climbdown = Unit::pixelsToBlocks( self.position.bottom() - 8.0f );
-                        const int climbright = Unit::pixelsToBlocks( self.position.right() );
-                        const int climblu = level.map.getIFromXAndY( climbleft, climbup );
-                        const int climbru = level.map.getIFromXAndY( climbright, climbup );
-                        const int climbld = level.map.getIFromXAndY( climbleft, climbdown );
-                        const int climbrd = level.map.getIFromXAndY( climbright, climbdown );
-                        if
-                        (
-                            level.map.testTile( climblu, MapCollisionType::CLIMB ) ||
-                            level.map.testTile( climbru, MapCollisionType::CLIMB ) ||
-                            level.map.testTile( climbld, MapCollisionType::CLIMB ) ||
-                            level.map.testTile( climbrd, MapCollisionType::CLIMB )
-                        )
+                        if ( Input::heldUp() )
                         {
-                            self.state = SpriteState::ON_LADDER;
-                            self.vy = 0;
-                            self.accy = 0;
+                            const int climbleft = Unit::pixelsToBlocks( self.position.x );
+                            const int climbup = Unit::pixelsToBlocks( self.position.y );
+                            const int climbdown = Unit::pixelsToBlocks( self.position.bottom() - 8.0f );
+                            const int climbright = Unit::pixelsToBlocks( self.position.right() );
+                            const int climblu = level.map.getIFromXAndY( climbleft, climbup );
+                            const int climbru = level.map.getIFromXAndY( climbright, climbup );
+                            const int climbld = level.map.getIFromXAndY( climbleft, climbdown );
+                            const int climbrd = level.map.getIFromXAndY( climbright, climbdown );
+                            if
+                            (
+                                level.map.testTile( climblu, MapCollisionType::CLIMB ) ||
+                                level.map.testTile( climbru, MapCollisionType::CLIMB ) ||
+                                level.map.testTile( climbld, MapCollisionType::CLIMB ) ||
+                                level.map.testTile( climbrd, MapCollisionType::CLIMB )
+                            )
+                            {
+                                self.state = SpriteState::ON_LADDER;
+                                self.vy = 0;
+                                self.accy = 0;
+                            }
                         }
-                    }
-                    else if ( Input::heldDown() )
-                    {
-                        const int climbleft = Unit::pixelsToBlocks( self.position.x );
-                        const int climbup = Unit::pixelsToBlocks( self.position.y + 8.0f );
-                        const int climbdown = Unit::pixelsToBlocks( self.position.bottom() + 2.0f );
-                        const int climbright = Unit::pixelsToBlocks( self.position.right() );
-                        const int climblu = level.map.getIFromXAndY( climbleft, climbup );
-                        const int climbru = level.map.getIFromXAndY( climbright, climbup );
-                        const int climbld = level.map.getIFromXAndY( climbleft, climbdown );
-                        const int climbrd = level.map.getIFromXAndY( climbright, climbdown );
-                        if
-                        (
-                            level.map.testTile( climblu, MapCollisionType::CLIMB ) ||
-                            level.map.testTile( climbru, MapCollisionType::CLIMB ) ||
-                            level.map.testTile( climbld, MapCollisionType::CLIMB ) ||
-                            level.map.testTile( climbrd, MapCollisionType::CLIMB )
-                        )
+                        else if ( Input::heldDown() )
                         {
-                            self.state = SpriteState::ON_LADDER;
-                            self.vy = 0;
-                            self.accy = 0;
-                        }
+                            const int climbleft = Unit::pixelsToBlocks( self.position.x );
+                            const int climbup = Unit::pixelsToBlocks( self.position.y + 8.0f );
+                            const int climbdown = Unit::pixelsToBlocks( self.position.bottom() + 2.0f );
+                            const int climbright = Unit::pixelsToBlocks( self.position.right() );
+                            const int climblu = level.map.getIFromXAndY( climbleft, climbup );
+                            const int climbru = level.map.getIFromXAndY( climbright, climbup );
+                            const int climbld = level.map.getIFromXAndY( climbleft, climbdown );
+                            const int climbrd = level.map.getIFromXAndY( climbright, climbdown );
+                            if
+                            (
+                                level.map.testTile( climblu, MapCollisionType::CLIMB ) ||
+                                level.map.testTile( climbru, MapCollisionType::CLIMB ) ||
+                                level.map.testTile( climbld, MapCollisionType::CLIMB ) ||
+                                level.map.testTile( climbrd, MapCollisionType::CLIMB )
+                            )
+                            {
+                                self.state = SpriteState::ON_LADDER;
+                                self.vy = 0;
+                                self.accy = 0;
+                            }
 
+                        }
                     }
 
                     moveHorizontally( self, 0.25f, self.top_speed, std::get<float>( self.props[ "traction" ] ) );
