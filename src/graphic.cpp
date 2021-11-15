@@ -26,14 +26,19 @@ Graphic Graphic::createSprite
 )
 {
     bool abs = false;
+    float opacity = 1.0f;
     for ( auto & i : args )
     {
         if ( std::string( i.first ) == "abs" )
         {
             abs = std::get<bool>( i.second );
         }
+        else if ( std::string( i.first ) == "opacity" )
+        {
+            opacity = std::get<float>( i.second );
+        }
     }
-    SpriteGraphics g { texture, palette, { src_x, src_y, dest.w, dest.h }, dest, 0, 0, 0.0f, 0.0f, 0.0f };
+    SpriteGraphics g { texture, palette, { src_x, src_y, dest.w, dest.h }, dest, 0, 0, 0.0f, 0.0f, 0.0f, opacity };
     return { g, abs };
 };
 

@@ -33,6 +33,7 @@ struct SpriteGraphics
     float rotation_x;
     float rotation_y;
     float rotation_z;
+    float opacity;
 };
 
 struct TilemapGraphics

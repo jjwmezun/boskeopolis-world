@@ -23,7 +23,7 @@
                 {
                  "name":"palette",
                  "type":"int",
-                 "value":127
+                 "value":124
                 }, 
                 {
                  "name":"x",
@@ -42,7 +42,7 @@
                 {
                  "name":"palette",
                  "type":"int",
-                 "value":126
+                 "value":124
                 }, 
                 {
                  "name":"x",
@@ -61,7 +61,7 @@
                 {
                  "name":"palette",
                  "type":"int",
-                 "value":125
+                 "value":124
                 }, 
                 {
                  "name":"x",
@@ -99,7 +99,7 @@
                 {
                  "name":"palette",
                  "type":"int",
-                 "value":123
+                 "value":124
                 }, 
                 {
                  "name":"x",

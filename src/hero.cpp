@@ -325,7 +325,7 @@ namespace Hero
                                     }
 
                                     // Change graphics to opened chest.
-                                    Render::changeTilemap( tilemapgfx, ox, oy, { 7, 0, 1, 0 } );
+                                    Render::changeTilemap( tilemapgfx, ox, oy, { 7, 0, 124, 0 } );
 
                                     // Remove object & set current iterator to next.
                                     it = map.objs[ i ].erase( it );

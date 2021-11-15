@@ -288,6 +288,9 @@ namespace Render
                     GLint palette_id_location = glGetUniformLocation( sprite_shader, "palette_id" );
                     glUniform1f( palette_id_location, ( float )( sprite.palette ) );
 
+                    GLint opacity_location = glGetUniformLocation( sprite_shader, "opacity" );
+                    glUniform1f( opacity_location, ( float )( sprite.opacity ) );
+
                     GLint texture_data_location = glGetUniformLocation(sprite_shader, "texture_data");
                     GLint palette_data_location = glGetUniformLocation(sprite_shader, "palette_data");
                     glActiveTexture(GL_TEXTURE0);
