@@ -31,7 +31,7 @@ void main()
     float yrel = mod( texture_coords.y * 256.0, ( 256.0 / map_height ) ) / ( 4096.0 / map_height );
     float xoffset = tile.x * 255.0 * ( 16 / tileset_width );
     float yoffset = tile.y * 255.0 * ( 16 / tileset_height );
-    float palette = tile.z * 256.0;
+    float palette = tile.z;
     vec4 index = texture( texture_data, vec2( xoffset + ( xrel / ( tileset_width / 256.0 ) ), yoffset + ( yrel / ( tileset_height / 256.0 ) ) ) );
-    final_color = ( tile.a < 1.0 ) ? texture( palette_data, vec2( index.r / 16.0, ( palette / 2.0 ) ) ) : vec4( 0.0, 0.0, 0.0, 0.0 );
+    final_color = ( tile.a < 1.0 ) ? texture( palette_data, vec2( index.r / 16.0, palette ) ) : vec4( 0.0, 0.0, 0.0, 0.0 );
 }

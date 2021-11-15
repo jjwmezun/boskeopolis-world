@@ -32,3 +32,30 @@ Graphic Graphic::createText( Text text, bool abs )
 {
     return { text, abs };
 };
+
+Graphic Graphic::createRectGradient
+(
+    Rect rect,
+    Color ulcolor,
+    Color urcolor,
+    Color dlcolor,
+    Color drcolor,
+    bool abs
+)
+{
+    RectGradientGraphics r { rect, ulcolor, urcolor, dlcolor, drcolor };
+    return { r, abs };
+};
+
+Graphic Graphic::createFullRectGradient
+(
+    Color ulcolor,
+    Color urcolor,
+    Color dlcolor,
+    Color drcolor,
+    bool abs
+)
+{
+    Rect rect = { 0.0, 0.0, ( float )( Unit::WINDOW_WIDTH_PIXELS ), ( float )( Unit::WINDOW_HEIGHT_PIXELS ) };
+    return createRectGradient( rect, ulcolor, urcolor, dlcolor, drcolor, abs );
+};

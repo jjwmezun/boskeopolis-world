@@ -359,6 +359,19 @@ namespace Render
                     }
                 }
                 break;
+                case ( 5 ):
+                {
+                    const auto & rect = std::get<RectGradientGraphics>( layers[ i ].data );
+                    drawBox
+                    (
+                        &rect.rect,
+                        &rect.ulcolor,
+                        &rect.urcolor,
+                        &rect.dlcolor,
+                        &rect.drcolor
+                    );
+                }
+                break;
             }
         }
         glfwSwapBuffers( window );

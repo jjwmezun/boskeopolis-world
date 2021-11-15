@@ -10,5 +10,6 @@ uniform float palette_id;
 void main()
 {
     vec4 index = texture( texture_data, texture_coords );
-    final_color = texture( palette_data, vec2( index.r / 16.0, palette_id ) );
+    float palette = palette_id / 256.0;
+    final_color = texture( palette_data, vec2( index.r / 16.0, palette ) );
 }

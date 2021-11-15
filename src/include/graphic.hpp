@@ -12,6 +12,15 @@ struct RectGraphics
     Color color;
 };
 
+struct RectGradientGraphics
+{
+    Rect rect;
+    Color ulcolor;
+    Color urcolor;
+    Color dlcolor;
+    Color drcolor;
+};
+
 struct SpriteGraphics
 {
     unsigned int texture;
@@ -33,7 +42,7 @@ struct TilemapGraphics
 
 struct Graphic
 {
-    std::variant<std::monostate, RectGraphics, SpriteGraphics, TilemapGraphics, Text> data;
+    std::variant<std::monostate, RectGraphics, SpriteGraphics, TilemapGraphics, Text, RectGradientGraphics> data;
     bool abs;
 
     static Graphic createRect( Rect rect, Color color, bool abs = false );
@@ -47,6 +56,23 @@ struct Graphic
         float src_y
     );
     static Graphic createText( Text text, bool abs = true );
+    static Graphic createRectGradient
+    (
+        Rect rect,
+        Color ulcolor,
+        Color urcolor,
+        Color dlcolor,
+        Color drcolor,
+        bool abs = false
+    );
+    static Graphic createFullRectGradient
+    (
+        Color ulcolor,
+        Color urcolor,
+        Color dlcolor,
+        Color drcolor,
+        bool abs = false
+    );
 };
 
 #endif // GRAPHIC_H
