@@ -5,6 +5,7 @@
 #include "render.hpp"
 #include "tile.hpp"
 #include "title_state.hpp"
+#include "treasure_message_state.hpp"
 #include "hero.hpp"
 
 namespace Hero
@@ -312,9 +313,10 @@ namespace Hero
                                 if ( Input::pressedUp() )
                                 {
                                     const auto seek = obj.props.find( "id" );
+                                    int id = -1;
                                     if ( seek != obj.props.end() )
                                     {
-                                        const int id = std::get<int>( seek->second );
+                                        id = std::get<int>( seek->second );
                                         level.inventory.getTreasure( id );
                                     }
 
@@ -323,6 +325,8 @@ namespace Hero
 
                                     // Remove object & set current iterator to next.
                                     it = map.objs[ i ].erase( it );
+
+                                    GameStateMachine::pushState( TreasureMessageState( id ) );
                                 }
                                 else
                                 {
