@@ -20,10 +20,18 @@ void TreasureMessageState::init( unsigned int state )
 {
     Render::addGraphic( Graphic::createRect
     (
-        { 64.0f, 64.0f, Unit::WINDOW_WIDTH_PIXELS - 128, Unit::WINDOW_HEIGHT_PIXELS - 128 },
-        { 0.0f, 0.0f, 0.0f, 255.0f },
+        { 66.0f, 66.0f, Unit::WINDOW_WIDTH_PIXELS - 132, Unit::WINDOW_HEIGHT_PIXELS - 132 },
+        { 0.0f, 0.0f, 0.0f, 224.0f },
         true
     ), state, Layer::BG_1 );
+    Render::addGraphic( Graphic::createSprite(
+        Render::getTextureID( "inventory/treasure-message-border.png" ),
+        127,
+        { 64.0f, 64.0f, Unit::WINDOW_WIDTH_PIXELS - 128, Unit::WINDOW_HEIGHT_PIXELS - 128 },
+        0.0f,
+        0.0f,
+        { { "abs", true } }
+    ), state, Layer::BG_2 );
     Render::addGraphic( Graphic::createText(
         {
             "¡You collected Climber’s Gloves!",
