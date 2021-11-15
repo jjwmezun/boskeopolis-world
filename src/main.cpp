@@ -5,6 +5,7 @@
 #include "layer.hpp"
 #include "localization.hpp"
 #include "log.hpp"
+#include "math.hpp"
 #include "rect.hpp"
 #include "render.hpp"
 
@@ -16,6 +17,7 @@ static int accumulator = 0;
 
 int main()
 {
+    Math::initRand();
     Input::init();
     if ( !Engine::init() )
     {

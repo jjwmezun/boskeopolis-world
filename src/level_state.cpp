@@ -16,6 +16,7 @@ void LevelState::update()
     hero.update( hero, *this );
     Render::adjustCamera( &hero.position, ( float )( Unit::blocksToPixels( map.width ) ), ( float )( Unit::blocksToPixels( map.height ) ) );
     inventory.update();
+    rain.update();
     printf( "Gems: %d\n", inventory.getShownGems() );
 };
 
@@ -26,4 +27,5 @@ void LevelState::init( unsigned int state )
     tilesets.init();
     map.init( state, tilesets );
     hero.gfx = Render::addGraphic( Graphic::createSprite( Render::getTextureID( "sprites/autumn.png" ), 0, hero.position, 0.0f, 0.0f ), state, Layer::SPRITES_1 );
+    rain.init( state );
 };
