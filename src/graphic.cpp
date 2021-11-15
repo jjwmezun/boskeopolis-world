@@ -21,11 +21,20 @@ Graphic Graphic::createSprite
     unsigned int palette,
     Rect dest,
     float src_x,
-    float src_y
+    float src_y,
+    PropMap args
 )
 {
+    bool abs = false;
+    for ( auto & i : args )
+    {
+        if ( std::string( i.first ) == "abs" )
+        {
+            abs = std::get<bool>( i.second );
+        }
+    }
     SpriteGraphics g { texture, palette, { src_x, src_y, dest.w, dest.h }, dest, 0, 0, 0.0f, 0.0f, 0.0f };
-    return { g, false };
+    return { g, abs };
 };
 
 Graphic Graphic::createText( Text text, bool abs )

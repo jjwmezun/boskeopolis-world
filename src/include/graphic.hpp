@@ -2,6 +2,7 @@
 #define GRAPHIC_H
 
 #include "color.hpp"
+#include "prop_map.hpp"
 #include "rect.hpp"
 #include "text.hpp"
 #include <variant>
@@ -53,7 +54,8 @@ struct Graphic
         unsigned int palette,
         Rect dest,
         float src_x,
-        float src_y
+        float src_y,
+        PropMap args = {}
     );
     static Graphic createText( Text text, bool abs = true );
     static Graphic createRectGradient
