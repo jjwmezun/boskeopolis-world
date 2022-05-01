@@ -107,11 +107,12 @@ namespace Hero
 
                     moveHorizontally( self, 0.25f, self.top_speed, std::get<float>( self.props[ "traction" ] ) );
 
-                    self.accy = 0.25f;
+                    const float gravity = ( Input::heldJump() ) ? self.gravity / 1.5f : self.gravity;
+                    self.accy = ( Input::heldJump() ) ? ( 0.25f / 1.5f ) : 0.25f;
                     self.vy += self.accy;
-                    if ( self.vy > self.gravity )
+                    if ( self.vy > gravity )
                     {
-                        self.vy = self.gravity;
+                        self.vy = gravity;
                     }
                     self.position.y += self.vy;
                 }
@@ -132,9 +133,9 @@ namespace Hero
 
                     self.accy = -0.75f;
                     self.vy += self.accy;
-                    if ( self.vy < -5.0f )
+                    if ( self.vy < -4.25f )
                     {
-                        self.vy = -5.0f;
+                        self.vy = -4.25f;
                         self.state = SpriteState::NORMAL;
                     }
                     self.position.y += self.vy;
