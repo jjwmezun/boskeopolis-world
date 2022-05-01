@@ -7,15 +7,17 @@
 #include "sprite.hpp"
 #include "tileset_system.hpp"
 #include "unit.hpp"
+#include <vector>
 
 struct LevelState
 {
     LevelState();
     void update();
     void init( unsigned int state );
+    Sprite & getHero();
 
+    std::vector<Sprite> sprites;
     Map map;
-    Sprite hero;
     Inventory inventory;
     TilesetSystem tilesets;
     LayerRain rain;

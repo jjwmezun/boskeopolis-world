@@ -4,11 +4,17 @@
 #include <functional>
 #include "prop_map.hpp"
 #include "rect.hpp"
+#include <vector>
 
 class LevelState;
 class Sprite;
 
 typedef std::function<void( Sprite & self, LevelState & level )> SpriteUpdate;
+
+enum class SpriteType
+{
+    HERO
+};
 
 enum class SpriteState
 {
@@ -31,6 +37,9 @@ struct Sprite
     SpriteState state;
     SpriteUpdate update = []( Sprite & self, LevelState & level ){};
     PropMap props;
+    std::vector<SpriteType> types;
+
+    bool hasType( SpriteType type ) const;
 };
 
 #endif // SPRITE_H

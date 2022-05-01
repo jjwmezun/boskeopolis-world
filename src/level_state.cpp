@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include "game_state_machine.hpp"
 #include "graphic.hpp"
 #include "hero.hpp"
@@ -7,14 +8,16 @@
 
 LevelState::LevelState()
 :
-    map ( "blueberry-1" ),
-    hero ( Hero::create() )
+    map ( "blueberry-1" )
 {};
 
 void LevelState::update()
 {
-    hero.update( hero, *this );
-    Render::adjustCamera( &hero.position, ( float )( Unit::blocksToPixels( map.width ) ), ( float )( Unit::blocksToPixels( map.height ) ) );
+    for ( auto & sprite : sprites )
+    {
+        sprite.update( sprite, *this );
+    }
+    Render::adjustCamera( &getHero().position, ( float )( Unit::blocksToPixels( map.width ) ), ( float )( Unit::blocksToPixels( map.height ) ) );
     inventory.update();
     rain.update();
 };
@@ -25,7 +28,7 @@ void LevelState::init( unsigned int state )
     Render::addGraphic( Graphic::createFullRect( map.bg_color, true ), state, Layer::BG_1 );
     tilesets.init();
     map.init( state, tilesets );
-    hero.gfx = Render::addGraphic( Graphic::createSprite( Render::getTextureID( "sprites/autumn.png" ), 128, hero.position, 0.0f, 0.0f ), state, Layer::SPRITES_1 );
+    sprites.push_back( Hero::create( state ) );
     rain.init( state );
     Render::addGraphic( Graphic::createFullRectGradient
     (
@@ -36,4 +39,16 @@ void LevelState::init( unsigned int state )
         true
     ), state, Layer::FG_2 );
     inventory.init( state );
+};
+
+Sprite & LevelState::getHero()
+{
+    for ( Sprite & sprite : sprites )
+    {
+        if ( sprite.hasType( SpriteType::HERO ) )
+        {
+            return sprite;
+        }
+    }
+    throw std::runtime_error( "¡Missing hero sprite!" );
 };

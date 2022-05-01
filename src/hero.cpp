@@ -11,9 +11,10 @@
 
 namespace Hero
 {
-    Sprite create()
+    Sprite create( unsigned int state )
     {
         Sprite hero;
+        hero.types.emplace_back( SpriteType::HERO );
         hero.position = { 300.0f, 348.0f, 16.0f, 26.0f };
         hero.vx = 0.0f;
         hero.accx = 0.0f;
@@ -206,6 +207,9 @@ namespace Hero
             mapInteract( self, level );
             updateGraphics( self, level );
         };
+
+        hero.gfx = Render::addGraphic( Graphic::createSprite( Render::getTextureID( "sprites/autumn.png" ), 128, hero.position, 0.0f, 0.0f ), state, Layer::SPRITES_1 );
+
         return hero;
     };
 
@@ -460,4 +464,16 @@ namespace Hero
 
         self.position.x += self.vx;
     }
+};
+
+bool Sprite::hasType( SpriteType type ) const
+{
+    for ( const auto & t : types )
+    {
+        if ( t == type )
+        {
+            return true;
+        }
+    }
+    return false;
 };
