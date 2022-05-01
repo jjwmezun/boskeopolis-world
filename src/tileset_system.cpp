@@ -7,5 +7,11 @@ void TilesetSystem::init()
 
 Tileset TilesetSystem::get( std::string name )
 {
-    return tilesets_.find( "objects" )->second;
+    const auto tileset = tilesets_.find( name );
+    if (tileset == tilesets_.end()) {
+        tilesets_.insert( std::pair<std::string, Tileset> ( name, { name } ) );
+        const auto tileset = tilesets_.find( name );
+        return tileset->second;
+    }
+    return tileset->second;
 };

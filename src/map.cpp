@@ -274,11 +274,7 @@ void Map::init( unsigned int state, TilesetSystem & tilesets )
                 for ( int i = 0; i < width * height; ++i )
                 {
                     const int n = layer.tiles[ i ] - 4097;
-                    const int tileset_w = 16;
-                    tiles[ i ].x = ( unsigned char )( n % tileset_w );
-                    tiles[ i ].y = ( unsigned char )( std::floor( ( double )( n ) / ( double )( tileset_w ) ) );
-                    tiles[ i ].palette = 0;
-                    tiles[ i ].animation = ( n < 0 ) ? 255 : 0;
+                    tiles[ i ] = tilesets.get( "urban" ).get( n );
                 }
                 Render::addTilemap( "urban", tiles, width, height, state, Layer::BLOCKS_1 );
             }

@@ -1,7 +1,17 @@
+#include <cmath>
 #include "io.hpp"
 #include "jjson.hpp"
 #include "log.hpp"
 #include "tileset.hpp"
+#include <vector>
+
+struct TileData {
+    int id = -1;
+    int x = -1;
+    int y = -1;
+    int animation = 0;
+    int palette = 0;
+};
 
 Tileset::Tileset( std::string type )
 {
@@ -11,6 +21,9 @@ Tileset::Tileset( std::string type )
         return;
     }
 
+    std::vector<TileData> tile_data_list;
+    int image_width = -1;
+    int tile_width = -1;
     for ( unsigned int i = 0; i < root->u.object.length; ++i )
     {
         const json_object_entry root_entry = root->u.object.values[ i ];
@@ -23,11 +36,7 @@ Tileset::Tileset( std::string type )
             const auto & tiles = root_entry.value->u.array;
             for ( unsigned int i = 0; i < tiles.length; ++i )
             {
-                int id = -1;
-                int x = -1;
-                int y = -1;
-                int animation = 0;
-                int palette = 0;
+                TileData tile_data;
                 if ( tiles.values[ i ]->type != json_object )
                 {
                     Log::sendError( "JSON for tileset “" + type + "” is malformed: tile isn’t an object." );
@@ -42,7 +51,7 @@ Tileset::Tileset( std::string type )
                         {
                             Log::sendError( "JSON for tileset “" + type + "” is malformed: tileset id isn’t an integer." );
                         }
-                        id = tile_entry.value->u.integer;
+                        tile_data.id = tile_entry.value->u.integer;
                     }
                     else if ( strcmp( "properties", tile_entry.name ) == 0 )
                     {
@@ -82,19 +91,19 @@ Tileset::Tileset( std::string type )
                             }
                             if ( name == "x" )
                             {
-                                x = value;
+                                tile_data.x = value;
                             }
                             else if ( name == "y" )
                             {
-                                y = value;
+                                tile_data.y = value;
                             }
                             else if ( name == "animation" )
                             {
-                                animation = value;
+                                tile_data.animation = value;
                             }
                             else if ( name == "palette" )
                             {
-                                palette = value;
+                                tile_data.palette = value;
                             }
                         }
                     }
@@ -104,7 +113,7 @@ Tileset::Tileset( std::string type )
                         {
                             Log::sendError( "JSON for tileset “" + type + "” is malformed: tileset y isn’t an integer." );
                         }
-                        y = tile_entry.value->u.integer;
+                        tile_data.y = tile_entry.value->u.integer;
                     }
                     else if ( strcmp( "animation", tile_entry.name ) == 0 )
                     {
@@ -112,7 +121,7 @@ Tileset::Tileset( std::string type )
                         {
                             Log::sendError( "JSON for tileset “" + type + "” is malformed: tileset animation isn’t an integer." );
                         }
-                        animation = tile_entry.value->u.integer;
+                        tile_data.animation = tile_entry.value->u.integer;
                     }
                     else if ( strcmp( "palette", tile_entry.name ) == 0 )
                     {
@@ -120,28 +129,53 @@ Tileset::Tileset( std::string type )
                         {
                             Log::sendError( "JSON for tileset “" + type + "” is malformed: tileset palette isn’t an integer." );
                         }
-                        palette = tile_entry.value->u.integer;
+                        tile_data.palette = tile_entry.value->u.integer;
                     }
                 }
 
-                if ( x >= 0 && y >= 0 )
-                {
-                    tiles_.insert( std::pair<int, Tile>
-                    (
-                        id,
-                        {
-                            ( unsigned char )( x ),
-                            ( unsigned char )( y ),
-                            ( unsigned char )( palette ),
-                            ( unsigned char )( animation )
-                        }
-                    ));
-                }
+                tile_data_list.push_back( tile_data );
             }
+        }
+        else if ( strcmp( "imagewidth", root_entry.name ) == 0 )
+        {
+            if ( root_entry.value->type != json_integer )
+            {
+                Log::sendError( "JSON for tileset “" + type + "” is malformed: “imagewidth” isn’t an integer." );
+            }
+            image_width = root_entry.value->u.integer;
+        }
+        else if ( strcmp( "tilewidth", root_entry.name ) == 0 )
+        {
+            if ( root_entry.value->type != json_integer )
+            {
+                Log::sendError( "JSON for tileset “" + type + "” is malformed: “tilewidth” isn’t an integer." );
+            }
+            tile_width = root_entry.value->u.integer;
         }
     }
 
     json_value_free( root );
+
+    const int tileset_width = std::floor( ( double )( image_width ) / ( double )( tile_width ) );
+    for ( auto & tile : tile_data_list )
+    {
+        if ( tile.x == -1 ) {
+            tile.x = tile.id % tileset_width;
+        }
+        if ( tile.y == -1 ) {
+            tile.y = ( int )( std::floor( ( double )( tile.id ) / ( double )( tileset_width ) ) );
+        }
+        tiles_.insert( std::pair<int, Tile>
+        (
+            tile.id,
+            {
+                ( unsigned char )( tile.x ),
+                ( unsigned char )( tile.y ),
+                ( unsigned char )( tile.palette ),
+                ( unsigned char )( tile.animation )
+            }
+        ));
+    }
 };
 
 Tile Tileset::get( int n ) const
