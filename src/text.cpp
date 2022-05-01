@@ -11,60 +11,56 @@ static int getCharacterSize( const char * s );
 
 Text::Text( const char * text, std::unordered_map<const char *, std::variant<float, Align, VAlign, Color>> args )
 {
-    float x = 0;
-    float y = 0;
-    float w = Unit::WINDOW_WIDTH_PIXELS;
-    float h = Unit::WINDOW_HEIGHT_PIXELS;
-    Align align = Align::LEFT;
-    VAlign valign = VAlign::TOP;
-    float padding_x = 0;
-    float padding_y = 0;
-    Color color = { 0, 0, 0, 255 };
-
     for ( auto & i : args )
     {
         if ( std::string( i.first ) == "x" )
         {
-            x = std::get<float>( i.second );
+            x_ = std::get<float>( i.second );
         }
         if ( std::string( i.first ) == "y" )
         {
-            y = std::get<float>( i.second );
+            y_ = std::get<float>( i.second );
         }
         if ( std::string( i.first ) == "w" )
         {
-            w = std::get<float>( i.second );
+            w_ = std::get<float>( i.second );
         }
         if ( std::string( i.first ) == "h" )
         {
-            h = std::get<float>( i.second );
+            h_ = std::get<float>( i.second );
         }
         else if ( std::string( i.first ) == "align" )
         {
-            align = std::get<Align>( i.second );
+            align_ = std::get<Align>( i.second );
         }
         else if ( std::string( i.first ) == "valign" )
         {
-            valign = std::get<VAlign>( i.second );
+            valign_ = std::get<VAlign>( i.second );
         }
         else if ( std::string( i.first ) == "x_padding" || std::string( i.first ) == "padding_x" )
         {
-            padding_x = std::get<float>( i.second );
+            padding_x_ = std::get<float>( i.second );
         }
         else if ( std::string( i.first ) == "y_padding" || std::string( i.first ) == "padding_y" )
         {
-            padding_y = std::get<float>( i.second );
+            padding_y_ = std::get<float>( i.second );
         }
         else if ( std::string( i.first ) == "color" )
         {
-            color = std::get<Color>( i.second );
+            color_ = std::get<Color>( i.second );
         }
     }
 
-    w -= ( padding_x * 2.0 );
-    h -= ( padding_y * 2.0 );
-    x += padding_x;
-    y += padding_y;
+    setCharacters( text );
+};
+
+void Text::setCharacters( const char * text )
+{
+    characters_.clear();
+    float w = w_ - ( padding_x_ * 2.0 );
+    float h = h_ - ( padding_y_ * 2.0 );
+    float x = x_ + padding_x_;
+    float y = y_ + padding_y_;
     const float line_end = x + w;
 
     const auto & character_map = Localization::getCurrentLanguage().chars;
@@ -174,22 +170,22 @@ Text::Text( const char * text, std::unordered_map<const char *, std::variant<flo
     }
 
     // Final loop: we have all the info we need now to set x & y positions.
-    float dy = ( valign == VAlign::MIDDLE )
+    float dy = ( valign_ == VAlign::MIDDLE )
         ? y + ( ( h - ( line_count * 8.0 ) ) / 2.0 )
-        : ( valign == VAlign::BOTTOM )
+        : ( valign_ == VAlign::BOTTOM )
             ? y + h - ( line_count * 8.0 )
             : y;
     for ( int l = 0; l < line_count; ++l )
     {
-        float dx = ( align == Align::CENTER )
+        float dx = ( align_ == Align::CENTER )
             ? x + ( ( w - line_widths[ l ] ) / 2.0 )
-            : ( align == Align::RIGHT )
+            : ( align_ == Align::RIGHT )
                 ? line_end - line_widths[ l ]
                 : x;
         for ( int c = 0; c < line_character_counts[ l ]; ++c )
         {
             // Just in case o’ character index misalignment, just copy o’er whole characters.
-            characters_.push_back( { lines[ l ][ c ].w, lines[ l ][ c ].h, lines[ l ][ c ].x, lines[ l ][ c ].y, dx, dy, color } );
+            characters_.push_back( { lines[ l ][ c ].w, lines[ l ][ c ].h, lines[ l ][ c ].x, lines[ l ][ c ].y, dx, dy, color_ } );
             dx += lines[ l ][ c ].w;
         }
         dy += 8.0;

@@ -61,6 +61,17 @@
         "shared_mutex": "cpp",
         "stop_token": "cpp",
         "color.h": "c",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "csignal": "cpp",
+        "strstream": "cpp",
+        "complex": "cpp",
+        "list": "cpp",
+        "set": "cpp",
+        "future": "cpp",
+        "mutex": "cpp",
+        "thread": "cpp",
+        "cfenv": "cpp",
+        "typeindex": "cpp",
+        "valarray": "cpp"
     }
 }

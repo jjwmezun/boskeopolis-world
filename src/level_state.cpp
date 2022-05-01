@@ -35,4 +35,5 @@ void LevelState::init( unsigned int state )
         { 48.0f, 80.0f, 96.0f, 160.0f },
         true
     ), state, Layer::FG_2 );
+    inventory.init( state );
 };
