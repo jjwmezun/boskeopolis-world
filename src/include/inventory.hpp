@@ -21,14 +21,20 @@ class Inventory
         void getTreasure( int id );
         bool hasTreasure( TreasureType type ) const;
         std::string getShownGemsString() const;
+        std::string getHPString() const;
+        void hurt( float damage );
 
     private:
         int gems;
         int shown_gems;
         bool treasures_collected[ MAX_TREASURES ];
         unsigned int pts_gfx;
+        float health;
+        float target_health;
+        unsigned int hp_gfx;
 
         void updateGemsGraphics();
+        void updateHPGraphics();
 };
 
 #endif // INVENTORY_H

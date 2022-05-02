@@ -7,7 +7,9 @@
 Inventory::Inventory()
 :
     gems ( 0 ),
-    shown_gems ( 0 )
+    shown_gems ( 0 ),
+    health ( 12 ),
+    target_health( 12 )
 {
     for ( int i = 0; i < MAX_TREASURES; ++i )
     {
@@ -28,6 +30,11 @@ void Inventory::init( unsigned int state )
         { getShownGemsString().c_str(), { { "color", Color{ 255, 255, 255, 255 } }, { "x", 12 }, { "y", 204 } } },
         true
     ), state, Layer::AFTER_FG_2 );
+    hp_gfx = Render::addGraphic( Graphic::createText
+    (
+        { getHPString().c_str(), { { "color", Color{ 255, 255, 255, 255 } }, { "x", 100 }, { "y", 204 } } },
+        true
+    ), state, Layer::AFTER_FG_2 );
 };
 
 void Inventory::update()
@@ -41,6 +48,31 @@ void Inventory::update()
     {
         shown_gems = gems;
         updateGemsGraphics();
+    }
+
+    if ( target_health < health )
+    {
+        if ( health - target_health < 0.12 )
+        {
+            health = target_health;
+        }
+        else
+        {
+            health -= 0.1;
+        }
+        updateHPGraphics();
+    }
+    else if ( target_health > health )
+    {
+        if ( target_health - health < 0.12 )
+        {
+            health = target_health;
+        }
+        else
+        {
+            health += 0.2;
+        }
+        updateHPGraphics();
     }
 };
 
@@ -66,7 +98,7 @@ bool Inventory::hasTreasure( TreasureType type ) const
 
 std::string Inventory::getShownGemsString() const
 {
-    return std::string( "₧" + String::pad( std::to_string( shown_gems ), 8 ) ).c_str();
+    return std::string( "₧" + String::pad( std::to_string( shown_gems ), 8 ) );
 };
 
 void Inventory::updateGemsGraphics()
@@ -74,4 +106,21 @@ void Inventory::updateGemsGraphics()
     Graphic * gfx = Render::getGraphic( pts_gfx );
     Text & text = std::get<Text>( gfx->data );
     text.setCharacters( getShownGemsString().c_str() );
+};
+
+void Inventory::updateHPGraphics()
+{
+    Graphic * gfx = Render::getGraphic( hp_gfx );
+    Text & text = std::get<Text>( gfx->data );
+    text.setCharacters( getHPString().c_str() );
+};
+
+void Inventory::hurt( float damage )
+{
+    target_health = health - damage;
+};
+
+std::string Inventory::getHPString() const
+{
+    return std::string( "HP: " + String::pad( std::to_string( ( int )( std::floor( health ) ) ), 2 ) );
 };

@@ -97,7 +97,6 @@ namespace Crab
         {
             if ( other.hasType( SpriteType::BUMPS_EACH_OTHER ) && self.position.testCollision( other.position ) )
             {
-                printf( "BUMP!\n" );
                 self.position.x += ( self.position.x - other.position.x ) / 4.0;
                 other.position.x += ( other.position.x - self.position.x ) / 4.0;
                 self.vx *= -0.25f;

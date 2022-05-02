@@ -29,7 +29,8 @@ namespace Hero
             { "traction", 1.15f },
             { "direction", ( int )( Direction::LEFT ) },
             { "walk_timer", 0 },
-            { "walk_animation", 0 }
+            { "walk_animation", 0 },
+            { "invincibility", 0 }
         };
         hero.update = []( Sprite & self, LevelState & level )
         {
@@ -205,9 +206,25 @@ namespace Hero
             }
 
             mapInteract( self, level );
-            updateGraphics( self, level );
+
+            int invincibility = std::get<int> ( self.props[ "invincibility" ] );
+            if ( invincibility > 0 )
+            {
+                self.props[ "invincibility" ] = invincibility - 1;
+            }
+
+            updateGraphics( self, level, invincibility );
         };
 
+        hero.interact = []( Sprite & self, Sprite & other, LevelState & level )
+        {
+            int invincibility = std::get<int> ( self.props[ "invincibility" ] );
+            if ( invincibility == 0 && other.hasType( SpriteType::HARMFUL ) && self.position.testCollision( other.position ) )
+            {
+                level.inventory.hurt( 3.0f );
+                self.props[ "invincibility" ] = 60;
+            }
+        };
         hero.gfx = Render::addGraphic( Graphic::createSprite( Render::getTextureID( "sprites/autumn.png" ), 128, hero.position, 0.0f, 0.0f ), state, Layer::SPRITES_1 );
 
         return hero;
@@ -350,11 +367,26 @@ namespace Hero
         }
     };
 
-    void updateGraphics( Sprite & self, LevelState & level )
+    void updateGraphics( Sprite & self, LevelState & level, int invincibility )
     {
         Graphic * gfx = Render::getGraphic( self.gfx );
         auto & g = std::get<SpriteGraphics>( gfx->data );
         g.dest = self.position;
+
+        switch ( invincibility % 4 )
+        {
+            case ( 0 ):
+                g.opacity = 1.0f;
+            break;
+            case ( 1 ):
+                g.opacity = 0.5f;
+            break;
+            case ( 2 ):
+                g.opacity = 0.0f;
+            break;
+            case ( 3 ):
+                g.opacity = 0.5f;
+        }
 
         switch ( ( Direction )( std::get<int> ( self.props[ "direction" ] ) ) )
         {
