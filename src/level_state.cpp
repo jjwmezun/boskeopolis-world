@@ -1,9 +1,10 @@
-#include <stdexcept>
+#include "crab.hpp"
 #include "game_state_machine.hpp"
 #include "graphic.hpp"
 #include "hero.hpp"
 #include "level_state.hpp"
 #include "render.hpp"
+#include <stdexcept>
 #include "text.hpp"
 
 LevelState::LevelState()
@@ -29,6 +30,21 @@ void LevelState::init( unsigned int state )
     tilesets.init();
     map.init( state, tilesets );
     sprites.push_back( Hero::create( state ) );
+    for ( const auto & sprite : map.sprites )
+    {
+        switch ( sprite.type )
+        {
+            case ( 0 ):
+            {
+                sprites.push_back( Crab::create( state, sprite.x, sprite.y ) );
+            }
+            break;
+            default:
+            {
+                throw std::runtime_error( "Invalid sprite type! #" + std::to_string( sprite.type ) + "\n" );
+            }
+        }
+    }
     rain.init( state );
     Render::addGraphic( Graphic::createFullRectGradient
     (

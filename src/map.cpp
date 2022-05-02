@@ -97,6 +97,10 @@ Map::Map( std::string slug )
                         {
                             l.type = MapLayer::Type::OBJ;
                         }
+                        else if ( strcmp( "sprites", layer_entry.value->u.string.ptr ) == 0 )
+                        {
+                            l.type = MapLayer::Type::SPRITES;
+                        }
                     }
                     else if ( strcmp( "width", layer_entry.name ) == 0 )
                     {
@@ -273,7 +277,7 @@ void Map::init( unsigned int state, TilesetSystem & tilesets )
                 Tile tiles[ width * height ];
                 for ( int i = 0; i < width * height; ++i )
                 {
-                    const int n = layer.tiles[ i ] - 4097;
+                    const int n = layer.tiles[ i ] - 7073;
                     tiles[ i ] = tilesets.get( "urban" ).get( n );
                 }
                 Render::addTilemap( "urban", tiles, width, height, state, Layer::BLOCKS_1 );
@@ -311,6 +315,23 @@ void Map::init( unsigned int state, TilesetSystem & tilesets )
                             };
                             objs[ i ].push_back({ MapObjType::GEM, tilemap, { { "amount", GEM_AMOUNTS[ n - 512 ] } } } );
                         }
+                    }
+                }
+            }
+            break;
+            case ( MapLayer::Type::SPRITES ):
+            {
+                for ( int i = 0; i < width * height; ++i )
+                {
+                    const int n = layer.tiles[ i ] - 4097;
+                    if ( n >= 0 )
+                    {
+                        sprites.push_back
+                        ({
+                            ( unsigned int )( n ),
+                            ( unsigned int )( i % width ),
+                            ( unsigned int )( std::floor( ( double )( i ) / ( double )( width ) ) )
+                        });
                     }
                 }
             }

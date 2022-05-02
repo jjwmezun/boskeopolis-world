@@ -24,6 +24,13 @@ struct MapObj
     PropMap props;
 };
 
+struct MapSprite
+{
+    unsigned int type;
+    unsigned int x;
+    unsigned int y;
+};
+
 struct MapLayer
 {
     enum class Type
@@ -31,6 +38,7 @@ struct MapLayer
         COLLISION,
         TILES,
         OBJ,
+        SPRITES,
         __NULL
     };
 
@@ -62,6 +70,7 @@ struct Map
     std::vector<MapLayer> layers;
     std::vector<std::vector<MapCollisionType>> collision;
     std::vector<std::vector<MapObj>> objs;
+    std::vector<MapSprite> sprites;
     Color bg_color;
 };
 
