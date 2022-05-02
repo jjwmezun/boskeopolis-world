@@ -17,6 +17,7 @@ namespace Crab
         crab.gravity = 6.0f;
         crab.jump_lock = false;
         crab.state = SpriteState::NORMAL;
+        crab.types = { SpriteType::HARMFUL, SpriteType::BUMPS_EACH_OTHER };
         crab.props =
         {
             { "animation_timer", 0 }
@@ -90,6 +91,17 @@ namespace Crab
             else
             {
                 self.props[ "animation_timer" ] = animation_timer + 1;
+            }
+        };
+        crab.interact = []( Sprite & self, Sprite & other, LevelState & level )
+        {
+            if ( other.hasType( SpriteType::BUMPS_EACH_OTHER ) && self.position.testCollision( other.position ) )
+            {
+                printf( "BUMP!\n" );
+                self.position.x += ( self.position.x - other.position.x ) / 4.0;
+                other.position.x += ( other.position.x - self.position.x ) / 4.0;
+                self.vx *= -0.25f;
+                other.vx *= -0.25f;
             }
         };
         crab.gfx = Render::addGraphic( Graphic::createSprite( Render::getTextureID( "sprites/crab.png" ), 126, crab.position, 0.0f, 0.0f ), state, Layer::SPRITES_1 );

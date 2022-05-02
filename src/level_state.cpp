@@ -18,6 +18,19 @@ void LevelState::update()
     {
         sprite.update( sprite, *this );
     }
+    for ( int i = 0; i < sprites.size(); ++i )
+    {
+        for ( int j = 0; j < sprites.size(); ++j )
+        {
+            if ( i != j )
+            {
+                Sprite & a = sprites[ i ];
+                Sprite & b = sprites[ j ];
+                a.interact( a, b, *this );
+                b.interact( b, a, *this );
+            }
+        }
+    }
     Render::adjustCamera( &getHero().position, ( float )( Unit::blocksToPixels( map.width ) ), ( float )( Unit::blocksToPixels( map.height ) ) );
     inventory.update();
     rain.update();

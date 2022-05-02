@@ -10,10 +10,13 @@ class LevelState;
 class Sprite;
 
 typedef std::function<void( Sprite & self, LevelState & level )> SpriteUpdate;
+typedef std::function<void( Sprite & self, Sprite & other, LevelState & level )> SpriteInteract;
 
 enum class SpriteType
 {
-    HERO
+    HERO,
+    HARMFUL,
+    BUMPS_EACH_OTHER
 };
 
 enum class SpriteState
@@ -36,6 +39,7 @@ struct Sprite
     bool jump_lock;
     SpriteState state;
     SpriteUpdate update = []( Sprite & self, LevelState & level ){};
+    SpriteInteract interact = []( Sprite & self, Sprite & other, LevelState & level ){};
     PropMap props;
     std::vector<SpriteType> types;
 
