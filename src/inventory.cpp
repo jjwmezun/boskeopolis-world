@@ -21,18 +21,18 @@ void Inventory::init( unsigned int state )
 {
     Render::addGraphic( Graphic::createRect
     (
-        { 4, 196, 392, 24 },
+        { 4, Unit::WINDOW_HEIGHT_PIXELS - 28, Unit::WINDOW_WIDTH_PIXELS - 8, 24 },
         { 0, 0, 0, 128 },
         true
     ), state, Layer::FG_2 );
     pts_gfx = Render::addGraphic( Graphic::createText
     (
-        { getShownGemsString().c_str(), { { "color", Color{ 255, 255, 255, 255 } }, { "x", 12 }, { "y", 204 } } },
+        { getShownGemsString().c_str(), { { "color", Color{ 255, 255, 255, 255 } }, { "x", 12 }, { "y", Unit::WINDOW_HEIGHT_PIXELS - 20 } } },
         true
     ), state, Layer::AFTER_FG_2 );
     hp_gfx = Render::addGraphic( Graphic::createText
     (
-        { getHPString().c_str(), { { "color", Color{ 255, 255, 255, 255 } }, { "x", 100 }, { "y", 204 } } },
+        { getHPString().c_str(), { { "color", Color{ 255, 255, 255, 255 } }, { "x", 100 }, { "y", Unit::WINDOW_HEIGHT_PIXELS - 20 } } },
         true
     ), state, Layer::AFTER_FG_2 );
 };

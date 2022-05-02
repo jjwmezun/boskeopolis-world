@@ -6,8 +6,8 @@
 namespace Unit
 {
     static constexpr int PIXELS_PER_BLOCK = 16;
-    static constexpr int WINDOW_WIDTH_BLOCKS = 25;
-    static constexpr int WINDOW_HEIGHT_BLOCKS = 14;
+    static constexpr int WINDOW_WIDTH_BLOCKS = 32;
+    static constexpr int WINDOW_HEIGHT_BLOCKS = 18;
     static constexpr int blocksToPixels( int n ) { return n * PIXELS_PER_BLOCK; };
     static constexpr int pixelsToBlocks( int n ) { return ( int )( floor( ( double )( n ) / ( double )( PIXELS_PER_BLOCK ) ) ); };
     static constexpr int WINDOW_WIDTH_PIXELS = blocksToPixels( WINDOW_WIDTH_BLOCKS );
