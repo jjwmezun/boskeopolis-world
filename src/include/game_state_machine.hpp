@@ -4,10 +4,11 @@
 #include "level_state.hpp"
 #include <string>
 #include "title_state.hpp"
+#include "treasure_list_state.hpp"
 #include "treasure_message_state.hpp"
 #include <variant>
 
-typedef std::variant<std::monostate, TitleState, LevelState, TreasureMessageState> GameState;
+typedef std::variant<std::monostate, TitleState, LevelState, TreasureMessageState, TreasureListState> GameState;
 
 namespace GameStateMachine
 {

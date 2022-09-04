@@ -34,11 +34,6 @@ namespace Hero
         };
         hero.update = []( Sprite & self, LevelState & level )
         {
-            if ( Input::pressedMenu() )
-            {
-                GameStateMachine::changeState( TitleState() );
-            }
-
             switch ( self.state )
             {
                 case ( SpriteState::NORMAL ):

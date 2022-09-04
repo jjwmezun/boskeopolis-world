@@ -84,5 +84,7 @@
         { "key": "’", "x": 141, "y": 16, "w": 4 },
         { "key": "₧", "x": 144, "y": 16, "w": 12 },
         { "key": " ", "x": 248, "y": 120, "type": "whitespace" }
-    ]
+    ],
+    "game": "Boskeopolis World",
+    "treasureList": "Treasures"
 }

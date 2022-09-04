@@ -2,10 +2,12 @@
 #include "game_state_machine.hpp"
 #include "graphic.hpp"
 #include "hero.hpp"
+#include "input.hpp"
 #include "level_state.hpp"
 #include "render.hpp"
 #include <stdexcept>
 #include "text.hpp"
+#include "treasure_list_state.hpp"
 
 LevelState::LevelState()
 :
@@ -34,6 +36,10 @@ void LevelState::update()
     Render::adjustCamera( &getHero().position, ( float )( Unit::blocksToPixels( map.width ) ), ( float )( Unit::blocksToPixels( map.height ) ) );
     inventory.update();
     rain.update();
+    if ( Input::pressedMenu() )
+    {
+        GameStateMachine::pushState( TreasureListState( inventory ) );
+    }
 };
 
 void LevelState::init( unsigned int state )

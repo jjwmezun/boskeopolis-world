@@ -61,7 +61,7 @@ void TreasureMessageState::init( unsigned int state )
         Render::getTextureID( "inventory/treasures.png" ),
         124,
         { 192.0f, 88.0f, 16.0f, 16.0f },
-        0.0f,
+        16.0f,
         0.0f,
         { { "abs", true } }
     ), state, Layer::FG_1 );

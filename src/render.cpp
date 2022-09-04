@@ -28,7 +28,7 @@ namespace Render
 
     #define MAX_TEXTURES 200
     #define VERTEX_SIZE 8
-    #define MAX_GRAPHICS 512
+    #define MAX_GRAPHICS 5120
     #define TEXTURE_MAP_CAPACITY 250
 
     #define BASE_MATRIX {\
@@ -437,6 +437,37 @@ namespace Render
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         stbi_image_free(texture_data);
+
+        return number_of_textures++;
+    };
+
+    unsigned int generateTexture( const char * local, unsigned char * texture_data, int width, int height, int indexed )
+    {
+        const hash_t needle_hash = hash_string( local );
+        TextureMapEntry * entry = hash_find_entry( local, needle_hash );
+        if ( entry->key.string != NULL )
+        {
+            /*
+            free( texture_map[ entry->value ].key.string );
+            texture_map[ entry->value ].key.hash = 0;
+            for ( int i = entry->value; i < number_of_textures; ++i ) {
+
+            }*/
+        }
+        entry->key.string = ( char * )( malloc( strlen( local ) + 1 ) );
+        strcpy( entry->key.string, local );
+        entry->key.hash = needle_hash;
+        entry->value = number_of_textures;
+
+        textures[ number_of_textures ].width = width;
+        textures[ number_of_textures ].height = height;
+
+        glBindTexture(GL_TEXTURE_2D, texture_ids[ number_of_textures ] );
+        glTexImage2D(GL_TEXTURE_2D, 0, ( indexed ) ? GL_R8 : GL_RGBA, textures[ number_of_textures ].width, textures[ number_of_textures ].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         return number_of_textures++;
     };

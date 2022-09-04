@@ -1,0 +1,40 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/jjwmezun/Documents/programming/boskeopolis-world'
+ 
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/tileset_system.o -c src/tileset_system.cpp
+ 
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/game_state_machine.o -c src/game_state_machine.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/sprite.o -c src/sprite.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/localization.o -c src/localization.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/engine.o -c src/engine.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/input.o -c src/input.cpp
+ 
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/map.o -c src/map.cpp
+ 
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/render.o -c src/render.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/title_state.o -c src/title_state.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/graphic.o -c src/graphic.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/jjson.o -c src/jjson.cpp
+ 
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/level_state.o -c src/level_state.cpp
+ 
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/treasure_message_state.o -c src/treasure_message_state.cpp
+ 
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/string.o -c src/string.cpp
+ 
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/hero.o -c src/hero.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/text.o -c src/text.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/crab.o -c src/crab.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/io.o -c src/io.cpp
+ 
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/layer_rain.o -c src/layer_rain.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/math.o -c src/math.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/glad.o -c src/glad.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/log.o -c src/log.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/inventory.o -c src/inventory.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/main.o -c src/main.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/tileset.o -c src/tileset.cpp
+g++ -std=c++2a -Wall -fconcepts -Isrc/include -o obj/json.o -c src/json.cpp
+g++ -std=c++2a -Wall -fconcepts -o BoskeopolisWorld obj/tileset_system.o obj/game_state_machine.o obj/sprite.o obj/localization.o obj/engine.o obj/input.o obj/map.o obj/render.o obj/title_state.o obj/graphic.o obj/jjson.o obj/level_state.o obj/treasure_message_state.o obj/string.o obj/hero.o obj/text.o obj/crab.o obj/io.o obj/layer_rain.o obj/math.o obj/glad.o obj/log.o obj/inventory.o obj/main.o obj/tileset.o obj/json.o -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lstdc++fs -lpthread
+make: Leaving directory '/home/jjwmezun/Documents/programming/boskeopolis-world'
+ 

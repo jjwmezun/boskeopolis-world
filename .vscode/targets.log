@@ -1,0 +1,1773 @@
+make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+# GNU Make 4.2.1
+# Built for x86_64-pc-linux-gnu
+# Copyright (C) 1988-2016 Free Software Foundation, Inc.
+# License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+# This is free software: you are free to change and redistribute it.
+# There is NO WARRANTY, to the extent permitted by law.
+ 
+
+# Make data base, printed on Mon May  2 18:02:42 2022
+
+# Variables
+
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+# automatic
+?F = $(notdir $?)
+# environment
+DESKTOP_SESSION = mate
+# default
+.SHELLFLAGS := -c
+# makefile (from 'Makefile', line 19)
+OBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)/%.o)
+# environment
+XDG_SESSION_CLASS = user
+# makefile (from 'Makefile', line 18)
+SRC = $(wildcard $(SRCDIR)/*$(EXT))
+# environment
+XDG_SESSION_TYPE = x11
+# environment
+VSCODE_LOG_NATIVE = false
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# automatic
+@D = $(patsubst %/,%,$(dir $@))
+# environment
+XAUTHORITY = /home/jjwmezun/.Xauthority
+# environment
+GDMSESSION = mate
+# environment
+XMODIFIERS = @im=ibus
+# makefile
+CURDIR := /home/jjwmezun/Documents/programming/boskeopolis-world
+# makefile
+SHELL = /bin/sh
+# makefile (from 'Makefile', line 22)
+RM = rm
+# environment
+GDM_LANG = en_US
+# environment
+VTE_VERSION = 6003
+# environment
+VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
+# environment
+_ = /usr/bin/code
+# environment
+QT_AUTO_SCREEN_SCALE_FACTOR = 0
+# environment
+XDG_CONFIG_DIRS = /etc/xdg/xdg-mate:/etc/xdg
+# environment
+GTK_OVERLAY_SCROLLING = 0
+# makefile (from 'json.d', line 1)
+MAKEFILE_LIST :=  Makefile tileset_system.d game_state_machine.d sprite.d localization.d engine.d input.d map.d render.d title_state.d graphic.d jjson.d level_state.d treasure_message_state.d string.d hero.d text.d crab.d io.d layer_rain.d math.d glad.d log.d inventory.d main.d tileset.d json.d
+# automatic
+@F = $(notdir $@)
+# 'override' directive
+GNUMAKEFLAGS := 
+# makefile (from 'Makefile', line 7)
+CXXFLAGS = -std=c++2a -Wall -fconcepts
+# environment
+MANDATORY_PATH = /usr/share/gconf/mate.mandatory.path
+# environment
+XDG_DATA_DIRS = /usr/share/mate:/home/jjwmezun/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share:/usr/share
+# environment
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
+# environment
+VSCODE_VERBOSE_LOGGING = true
+# environment
+QT_SCALE_FACTOR = 1
+# makefile (from 'Makefile', line 25)
+DEL = del
+# environment
+CLUTTER_IM_MODULE = ibus
+# environment
+LESSOPEN = | /usr/bin/lesspipe %s
+# environment
+VSCODE_CWD = /home/jjwmezun/Documents/programming/boskeopolis-world
+# environment
+XDG_SESSION_PATH = /org/freedesktop/DisplayManager/Session0
+# default
+MAKE_HOST := x86_64-pc-linux-gnu
+# environment
+PATH = /home/jjwmezun/.local/bin:/home/jjwmezun/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+# environment
+GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
+# makefile (from 'Makefile', line 20)
+DEP = $(OBJ:$(OBJDIR)/%.o=%.d)
+# environment
+SESSION_MANAGER = local/jjwmezun-B450M-DS3H:@/tmp/.ICE-unix/1318,unix/jjwmezun-B450M-DS3H:/tmp/.ICE-unix/1318
+# environment
+XDG_RUNTIME_DIR = /run/user/1000
+# environment
+WINDOWID = 98837869
+# environment
+VSCODE_LOG_STACK = false
+# environment
+ELECTRON_RUN_AS_NODE = 1
+# makefile (from 'Makefile', line 8)
+LDFLAGS = -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lstdc++fs -lpthread
+# default
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
+# environment
+XDG_GREETER_DATA_DIR = /var/lib/lightdm-data/jjwmezun
+# environment
+LS_COLORS = rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+# environment
+XDG_SESSION_DESKTOP = mate
+# environment
+SSH_AUTH_SOCK = /run/user/1000/keyring/ssh
+# makefile (from 'Makefile', line 13)
+SRCDIR = src
+# automatic
+%F = $(notdir $%)
+# environment
+DISPLAY = :0
+# environment
+GTK_IM_MODULE = ibus
+# environment
+VSCODE_PIPE_LOGGING = true
+# makefile (from 'Makefile', line 15)
+LOCALINC = -Isrc/include
+# environment
+PWD = /home/jjwmezun/Documents/programming/boskeopolis-world
+# environment
+QT_QPA_PLATFORMTHEME = qt5ct
+# default
+.LOADED := 
+# environment
+XDG_SEAT = seat0
+# environment
+SSH_AGENT_PID = 1400
+# environment
+ORIGINAL_XDG_CURRENT_DESKTOP = MATE
+# environment
+GTK_MODULES = gail:atk-bridge
+# environment
+VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+# environment
+HOME = /home/jjwmezun
+# environment
+LESSCLOSE = /usr/bin/lesspipe %s %s
+# environment
+VSCODE_CLI = 1
+# environment
+VSCODE_CODE_CACHE_PATH = /home/jjwmezun/.config/Code/CachedData/dfd34e8260c270da74b5c2d86d61aee4b6d56977
+# environment
+LOGNAME = jjwmezun
+# environment
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
+# makefile (from 'Makefile', line 23)
+DELOBJ = $(OBJ)
+# environment
+ELECTRON_NO_ATTACH_CONSOLE = 1
+# environment
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# default
+MAKE_VERSION := 4.2.1
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
+# environment
+XDG_VTNR = 7
+# environment
+CLUTTER_BACKEND = x11
+# environment
+MAKELEVEL := 0
+# environment
+COLORTERM = truecolor
+# default
+MAKE = $(MAKE_COMMAND)
+# default
+MAKECMDGOALS := all
+# environment
+QT_IM_MODULE = ibus
+# environment
+SHLVL = 1
+# makefile (from 'Makefile', line 6)
+CC = g++
+# environment
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-b653d951-410a-4d1c-bd75-084771106517.sock
+# environment
+XDG_SESSION_ID = c2
+# environment
+USER = jjwmezun
+# makefile
+.DEFAULT_GOAL := all
+# environment
+XDG_CURRENT_DESKTOP = MATE
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
+# default
+MAKE_COMMAND := make
+# default
+.VARIABLES := 
+# automatic
+*F = $(notdir $*)
+# environment
+LANGUAGE = en_US
+# environment
+XDG_SEAT_PATH = /org/freedesktop/DisplayManager/Seat0
+# environment
+VSCODE_IPC_HOOK = /run/user/1000/vscode-2325580b-1.66.2-main.sock
+# makefile (from 'Makefile', line 12)
+EXT = .cpp
+# makefile
+MAKEFLAGS = pqrR
+# environment
+MFLAGS = -pqrR
+# automatic
+*D = $(patsubst %/,%,$(dir $*))
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# environment
+GDK_BACKEND = x11
+# automatic
++F = $(notdir $+)
+# environment
+NO_AT_BRIDGE = 1
+# makefile (from 'Makefile', line 11)
+APPNAME = BoskeopolisWorld
+# environment
+QT_ACCESSIBILITY = 1
+# environment
+DEFAULTS_PATH = /usr/share/gconf/mate.default.path
+# default
+MAKEFILES := 
+# automatic
+<F = $(notdir $<)
+# makefile (from 'Makefile', line 14)
+OBJDIR = obj
+# environment
+LC_ALL = C
+# makefile (from 'Makefile', line 27)
+WDELOBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)\\%.o)
+# environment
+QT4_IM_MODULE = ibus
+# automatic
+^F = $(notdir $^)
+# default
+SUFFIXES := 
+# environment
+CHROME_DESKTOP = code-url-handler.desktop
+# environment
+MATE_DESKTOP_SESSION_ID = this-is-deprecated
+# default
+.INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
+# default
+.RECIPEPREFIX := 
+# environment
+INSIDE_CAJA_PYTHON = 
+# makefile (from 'Makefile', line 26)
+EXE = .exe
+# environment
+LANG = C
+# environment
+TERM = xterm-256color
+# environment
+VSCODE_PID = 61736
+# variable set hash-table stats:
+# Load=127/1024=12%, Rehash=0, Collisions=15/237=6%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# . (device 2070, inode 9838638): 37 files, no impossibilities.
+# src (device 2070, inode 9838987): 30 files, no impossibilities.
+
+# 67 files, no impossibilities in 2 directories.
+
+# Implicit Rules
+
+%.d: src/%.cpp
+#  recipe to execute (from 'Makefile', line 46):
+ 
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+obj/%.o: src/%.cpp
+#  recipe to execute (from 'Makefile', line 53):
+	$(CC) $(CXXFLAGS) $(LOCALINC) -o $@ -c $<
+
+# 2 implicit rules, 0 (0.0%) terminal.
+
+# Files
+
+# Not a target:
+src/include/engine.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:23:59.958585088
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/mat3.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/json.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:23:59.958585088
+#  File has been updated.
+#  Successfully updated.
+
+obj/text.o: src/text.cpp src/include/localization.hpp src/include/character_template.hpp src/include/render.hpp src/include/color.hpp src/include/graphic.hpp src/include/prop_map.hpp src/include/rect.hpp src/include/text.hpp src/include/character.hpp src/include/unit.hpp src/include/layer.hpp src/include/text.hpp src/include/unit.hpp
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/include/sprite.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 19:36:03.718445669
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/config.hpp:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+obj/io.o: src/io.cpp src/include/io.hpp src/include/log.hpp
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/include/cglm/sphere.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/inventory.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 20:23:01.124117512
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/call/project.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/plane.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/affine-mat.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.644557718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/call/affine2d.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.644557718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/tileset.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 10:56:59.854118055
+#  File has been updated.
+#  Successfully updated.
+
+obj/game_state_machine.o: src/game_state_machine.cpp src/game_state_machine.cpp src/include/game_state_machine.hpp src/include/level_state.hpp src/include/inventory.hpp src/include/layer_rain.hpp src/include/unit.hpp src/include/map.hpp src/include/color.hpp src/include/prop_map.hpp src/include/sprite.hpp src/include/rect.hpp src/include/tileset_system.hpp src/include/tileset.hpp src/include/tile.hpp src/include/title_state.hpp src/include/treasure_message_state.hpp src/include/render.hpp src/include/graphic.hpp src/include/text.hpp src/include/character.hpp src/include/layer.hpp src/include/unit.hpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'game_state_machine'
+#  Last modified 2022-05-01 20:39:15.862942086
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 53):
+	$(CC) $(CXXFLAGS) $(LOCALINC) -o $@ -c $<
+
+# Not a target:
+src/include/cglm/vec3-ext.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.652561717
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/character.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:23:59.954583088
+#  File has been updated.
+#  Successfully updated.
+
+level_state.d: src/level_state.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'level_state'
+#  Last modified 2022-05-02 18:02:40.45471645
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Not a target:
+src/include/cglm/curve.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+all: makedir BoskeopolisWorld
+#  Command line target.
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/10=0%
+
+# Not a target:
+src/include/cglm/cglm.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/call/vec3.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+map.d: src/map.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'map'
+#  Last modified 2022-05-02 18:02:40.978726417
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Not a target:
+src/include/level_state.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 13:38:07.423493573
+#  File has been updated.
+#  Successfully updated.
+
+.PHONY: makedir clean cleandep cleanw cleandepw
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+obj/glad.o: src/glad.cpp src/include/glad/glad.h src/include/KHR/khrplatform.h
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+tileset.d: src/tileset.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'tileset'
+#  Last modified 2022-05-02 18:02:39.918706256
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Not a target:
+src/include/map.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 18:50:17.871867784
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/simd/sse2/affine.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/call/frustum.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/engine.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-13 15:07:34.127540669
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/vec2.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.652561717
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/simd/x86.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/call/curve.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/sprite.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 19:36:01.102394246
+#  File has been updated.
+#  Successfully updated.
+
+obj/title_state.o: src/title_state.cpp src/title_state.cpp src/include/game_state_machine.hpp src/include/level_state.hpp src/include/inventory.hpp src/include/layer_rain.hpp src/include/unit.hpp src/include/map.hpp src/include/color.hpp src/include/prop_map.hpp src/include/sprite.hpp src/include/rect.hpp src/include/tileset_system.hpp src/include/tileset.hpp src/include/tile.hpp src/include/title_state.hpp src/include/treasure_message_state.hpp src/include/graphic.hpp src/include/text.hpp src/include/character.hpp src/include/input.hpp src/include/level_state.hpp src/include/render.hpp src/include/graphic.hpp src/include/layer.hpp src/include/title_state.hpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'title_state'
+#  File does not exist.
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# automatic
+# @ := obj/title_state.o
+# automatic
+# % := 
+# automatic
+# * := title_state
+# automatic
+# + := src/title_state.cpp src/title_state.cpp src/include/game_state_machine.hpp src/include/level_state.hpp src/include/inventory.hpp src/include/layer_rain.hpp src/include/unit.hpp src/include/map.hpp src/include/color.hpp src/include/prop_map.hpp src/include/sprite.hpp src/include/rect.hpp src/include/tileset_system.hpp src/include/tileset.hpp src/include/tile.hpp src/include/title_state.hpp src/include/treasure_message_state.hpp src/include/graphic.hpp src/include/text.hpp src/include/character.hpp src/include/input.hpp src/include/level_state.hpp src/include/render.hpp src/include/graphic.hpp src/include/layer.hpp src/include/title_state.hpp
+# automatic
+# | := 
+# automatic
+# < := src/title_state.cpp
+# automatic
+ 
+# ^ := src/title_state.cpp src/include/game_state_machine.hpp src/include/level_state.hpp src/include/inventory.hpp src/include/layer_rain.hpp src/include/unit.hpp src/include/map.hpp src/include/color.hpp src/include/prop_map.hpp src/include/sprite.hpp src/include/rect.hpp src/include/tileset_system.hpp src/include/tileset.hpp src/include/tile.hpp src/include/title_state.hpp src/include/treasure_message_state.hpp src/include/graphic.hpp src/include/text.hpp src/include/character.hpp src/include/input.hpp src/include/render.hpp src/include/layer.hpp
+# automatic
+# ? := src/title_state.cpp src/include/game_state_machine.hpp src/include/level_state.hpp src/include/inventory.hpp src/include/layer_rain.hpp src/include/unit.hpp src/include/map.hpp src/include/color.hpp src/include/prop_map.hpp src/include/sprite.hpp src/include/rect.hpp src/include/tileset_system.hpp src/include/tileset.hpp src/include/tile.hpp src/include/title_state.hpp src/include/treasure_message_state.hpp src/include/graphic.hpp src/include/text.hpp src/include/character.hpp src/include/input.hpp src/include/render.hpp src/include/layer.hpp
+# variable set hash-table stats:
+# Load=8/32=25%, Rehash=0, Collisions=1/16=6%
+#  recipe to execute (from 'Makefile', line 53):
+	$(CC) $(CXXFLAGS) $(LOCALINC) -o $@ -c $<
+
+# Not a target:
+src/include/crab.hpp:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+graphic.d: src/graphic.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'graphic'
+#  Last modified 2022-05-02 18:02:40.522717744
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Not a target:
+src/include/string.hpp:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+obj/tileset_system.o: src/tileset_system.cpp src/tileset_system.cpp src/include/tileset_system.hpp src/include/tileset.hpp src/include/tile.hpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'tileset_system'
+#  Last modified 2022-05-01 20:38:31.914092979
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 53):
+	$(CC) $(CXXFLAGS) $(LOCALINC) -o $@ -c $<
+
+# Not a target:
+src/inventory.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 20:41:26.929473709
+#  File has been updated.
+#  Successfully updated.
+
+text.d: src/text.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'text'
+#  Last modified 2022-05-02 18:02:40.266712875
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Not a target:
+src/crab.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 20:05:55.000923148
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/hero.hpp:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+input.d: src/input.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'input'
+#  Last modified 2022-05-02 18:02:41.018727178
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+obj/main.o: src/main.cpp src/include/color.hpp src/include/engine.hpp src/include/game_state_machine.hpp src/include/level_state.hpp src/include/inventory.hpp src/include/layer_rain.hpp src/include/unit.hpp src/include/map.hpp src/include/color.hpp src/include/prop_map.hpp src/include/sprite.hpp src/include/rect.hpp src/include/tileset_system.hpp src/include/tileset.hpp src/include/tile.hpp src/include/title_state.hpp src/include/treasure_message_state.hpp src/include/input.hpp src/include/layer.hpp src/include/localization.hpp src/include/character_template.hpp src/include/log.hpp src/include/math.hpp src/include/rect.hpp src/include/render.hpp src/include/graphic.hpp src/include/text.hpp src/include/character.hpp src/include/layer.hpp
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+.SUFFIXES:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/include/graphic.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-14 22:27:14.141670953
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/layer.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:23:59.958585088
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/clipspace/../common.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+obj/math.o: src/math.cpp src/include/math.hpp
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/include/cglm/ray.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+Makefile:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 14:24:19.451193676
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/json/json.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.652561717
+#  File has been updated.
+#  Successfully updated.
+
+engine.d: src/engine.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'engine'
+#  Last modified 2022-05-02 18:02:41.06672809
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Not a target:
+src/include/cglm/bezier.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.644557718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/level_state.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 19:28:49.029887858
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/call/quat.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/box.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.644557718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/GLFW/glfw3.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-06-14 22:16:44.94152791
+#  File has been updated.
+#  Successfully updated.
+
+json.d: src/json.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'json'
+#  Last modified 2022-05-02 18:02:39.838704735
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Not a target:
+src/map.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 19:02:02.509984614
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/call/euler.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/text.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 12:43:04.561431843
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/KHR/khrplatform.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-06-14 22:16:44.94152791
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/tile.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-11 23:18:44.7882139
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/io.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:23:59.958585088
+#  File has been updated.
+#  Successfully updated.
+
+obj/localization.o: src/localization.cpp src/localization.cpp src/include/io.hpp src/include/localization.hpp src/include/character_template.hpp src/include/log.hpp src/include/json/json.h
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'localization'
+#  Last modified 2022-05-01 20:38:35.362159602
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 53):
+	$(CC) $(CXXFLAGS) $(LOCALINC) -o $@ -c $<
+
+obj/jjson.o: src/jjson.cpp src/include/io.hpp src/include/jjson.hpp src/include/json/json.h src/include/log.hpp
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/include/cglm/simd/sse2/mat2.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/call/mat2.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/string.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 13:01:37.109208744
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/ease.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/game_state_machine.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-14 18:29:01.438566709
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/hero.cpp:
+#  Implicit rule search has been done.
+ 
+#  Last modified 2022-05-01 20:23:11.072307428
+#  File has been updated.
+#  Successfully updated.
+
+obj/log.o: src/log.cpp src/include/config.hpp src/include/log.hpp
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+obj/treasure_message_state.o: src/treasure_message_state.cpp src/include/game_state_machine.hpp src/include/level_state.hpp src/include/inventory.hpp src/include/layer_rain.hpp src/include/unit.hpp src/include/map.hpp src/include/color.hpp src/include/prop_map.hpp src/include/sprite.hpp src/include/rect.hpp src/include/tileset_system.hpp src/include/tileset.hpp src/include/tile.hpp src/include/title_state.hpp src/include/treasure_message_state.hpp src/include/graphic.hpp src/include/text.hpp src/include/character.hpp src/include/input.hpp src/include/render.hpp src/include/graphic.hpp src/include/layer.hpp src/include/text.hpp src/include/treasure_message_state.hpp src/include/unit.hpp
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/graphic.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-14 22:28:17.24120482
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/call/io.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+cleanw:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 70):
+	$(DEL) $(WDELOBJ) $(DEP) $(APPNAME)$(EXE)
+
+# Not a target:
+src/include/cglm/clipspace/../mat4.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+title_state.d: src/title_state.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'title_state'
+#  Last modified 2022-05-02 18:02:40.566718581
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+hero.d: src/hero.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'hero'
+#  Last modified 2022-05-02 18:02:40.310713712
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Not a target:
+src/include/cglm/call/mat4.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+obj/input.o: src/input.cpp src/input.cpp src/include/input.hpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'input'
+#  Last modified 2022-05-01 20:38:36.962190515
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 53):
+	$(CC) $(CXXFLAGS) $(LOCALINC) -o $@ -c $<
+
+game_state_machine.d: src/game_state_machine.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'game_state_machine'
+#  Last modified 2022-05-02 18:02:41.19073045
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Not a target:
+src/include/cglm/call/cam.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.644557718
+#  File has been updated.
+#  Successfully updated.
+
+obj/json.o: src/json.cpp src/include/json/json.h
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/text.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 12:48:00.199772744
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/project.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/title_state.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:39:05.919341303
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/types.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.652561717
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/affine2d.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.644557718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/io.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:23:59.958585088
+#  File has been updated.
+#  Successfully updated.
+
+obj/layer_rain.o: src/layer_rain.cpp src/include/graphic.hpp src/include/color.hpp src/include/prop_map.hpp src/include/rect.hpp src/include/text.hpp src/include/character.hpp src/include/unit.hpp src/include/layer_rain.hpp src/include/math.hpp src/include/render.hpp src/include/graphic.hpp src/include/layer.hpp
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+obj/render.o: src/render.cpp src/render.cpp src/include/character.hpp src/include/color.hpp src/include/glad/glad.h src/include/KHR/khrplatform.h src/include/GLFW/glfw3.h src/include/io.hpp src/include/log.hpp src/include/rect.hpp src/include/render.hpp src/include/graphic.hpp src/include/prop_map.hpp src/include/rect.hpp src/include/text.hpp src/include/character.hpp src/include/unit.hpp src/include/layer.hpp src/include/text.hpp src/include/tile.hpp src/include/cglm/cglm.h src/include/cglm/common.h src/include/cglm/types.h src/include/cglm/simd/intrin.h src/include/cglm/simd/x86.h src/include/cglm/simd/intrin.h src/include/cglm/vec2.h src/include/cglm/util.h src/include/cglm/vec2-ext.h src/include/cglm/vec3.h src/include/cglm/vec4.h src/include/cglm/vec4-ext.h src/include/cglm/vec3-ext.h src/include/cglm/mat4.h src/include/cglm/simd/sse2/mat4.h src/include/cglm/simd/sse2/../../common.h src/include/cglm/simd/sse2/../intrin.h src/include/cglm/mat3.h src/include/cglm/simd/sse2/mat3.h src/include/cglm/mat2.h src/include/cglm/simd/sse2/mat2.h src/include/cglm/affine.h src/include/cglm/affine-mat.h src/include/cglm/simd/sse2/affine.h src/include/cglm/cam.h src/include/cglm/plane.h src/include/cglm/clipspace/persp.h src/include/cglm/clipspace/../common.h src/include/cglm/clipspace/../plane.h src/include/cglm/clipspace/../mat4.h src/include/cglm/clipspace/ortho_rh_no.h src/include/cglm/clipspace/persp_rh_no.h src/include/cglm/clipspace/persp.h src/include/cglm/clipspace/view_rh_no.h src/include/cglm/clipspace/view_rh.h src/include/cglm/frustum.h src/include/cglm/quat.h src/include/cglm/simd/sse2/quat.h src/include/cglm/euler.h src/include/cglm/box.h src/include/cglm/color.h src/include/cglm/io.h src/include/cglm/project.h src/include/cglm/sphere.h src/include/cglm/ease.h src/include/cglm/curve.h src/include/cglm/bezier.h src/include/cglm/ray.h src/include/cglm/affine2d.h src/include/cglm/call.h src/include/cglm/cglm.h src/include/cglm/call/vec2.h src/include/cglm/call/../cglm.h src/include/cglm/call/vec3.h src/include/cglm/call/vec4.h src/include/cglm/call/mat2.h src/include/cglm/call/mat3.h src/include/cglm/call/mat4.h src/include/cglm/call/affine.h src/include/cglm/call/cam.h src/include/cglm/call/quat.h src/include/cglm/call/euler.h src/include/cglm/call/plane.h src/include/cglm/call/frustum.h src/include/cglm/call/box.h src/include/cglm/call/io.h src/include/cglm/call/project.h src/include/cglm/call/sphere.h src/include/cglm/call/ease.h src/include/cglm/call/curve.h src/include/cglm/call/bezier.h src/include/cglm/call/ray.h src/include/cglm/call/affine2d.h src/include/stb_image/stb_image.h
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'render'
+#  Last modified 2022-05-01 20:39:20.039022764
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 53):
+	$(CC) $(CXXFLAGS) $(LOCALINC) -o $@ -c $<
+
+# Not a target:
+src/include/tileset_system.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-13 16:18:50.63260381
+#  File has been updated.
+#  Successfully updated.
+
+main.d: src/main.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'main'
+#  Last modified 2022-05-02 18:02:39.994707701
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+inventory.d: src/inventory.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'inventory'
+#  Last modified 2022-05-02 18:02:40.042708614
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+glad.d: src/glad.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'glad'
+#  Last modified 2022-05-02 18:02:40.09870968
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+math.d: src/math.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'math'
+#  Last modified 2022-05-02 18:02:40.122710136
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Not a target:
+src/include/cglm/mat2.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/vec3.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.652561717
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/game_state_machine.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-14 18:41:00.441887206
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/simd/sse2/../../common.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/call/mat3.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/math.hpp:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/include/cglm/quat.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/clipspace/../plane.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/include/cglm/frustum.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/affine.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.644557718
+#  File has been updated.
+#  Successfully updated.
+
+obj/tileset.o: src/tileset.cpp src/include/io.hpp src/include/jjson.hpp src/include/json/json.h src/include/log.hpp src/include/tileset.hpp src/include/tile.hpp
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/include/cglm/simd/intrin.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/glad.cpp:
+#  Implicit rule search has been done.
+ 
+#  Last modified 2021-09-06 23:23:59.954583088
+#  File has been updated.
+#  Successfully updated.
+
+render.d: src/render.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'render'
+#  Last modified 2022-05-02 18:02:40.870724363
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Not a target:
+src/include/cglm/call/sphere.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+cleandep:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 64):
+	$(RM) $(DEP)
+
+# Not a target:
+src/include/cglm/call/plane.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+localization.d: src/localization.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'localization'
+#  Last modified 2022-05-02 18:02:41.110728928
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+sprite.d: src/sprite.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'sprite'
+#  Last modified 2022-05-02 18:02:41.146729612
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+jjson.d: src/jjson.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'jjson'
+#  Last modified 2022-05-02 18:02:40.482716983
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Not a target:
+src/include/color.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:23:59.954583088
+#  File has been updated.
+#  Successfully updated.
+
+# 'override' directive
+makedir: .SHELLSTATUS := 0
+makedir:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  Implicit/static pattern stem: ''
+#  File does not exist.
+#  File has been updated.
+#  Successfully updated.
+# automatic
+# @ := makedir
+# automatic
+# % := 
+# automatic
+# * := 
+# automatic
+# + := 
+# automatic
+# | := 
+# automatic
+# < := 
+# automatic
+# ^ := 
+# automatic
+# ? := 
+# variable set hash-table stats:
+# Load=9/32=28%, Rehash=0, Collisions=1/13=8%
+#  recipe to execute (from 'Makefile', line 38):
+	$(shell mkdir -p $(OBJDIR))
+
+# Not a target:
+src/include/character_template.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:23:59.954583088
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/localization.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:23:59.958585088
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/util.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.652561717
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/title_state.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-14 18:50:38.145432702
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/call.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.644557718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/call/../cglm.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/jjson.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-07 00:55:05.239941943
+#  File has been updated.
+#  Successfully updated.
+
+clean:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 59):
+	$(RM) $(DELOBJ) $(DEP) $(APPNAME)
+
+# Not a target:
+src/include/cglm/clipspace/view_rh.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+log.d: src/log.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'log'
+#  Last modified 2022-05-02 18:02:40.0787093
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Not a target:
+src/tileset_system.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 10:32:25.877316855
+#  File has been updated.
+#  Successfully updated.
+
+io.d: src/io.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'io'
+#  Last modified 2022-05-02 18:02:40.186711354
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+obj/engine.o: src/engine.cpp src/engine.cpp src/include/color.hpp src/include/engine.hpp src/include/glad/glad.h src/include/KHR/khrplatform.h src/include/GLFW/glfw3.h src/include/input.hpp src/include/log.hpp src/include/render.hpp src/include/color.hpp src/include/graphic.hpp src/include/prop_map.hpp src/include/rect.hpp src/include/text.hpp src/include/character.hpp src/include/unit.hpp src/include/layer.hpp src/include/unit.hpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'engine'
+#  Last modified 2022-05-01 20:39:16.658957465
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 53):
+	$(CC) $(CXXFLAGS) $(LOCALINC) -o $@ -c $<
+
+# Not a target:
+src/include/cglm/vec2-ext.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.652561717
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/clipspace/persp_rh_no.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/log.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:23:59.958585088
+#  File has been updated.
+#  Successfully updated.
+
+obj/sprite.o: src/sprite.cpp src/sprite.cpp src/include/sprite.hpp src/include/prop_map.hpp src/include/rect.hpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'sprite'
+#  Last modified 2022-05-01 20:38:34.58214453
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 53):
+	$(CC) $(CXXFLAGS) $(LOCALINC) -o $@ -c $<
+
+# Not a target:
+src/main.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-14 19:16:35.685721061
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/call/vec2.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+BoskeopolisWorld: obj/tileset_system.o obj/game_state_machine.o obj/sprite.o obj/localization.o obj/engine.o obj/input.o obj/map.o obj/render.o obj/title_state.o obj/graphic.o obj/jjson.o obj/level_state.o obj/treasure_message_state.o obj/string.o obj/hero.o obj/text.o obj/crab.o obj/io.o obj/layer_rain.o obj/math.o obj/glad.o obj/log.o obj/inventory.o obj/main.o obj/tileset.o obj/json.o
+#  Implicit rule search has not been done.
+#  Last modified 2022-05-01 20:41:29.505523458
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/6=0%
+#  recipe to execute (from 'Makefile', line 42):
+	$(CC) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+# Not a target:
+src/include/treasure_message_state.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-14 18:38:58.036715465
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/simd/sse2/mat4.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/common.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/math.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-14 19:15:55.345561148
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/prop_map.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-13 12:00:41.115677063
+#  File has been updated.
+#  Successfully updated.
+
+obj/inventory.o: src/inventory.cpp src/include/graphic.hpp src/include/color.hpp src/include/prop_map.hpp src/include/rect.hpp src/include/text.hpp src/include/character.hpp src/include/unit.hpp src/include/inventory.hpp src/include/render.hpp src/include/graphic.hpp src/include/layer.hpp src/include/string.hpp src/include/text.hpp
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+tileset_system.d: src/tileset_system.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'tileset_system'
+#  Last modified 2022-05-02 18:02:41.218730982
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+ 
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Not a target:
+src/include/cglm/euler.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/vec4.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.652561717
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/input.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-13 17:52:30.997631707
+#  File has been updated.
+#  Successfully updated.
+
+layer_rain.d: src/layer_rain.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'layer_rain'
+#  Last modified 2022-05-02 18:02:40.158710821
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+crab.d: src/crab.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'crab'
+#  Last modified 2022-05-02 18:02:40.226712115
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Not a target:
+src/include/cglm/clipspace/view_rh_no.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+string.d: src/string.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'string'
+#  Last modified 2022-05-02 18:02:40.354714548
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+obj/level_state.o: src/level_state.cpp src/include/crab.hpp src/include/sprite.hpp src/include/prop_map.hpp src/include/rect.hpp src/include/game_state_machine.hpp src/include/level_state.hpp src/include/inventory.hpp src/include/layer_rain.hpp src/include/unit.hpp src/include/map.hpp src/include/color.hpp src/include/tileset_system.hpp src/include/tileset.hpp src/include/tile.hpp src/include/title_state.hpp src/include/treasure_message_state.hpp src/include/graphic.hpp src/include/text.hpp src/include/character.hpp src/include/hero.hpp src/include/level_state.hpp src/include/render.hpp src/include/graphic.hpp src/include/layer.hpp src/include/text.hpp
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/include/layer_rain.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-14 19:41:51.046218334
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/localization.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:23:59.958585088
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/simd/sse2/mat3.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/render.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-14 18:51:54.999840539
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/call/ray.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/clipspace/persp.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/jjson.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-07 00:58:23.976
+#  File has been updated.
+#  Successfully updated.
+
+obj/map.o: src/map.cpp src/map.cpp src/include/graphic.hpp src/include/color.hpp src/include/prop_map.hpp src/include/rect.hpp src/include/text.hpp src/include/character.hpp src/include/unit.hpp src/include/jjson.hpp src/include/json/json.h src/include/log.hpp src/include/map.hpp src/include/render.hpp src/include/graphic.hpp src/include/layer.hpp src/include/tile.hpp src/include/tileset_system.hpp src/include/tileset.hpp src/include/tile.hpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'map'
+#  Last modified 2022-05-01 20:39:18.162986521
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 53):
+	$(CC) $(CXXFLAGS) $(LOCALINC) -o $@ -c $<
+
+# Not a target:
+src/include/cglm/call/bezier.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.644557718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/vec4-ext.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.652561717
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/call/box.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.644557718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/simd/sse2/../intrin.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/io.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+cleandepw:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 75):
+	$(DEL) $(DEP)
+
+# Not a target:
+src/include/glad/glad.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-06-14 22:16:44.94552991
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/log.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:23:59.958585088
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/direction.hpp:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/include/cglm/call/vec4.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+obj/crab.o: src/crab.cpp src/include/crab.hpp src/include/sprite.hpp src/include/prop_map.hpp src/include/rect.hpp src/include/level_state.hpp src/include/inventory.hpp src/include/layer_rain.hpp src/include/unit.hpp src/include/map.hpp src/include/color.hpp src/include/tileset_system.hpp src/include/tileset.hpp src/include/tile.hpp src/include/map.hpp src/include/render.hpp src/include/graphic.hpp src/include/text.hpp src/include/character.hpp src/include/layer.hpp
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/include/cglm/call/affine.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.644557718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/treasure_message_state.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-14 22:35:02.955960009
+#  File has been updated.
+#  Successfully updated.
+
+obj/string.o: src/string.cpp src/include/string.hpp
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/include/cglm/mat4.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/tileset.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-13 17:06:24.339646758
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/rect.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 19:43:59.671786518
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/cam.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/color.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+obj/hero.o: src/hero.cpp src/include/direction.hpp src/include/game_state_machine.hpp src/include/level_state.hpp src/include/inventory.hpp src/include/layer_rain.hpp src/include/unit.hpp src/include/map.hpp src/include/color.hpp src/include/prop_map.hpp src/include/sprite.hpp src/include/rect.hpp src/include/tileset_system.hpp src/include/tileset.hpp src/include/tile.hpp src/include/title_state.hpp src/include/treasure_message_state.hpp src/include/graphic.hpp src/include/text.hpp src/include/character.hpp src/include/input.hpp src/include/map.hpp src/include/render.hpp src/include/graphic.hpp src/include/layer.hpp src/include/tile.hpp src/include/title_state.hpp src/include/treasure_message_state.hpp src/include/hero.hpp
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/include/unit.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-01 20:39:12.522877559
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/call/ease.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/input.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-13 17:52:40.482371688
+#  File has been updated.
+#  Successfully updated.
+ 
+
+obj/graphic.o: src/graphic.cpp src/include/graphic.hpp src/include/color.hpp src/include/prop_map.hpp src/include/rect.hpp src/include/text.hpp src/include/character.hpp src/include/unit.hpp src/include/render.hpp src/include/graphic.hpp src/include/layer.hpp src/include/unit.hpp
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+treasure_message_state.d: src/treasure_message_state.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'treasure_message_state'
+#  Last modified 2022-05-02 18:02:40.406715538
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@$(CPP) $(CFLAGS) $(LOCALINC) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Not a target:
+src/include/stb_image/stb_image.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-06-14 22:16:44.96954191
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/clipspace/ortho_rh_no.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/include/cglm/simd/sse2/quat.h:
+#  Implicit rule search has been done.
+#  Last modified 2021-09-06 23:19:26.648559718
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/layer_rain.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-14 19:42:26.127750262
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/render.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-14 22:26:58.085646988
+#  File has been updated.
+#  Successfully updated.
+
+# files hash-table stats:
+# Load=197/1024=19%, Rehash=0, Collisions=139/804=17%
+# VPATH Search Paths
+
+# No 'vpath' search paths.
+
+# No general ('VPATH' variable) search path.
+
+# strcache buffers: 1 (0) / strings = 265 / storage = 4820 B / avg = 18 B
+# current buf: size = 8162 B / used = 4820 B / count = 265 / avg = 18 B
+
+# strcache performance: lookups = 752 / hit rate = 64%
+# hash-table stats:
+# Load=265/8192=3%, Rehash=0, Collisions=27/752=4%
+# Finished Make data base on Mon May  2 18:02:42 2022
+
+ 
