@@ -1,0 +1,10 @@
+set(engine_sources
+    engine/json.c
+    engine/glad.c
+    engine/nasr.c
+    engine/nasr_input.c
+    engine/nasr_io.c
+    engine/nasr_log.c
+    engine/nasr_localization.c
+    engine/nasr_math.c
+)
