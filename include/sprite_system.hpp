@@ -8,6 +8,7 @@
 namespace BSW
 {
     class Game;
+    class Inventory;
     class Map;
 
     enum class SpriteType
@@ -77,7 +78,7 @@ namespace BSW
         } misc_;
 
         void init( Game & game );
-        void update( Game & game, Map & map, float dt );
+        void update( Game & game, Map & map, Inventory & inventory, float dt );
         void goLeft();
         void goRight();
         void updatePositionGraphics( float xoffset = 0.0f, float yoffset = 0.0f );
@@ -92,7 +93,7 @@ namespace BSW
         Sprite hero_;
 
         void init( Game & game, Map & map, float x, float y );
-        void update( Game & game, Map & map, float dt );
+        void update( Game & game, Map & map, Inventory & inventory, float dt );
     };
 };
 

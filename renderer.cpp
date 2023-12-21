@@ -111,12 +111,15 @@ namespace BSW
         float w,
         float h,
         uint_fast8_t color,
-        float scrollx,
-        float scrolly,
-        Layer layer,
-        float opacity
+        ArgList args
     ) const
     {
+        float scrollx = GetArg( "scrollx", args, 0.0f );
+        float scrolly = GetArg( "scrolly", args, 0.0f );
+        float opacity = GetArg( "opacity", args, 1.0f );
+        unsigned int layer = GetArgConvert<unsigned int, Layer> ( "layer", args, Layer::BG_1 );
+        uint_fast8_t palette = GetArg( "palette", args, 0 );
+
         NasrRect r { x, y, w, h };
         int graphic = NasrGraphicsAddRectPalette
         (
@@ -125,9 +128,9 @@ namespace BSW
             current_state_,
             static_cast<unsigned int>( layer ),
             r,
-            0,
+            palette,
             color,
-            1,
+            0,
             opacity
         );
 
@@ -142,10 +145,7 @@ namespace BSW
     RectGraphic Renderer::addScreen
     (
         uint_fast8_t color,
-        float scrollx,
-        float scrolly,
-        Layer layer,
-        float opacity
+        ArgList args
     ) const
     {
         return addRect
@@ -155,10 +155,7 @@ namespace BSW
             static_cast<float> ( WINDOW_WIDTH_PIXELS ),
             static_cast<float> ( WINDOW_HEIGHT_PIXELS ),
             color,
-            scrollx,
-            scrolly,
-            layer,
-            opacity
+            args
         );
     };
 
@@ -308,8 +305,8 @@ namespace BSW
                 current_state_,
                 layer,
                 t,
+                palette,
                 0,
-                1,
                 dir,
                 color1,
                 color2
@@ -325,8 +322,8 @@ namespace BSW
                 current_state_,
                 layer,
                 t,
+                palette,
                 0,
-                1,
                 color
             );
         }
@@ -377,11 +374,11 @@ namespace BSW
                 maxdecimals,
                 numpadding,
                 decimalpadding,
-                0,
+                palette,
                 dir,
                 color1,
                 color2,
-                1,
+                0,
                 x,
                 y,
                 shadow,
@@ -405,7 +402,7 @@ namespace BSW
                 decimalpadding,
                 palette,
                 color,
-                1,
+                0,
                 x,
                 y,
                 shadow,
@@ -601,6 +598,7 @@ namespace BSW
         float opacity = GetArg( "opacity", args, 1.0f );
         float x = GetArg( "x", args, 0.0f );
         float y = GetArg( "y", args, 0.0f );
+        uint_fast8_t palette = GetArg( "palette", args, 0 );
 
         int graphic = NasrGraphicsAddSprite
         (
@@ -622,8 +620,8 @@ namespace BSW
             0.0f,
             0.0f,
             opacity,
+            palette,
             0,
-            1,
             1.0f,
             1.0f
         );

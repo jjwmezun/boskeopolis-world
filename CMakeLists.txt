@@ -3,19 +3,17 @@ cmake_minimum_required(VERSION 3.2)
 project(BoskeopolisWorld)
 include(engine/engine.cmake)
 add_executable(BoskeopolisWorld
-    block_behavior.cpp
-    block_component.cpp
-    block_condition.cpp
-    block_type.cpp
     dir.cpp
     game.cpp
     input.cpp
+    inventory.cpp
     json.cpp
     layer.cpp
     map.cpp
     main.cpp
     renderer.cpp
     sprite_system.cpp
+    tile.cpp
     tileset.cpp
     utility.cpp
     ${engine_sources}

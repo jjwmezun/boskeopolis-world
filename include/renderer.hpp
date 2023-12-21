@@ -170,17 +170,14 @@ namespace BSW
             };
     };
 
-    class CounterGraphic
+    struct CounterGraphic
     {
-        public:
-            constexpr CounterGraphic( unsigned int gfx = 0 ) : gfx_ ( gfx ) {};
-            inline void setNumber( float v ) const
-            {
-                NasrGraphicsCounterSetNumber( gfx_, v );
-            }
+        unsigned int gfx_;
 
-        private:
-            unsigned int gfx_;
+        inline void setNumber( float v ) const
+        {
+            NasrGraphicsCounterSetNumber( gfx_, v );
+        }
     };
 
     class TilemapGraphics
@@ -236,19 +233,13 @@ namespace BSW
                 float w,
                 float h,
                 uint_fast8_t color,
-                float scrollx = 0.0f,
-                float scrolly = 0.0f,
-                Layer layer = Layer::BG_1,
-                float opacity = 1.0f
+                ArgList args = {}
             ) const;
 
             RectGraphic addScreen
             (
                 uint_fast8_t color,
-                float scrollx = 0.0f,
-                float scrolly = 0.0f,
-                Layer layer = Layer::BG_1,
-                float opacity = 1.0f
+                ArgList args = {}
             ) const;
 
             unsigned int addRectGradient

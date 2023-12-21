@@ -1,20 +1,31 @@
 #ifndef TILESET_H
 #define TILESET_H
 
-#include "block_type.hpp"
+#include "arg.hpp"
+#include <optional>
 #include <string>
+#include "tile.hpp"
+#include <unordered_map>
 
 namespace BSW
 {
+    struct BehaviorInfo
+    {
+        std::string type;
+        ArgList args;
+    };
+
     class Tileset
     {
         public:
             inline Tileset( std::string name ) : name_ ( name ) {};
             void init();
-            const BlockType & getBlockType( unsigned int type ) const;
+            const std::optional<Tile> getTile( unsigned int type ) const;
+            const std::optional<BehaviorInfo> getBehaviorInfo( unsigned int type ) const;
 
         private:
-            std::vector<BlockType> data_;
+            std::unordered_map<unsigned int, Tile> tiles_;
+            std::unordered_map<unsigned int, BehaviorInfo> behavior_info_;
             std::string name_;
     };
 }

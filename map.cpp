@@ -79,6 +79,7 @@ namespace BSW
         JSON json { "assets/maps/" + slug + ".json" };
         width_ = json.getInt( "width" );
         height_ = json.getInt( "height" );
+        const size_t tilecount = width_ * height_;
         JSONArray l = json.getArray( "layers" );
 
         unsigned int ii = 0;
@@ -594,9 +595,15 @@ namespace BSW
             warps_[ i ] = warps[ i ];
         }
 
-        collision_ = static_cast<CollisionNode *> ( calloc( width_ * height_, sizeof( CollisionNode ) ) );
+        collision_ = static_cast<CollisionType **> ( calloc( tilecount, sizeof( CollisionType * ) ) );
+        blocks_ = static_cast<BlockList *> ( calloc( tilecount, sizeof( BlockList ) ) );
+        std::vector<CollisionType> tempcollisions[ tilecount ] = {};
+        std::vector<Block> tempblocks[ tilecount ] = {};
 
         std::unordered_map<std::string, Tileset> tilesets;
+        Tileset objects { "objects" };
+        objects.init();
+        std::vector<TilemapGraphics> block_layers;
         for ( unsigned int i = 0; i < layers.size(); ++i )
         {
             const MapTileLayer & layer = layers[ i ];
@@ -608,29 +615,20 @@ namespace BSW
                     {
                         if ( layer.tiles[ i ] > 0 )
                         {
-                            if ( collision_[ i ].type == CollisionType::NONE )
-                            {
-                                collision_[ i ].type = static_cast<CollisionType> ( layer.tiles[ i ] );
-                            }
-                            else
-                            {
-                                CollisionNode * node = &collision_[ i ];
-                                while ( node->next )
-                                {
-                                    node = node->next;
-                                }
-                                node->next = static_cast<CollisionNode *> ( calloc( 1, sizeof( CollisionNode ) ) );
-                                node->next->type = static_cast<CollisionType> ( layer.tiles[ i ] );
-                            }
+                            tempcollisions[ i ].push_back( static_cast<CollisionType> ( layer.tiles[ i ] ) );
                         }
                     }
                 }
                 break;
                 case ( MapTileLayer::Type::TILE ):
                 {
+                    // Size o’ texture background.
                     unsigned int w = layer.tilex == 0 ? width_ : layer.tilex;
                     unsigned int wx = blocksToPixels( w );
+
+                    // How many times to tile background horizontally.
                     float tilingx = layer.tilex == 0 ? 1.0f : std::ceil( static_cast<float> ( getWidthPixels() ) / static_cast<float> ( wx ) );
+
                     float fullw = tilingx * wx;
                     int texture = NasrAddTextureBlankEx( wx, getHeightPixels(), NASR_SAMPLING_DEFAULT, NASR_INDEXED_NO );
                     int menu_texture = NasrLoadFileAsTexture( "assets/graphics/tilesets/urban.png" );
@@ -675,20 +673,17 @@ namespace BSW
                                 dest.x = static_cast<float> ( i % width_ ) * 16.0f;
                                 dest.y = std::floor( i / width_ ) * 16.0f;
 
-                                try
+                                const auto bt = tileset.getTile( ti );
+                                if ( bt.has_value() )
                                 {
-                                    BlockType bt = tileset.getBlockType( ti );
-                                    palette = bt.getPalette();
-                                    animation = bt.getAnimation();
+                                    const auto btv = bt.value();
+                                    palette = btv.getPalette();
+                                    animation = btv.getAnimation();
                                     if ( animation > 1 )
                                     {
                                         has_dynamic_tiles = true;
                                         is_dynamic_tile = true;
                                     }
-                                }
-                                catch ( std::runtime_error & error )
-                                {
-
                                 }
 
                                 if ( is_dynamic_tile )
@@ -748,6 +743,64 @@ namespace BSW
                     }
                 }
                 break;
+                case ( MapTileLayer::Type::OBJECT ):
+                {
+                    std::vector<NasrTile> tiles;
+                    int i = 0;
+                    for ( unsigned int i = 0; i < layer.tiles.size(); ++i )
+                    {
+                        tiles.push_back({ 0, 0, 0, 255 });
+                        const int tile = layer.tiles[ i ];
+                        if ( tile == 0 )
+                        {
+                            continue;
+                        }
+
+                        const int objtype = tile - 1121;
+                        if ( objtype < 0 )
+                        {
+                            throw std::runtime_error( "Invalid object #" + tile );
+                        }
+
+                        const auto tileobj = objects.getTile( objtype );
+                        if ( tileobj.has_value() )
+                        {
+                            const auto tileobjval = tileobj.value();
+                            tiles[ i ] =
+                            {
+                                tileobjval.getX(),
+                                tileobjval.getY(),
+                                0,
+                                tileobjval.getAnimation()
+                            };
+                        }
+
+                        const auto object = objects.getBehaviorInfo( objtype );
+                        if ( object.has_value() )
+                        {
+                            const std::string blocktype = object.value().type;
+                            Block b;
+                            b.layer = block_layers.size();
+                            if ( blocktype == "money" )
+                            {
+                                b.type = BlockType::MONEY;
+                                b.data.money.amount = GetArgConvert<float, int> ( "amount", object.value().args, 0.0f );
+                            }
+                            tempblocks[ i ].push_back( b );
+                        }
+                    }
+                    block_layers.push_back
+                    (
+                        game.render().addTilemap
+                        (
+                            "objects",
+                            tiles,
+                            width_,
+                            height_
+                        )
+                    );
+                }
+                break;
                 case ( MapTileLayer::Type::IMAGE ):
                 {
                     const unsigned int texture_id = game.render().getTextureId( layer.misc.image.texture );
@@ -775,6 +828,9 @@ namespace BSW
                             { "srcw", width }
                         }
                     );
+
+                    // This was calloc’d when the MapTileLayer was generated from the JSON file & needs to be freed.
+                    free( layer.misc.image.texture );
                 }
                 break;
                 case ( MapTileLayer::Type::GRADIENT ):
@@ -794,6 +850,23 @@ namespace BSW
                 break;
             }
         }
+
+        // C++ vectors cannot be in unions, which Map is in, so we must convert them to raw data.
+        for ( unsigned int i = 0; i < tilecount; ++i )
+        {
+            blocks_[ i ].count = tempblocks[ i ].size();
+            if ( blocks_[ i ].count > 0 )
+            {
+                blocks_[ i ].list = static_cast<Block *> ( calloc( blocks_[ i ].count, sizeof( Block ) ) );
+                memcpy( blocks_[ i ].list, &tempblocks[ i ][ 0 ], blocks_[ i ].count * sizeof( Block ) );
+            }
+
+            collision_[ i ] = static_cast<CollisionType *> ( calloc( tempcollisions[ i ].size() + 1, sizeof( CollisionType ) ) );
+            memcpy( collision_[ i ], &tempcollisions[ i ][ 0 ], tempcollisions[ i ].size() * sizeof( CollisionType ) );
+        }
+
+        block_layers_ = static_cast<TilemapGraphics *> ( calloc( block_layers.size(), sizeof( TilemapGraphics ) ) );
+        memcpy( block_layers_, &block_layers[ 0 ], sizeof( TilemapGraphics ) );
     };
 
     void Map::close()
@@ -801,30 +874,86 @@ namespace BSW
         free( warps_ );
         for ( unsigned int i = 0; i < width_ * height_; ++i )
         {
-            CollisionNode * next = collision_[ i ].next;
-            while ( next )
-            {
-                CollisionNode * tempnext = next->next;
-                free( next );
-                next = tempnext;
-            }
+            free( collision_[ i ] );
+            free( blocks_[ i ].list );
         }
         free( collision_ );
+        free( blocks_ );
+        free( block_layers_ );
     };
 
     bool Map::testCollision( unsigned int x, unsigned int y, CollisionType type ) const
     {
-        if ( x > width_ || y > height_ ) return false;
+        if ( x >= width_ || y >= height_ ) return false;
 
         const int i = getIFromXAndY( x, y );
 
-        for ( CollisionNode * node = &collision_[ i ]; node; node = node->next )
+        // Loop thru collision till we reach NONE, signalling end o’ list,
+        // indicating that we’ve failed to find the right collision type,
+        // or till we do find the right collision type.
+        unsigned int j = 0;
+        while ( true )
         {
-            if ( node->type == type )
+            if ( collision_[ i ][ j ] == CollisionType::NONE )
+            {
+                return false;
+            }
+            else if ( collision_[ i ][ j ] == type )
             {
                 return true;
             }
+            ++j;
         }
-        return false;
+    };
+
+    void Map::interact( Sprite & sprite, Game & game, Inventory & inventory )
+    {
+        const int y1 = pixelsToBlocks( sprite.pos_.y );
+        const int y2 = pixelsToBlocks( sprite.pos_.bottom() );
+        const int x1 = pixelsToBlocks( sprite.pos_.x );
+        const int x2 = pixelsToBlocks( sprite.pos_.right() );
+
+        if
+        (
+            y1 < 0 ||
+            x1 < 0 ||
+            y2 >= height_ ||
+            x2 >= width_
+        )
+        {
+            return;
+        }
+
+        // For e’ery tile the sprite’s touching, check for block interaction.
+        for ( unsigned int y = y1; y <= y2; ++y )
+        {
+            for ( unsigned int x = x1; x <= x2; ++x )
+            {
+                const unsigned int i = getIFromXAndY( x, y );
+                for ( unsigned int j = 0; j < blocks_[ i ].count; ++j )
+                {
+                    switch ( blocks_[ i ].list[ j ].type )
+                    {
+                        case ( BlockType::MONEY ):
+                        {
+                            // Add money.
+                            inventory.updateMoney( blocks_[ i ].list[ j ].data.money.amount );
+
+                            // Remove block gfx.
+                            block_layers_[ blocks_[ i ].list[ j ].layer ].clearTile( x, y );
+
+                            // Remove block & move following blocks back 1 to fill in space.
+                            for ( unsigned k = j; k + 1 < blocks_[ i ].count; ++k )
+                            {
+                                blocks_[ i ].list[ k ] = blocks_[ i ].list[ k + 1 ];
+                            }
+                            --blocks_[ i ].count;
+                            --j;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
     };
 }

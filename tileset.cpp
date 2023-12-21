@@ -1,4 +1,3 @@
-#include "arg.hpp"
 #include <cmath>
 #include "json.hpp"
 #include <stdexcept>
@@ -6,8 +5,6 @@
 
 namespace BSW
 {
-    typedef std::function<std::vector<BlockBehavior>( const ArgList & args )> BlockBehaviorGenerator;
-
     void Tileset::init()
     {
         const JSON json { "assets/tilesets/" + name_ + ".json" };
@@ -82,41 +79,32 @@ namespace BSW
                 }
             });
 
-            while ( data_.size() <= static_cast<size_t>( id ) )
+            if ( blocktype != "none" )
             {
-                data_.push_back({});
+                behavior_info_.insert( std::pair<unsigned int, BehaviorInfo> ( id, { blocktype, args } ) );
             }
 
-            std::unordered_map<std::string, BlockBehaviorGenerator> generators =
-            {
-                {
-                    "money",
-                    [&]( const ArgList & args )
-                    {
-                        BlockCondition cond { BlockCondition::Type::PROTAG, args };
-                        return std::vector<BlockBehavior>{
-                            { { BlockComponent::Type::MONEY, args }, { cond } },
-                            { { BlockComponent::Type::REMOVE, args }, { cond } }
-                        };
-                    }
-                }
-            };
-
-            auto it = generators.find( blocktype );
-            const std::vector<BlockBehavior> behaviors = ( it != generators.end() )
-                ? it->second( args )
-                : std::vector<BlockBehavior>{};
-
-            data_[ id ] = { x, y, animation, palette, behaviors };
+            tiles_.insert( std::pair<unsigned int, Tile> ( id, { x, y, animation, palette } ) );
         });
     }
 
-    const BlockType & Tileset::getBlockType( unsigned int type ) const
+    const std::optional<Tile> Tileset::getTile( unsigned int type ) const
     {
-        if ( data_.at( type ).isNull() )
+        const auto it = tiles_.find( type );
+        if ( it == tiles_.end() )
         {
-            throw std::runtime_error( "Invalid block type #" + std::to_string( type ) );
+            return std::nullopt;
         }
-        return data_.at( type );
+        return std::optional<Tile> ( it->second );
+    };
+
+    const std::optional<BehaviorInfo> Tileset::getBehaviorInfo( unsigned int type ) const
+    {
+        const auto it = behavior_info_.find( type );
+        if ( it == behavior_info_.end() )
+        {
+            return std::nullopt;
+        }
+        return std::optional<BehaviorInfo> ( it->second );
     };
 }

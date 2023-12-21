@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include "config.hpp"
+#include "inventory.hpp"
 #include "map.hpp"
 #include "renderer.hpp"
 #include "sprite_system.hpp"
@@ -34,6 +35,7 @@ namespace BSW
         RectGraphic bg;
         SpriteSystem sprites;
         Map map;
+        Inventory inventory;
     };
 
     union GameStateData

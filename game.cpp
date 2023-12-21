@@ -12,6 +12,7 @@ namespace BSW
         states_[ 0 ].data.areaname.text = renderer_.addText
         ({
             { "text", "Blueberry Burroughs" },
+            { "palette", 128 },
             { "color", 2 },
             { "align", Text::Align::CENTER },
             { "valign", Text::Valign::MIDDLE }
@@ -77,6 +78,7 @@ namespace BSW
                     states_[ 0 ].data.main.bg = renderer_.addScreen( 2 );
                     states_[ 0 ].data.main.map.init( *this );
                     states_[ 0 ].data.main.sprites.init( *this, states_[ 0 ].data.main.map, 96.0f, 32.0f );
+                    states_[ 0 ].data.main.inventory.init( *this );
                     renderer_.current_state_ = 1;
                     states_[ 1 ].type = GameStateType::FADE_IN;
                     states_[ 1 ].data.fade.graphic = renderer_.addScreen( 1 );
@@ -107,7 +109,7 @@ namespace BSW
             case ( GameStateType::MAIN ):
             {
                 #define DATA states_[ num_o_states_ - 1 ].data.main
-                DATA.sprites.update( *this, DATA.map, dt );
+                DATA.sprites.update( *this, DATA.map, DATA.inventory, dt );
                 #undef DATA
             }
             break;

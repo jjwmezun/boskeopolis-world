@@ -13,20 +13,25 @@
          "id":0,
          "properties":[
                 {
+                 "name":"amount",
+                 "type":"int",
+                 "value":100
+                }, 
+                {
                  "name":"animation",
                  "type":"int",
                  "value":6
+                }, 
+                {
+                 "name":"palette",
+                 "type":"int",
+                 "value":1
                 }, 
                 {
                  "name":"type",
                  "type":"string",
                  "value":"money"
                 }, 
-                {
-                 "name":"amount",
-                 "type":"int",
-                 "value":100
-                },
                 {
                  "name":"x",
                  "type":"int",

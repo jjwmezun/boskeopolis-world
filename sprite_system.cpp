@@ -19,7 +19,7 @@ namespace BSW
         graphic_ = game.render().addSprite( "sprites/autumn.png", 0.0f, 0.0f, pos_.w, pos_.h, pos_.x, pos_.y, { { "palette", 128 } } );
     };
 
-    void Sprite::update( Game & game, Map & map, float dt )
+    void Sprite::update( Game & game, Map & map, Inventory & inventory, float dt )
     {
         // Horizontal Movement.
         start_speed_ = Input::heldRun() ? START_SPEED * 2.0f : START_SPEED;
@@ -104,6 +104,9 @@ namespace BSW
 
         on_ground_ = false;
         misc_.autumn.jump_padding = std::max( 0.0f, misc_.autumn.jump_padding - 1.0f * dt);
+
+        // General block collision.
+        map.interact( *this, game, inventory );
 
         // Handle downward collision.
         if ( ychange > 0.0f )
@@ -271,9 +274,9 @@ namespace BSW
         hero_.init( game );
     };
 
-    void SpriteSystem::update( Game & game, Map & map, float dt )
+    void SpriteSystem::update( Game & game, Map & map, Inventory & inventory, float dt )
     {
-        hero_.update( game, map, dt );
+        hero_.update( game, map, inventory, dt );
     };
 
     void Sprite::autumnLanding()
